@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import math
 import os
 
 from . import synth, workbook
@@ -101,6 +102,38 @@ def _band(fee):
     return 0 if fee <= 1000 else 1 if fee <= 1500 else 2 if fee <= 2000 else 3
 
 
+HERE_DATA = os.path.dirname(os.path.abspath(__file__))
+
+
+def _name(x):
+    """One spelling per stallion across the sources (qa/v2data.py keeps the list)."""
+    s = " ".join(str(x or "").upper().replace(";", " ").replace("(P)", " ").split())
+    return {"ELANTE": "EL ANTE", "ENVINCEBLE": "EVINCEBLE", "LFL ELIGANCE": "LFL ELIGIANCE", "RUMEREZ": "RUMERZ", "SAIL ON SAILER": "SAIL ON SAILOR"}.get(s, s)
+
+
+def _dollars(v):
+    if v >= 1e6:
+        return "$%.1f million" % (v / 1e6)
+    return "${:,.0f}".format(round(v, -3) if v >= 10000 else v)
+
+
+def _rec(r, latest, years):
+    """Add the sentence the page shows, and whether he was on last year's list."""
+    span = "%d to %d" % (years[0], years[-1]) if years else ""
+    r["active"] = bool(r["y"] == latest and r["e"] > 0)
+    if r["tier"] == "none" or not r["y"]:
+        r["text"] = "None of his foals are on the halter leaderboards for %s." % span
+    elif r["y"] < latest:
+        r["text"] = "His foals were last on the leaderboard in %d, when they won %s." % (r["y"], _dollars(r["e"]))
+    else:
+        r["text"] = "His foals won %s in halter classes in %d, and %d of them earned money." % (_dollars(r["e"]), r["y"], r["n"])
+        if r["prev"] and r["e"] / r["prev"] >= 1.2:
+            r["text"] += " That is up from %s the year before." % _dollars(r["prev"])
+        elif r["prev"] and r["e"] / r["prev"] <= 0.8:
+            r["text"] += " That is down from %s the year before." % _dollars(r["prev"])
+    return r
+
+
 def match_data(ds, p):
     """What the matcher needs per stallion: a price, a track record and a score.
 
@@ -120,6 +153,20 @@ def match_data(ds, p):
         stats.setdefault(r["stallion_id"], {})[r["period"]] = r
     shown = (_load("active_foals_2026.json") or {}).get("stallions", {})
     pm = PriceModel.load(QA)
+    foal = _load("foal_model.json")               # chance of a top-three futurity finish (qa/foal_model.py)
+    fut = (_load("sire_model.json") or {}).get("sires", {})      # what his foals did at the futurity, 2024 to 2026
+    top50 = {}                                    # his foals among last year's top 50 money earners
+    earners_csv = os.path.join(QA, "leaders", "earners.csv")
+    if os.path.exists(earners_csv) and latest:
+        import csv as _csv
+        with open(earners_csv, newline="") as fh:
+            for r in _csv.DictReader(fh):
+                if r["period"] == str(latest):
+                    top50[_name(r["sire"])] = top50.get(_name(r["sire"]), 0) + 1
+
+    def chance(weights, rank, proven):
+        z = weights[0] + weights[1] * (1.0 if rank <= 20 else 0.0) + weights[2] * proven
+        return 1.0 / (1.0 + math.exp(-z))
     sold = {}                                   # what each stallion's young foals actually fetched
     ages = {}                                   # how many sales the model saw at each age
     prices = []
@@ -170,29 +217,62 @@ def match_data(ds, p):
                 sale["real"] = {"n": len(real), "median": _median([x[0] for x in real]), "label": BANDS[_band(price["fee"])],
                                 "multiple": _round(_median([x[0] / x[1] for x in real]), 2)}
         mine_sold = sold.get((st.get("name") or "").upper(), [])
+        hits = top50.get(_name(st.get("name")), 0)
+        f = fut.get(_name(st.get("name")))
+        odds = None
+        now = mine.get(str(latest)) if latest else None                  # his row on last year's leaderboard
+        rank_now = now["rank"] if now and now.get("rank") else 99
+        if foal:
+            odds = {"no": _round(chance(foal["weights_top3"], rank_now, 0), 3), "yes": _round(chance(foal["weights_top3"], rank_now, 1), 3),
+                    "win_no": _round(chance(foal["weights_win"], rank_now, 0), 3), "win_yes": _round(chance(foal["weights_win"], rank_now, 1), 3),
+                    "money_no": _round(chance(foal["weights_money"], rank_now, 0), 3), "money_yes": _round(chance(foal["weights_money"], rank_now, 1), 3)}
         out.append({
             "id": sid, "name": st.get("name"), "foaled": st.get("foaling_year"), "sire": st.get("sire"),
             "dam": st.get("dam"), "dam_sire": st.get("dam_sire"), "price": price,
             "pt": bool(newest is not None and newest.get("fee") is None),
             "share": _round(_median(ratios), 2), "bids": len(ratios),
-            "score": _round(hist.score(sid, latest), 0) if latest else 0,
+            "score": _round((hist.e(sid, latest) or 0.0) + hits / 100.0, 2) if latest else 0,     # last year's foal winnings; top-50 foals break ties
+            "hits": hits, "rank": rank_now if rank_now < 99 else None, "odds": odds,
+            "fut": {"shown": f["shown"], "starts": f["starts"], "top3": f["top3"], "wins": f["wins"]} if f else None,
             "sale": sale,
             "sold": {"n": len(mine_sold), "median": _median(mine_sold)} if len(mine_sold) >= 3 else None,
-            "rec": {"tier": "strong" if best is not None and best <= 10 else "some" if seen else "none",
-                    "y": int(lastrow["period"]) if lastrow else None, "e": lastrow["earnings"] if lastrow else 0,
-                    "n": lastrow["earners"] if lastrow else 0,
-                    "prev": (hist.e(sid, int(lastrow["period"]) - 1) if lastrow else None)},
+            "rec": _rec({"tier": "strong" if best is not None and best <= 10 else "some" if seen else "none",
+                         "y": int(lastrow["period"]) if lastrow else None, "e": lastrow["earnings"] if lastrow else 0,
+                         "n": lastrow["earners"] if lastrow else 0,
+                         "prev": (hist.e(sid, int(lastrow["period"]) - 1) if lastrow else None)}, latest, recent),
             "shown": {"n": foals["shown"], "y": foals["year"], "big": foals["at_least_20000"],
                       "median": foals["median"]} if foals else None})
     dates = sorted({r["date"] for r in ds.sire_stats if r.get("date")})
-    record = _load("track_record.json")           # the leave-one-season-out figures from qa/backtest.py
+    record = _load("track_record2.json") or _load("track_record.json")     # the leave-one-season-out figures from qa/backtest2.py
     if not record:
         record = track_record(hist)
         if record:
             for row in record["by_budget"]:
                 row.pop("seasons", None)
-    return {"years": recent, "latest": latest, "read_on": dates[-1] if dates else "", "stallions": out,
-            "record": record, "sales": _load("sales_summary.json"), "pricing": dict(pm.summary(), weanlings=ages.get("0", 0), yearlings=ages.get("1", 0),
+    n_priced = sum(1 for s in out if s["price"])
+    how = ["We track %d Quarter Horse halter stallions and what each has charged for a breeding. %d have a published price." % (len(out), n_priced)]
+    if pm:
+        how.append("The sale price comes from %d young horses sold at public online auctions, by %d stallions. Return is that price divided by the stud fee. "
+                   "It leaves out the cost of raising the foal." % (pm.m["sales"], pm.m["sires"]))
+    how.append("A record is prize money won by a stallion's foals in halter classes, from the public QData leaderboards. Strong record: in the top ten sires "
+               "in at least one of the last three years. Some record: on the top-50 list.")
+    how.append("Chance of a prize winner ranks by what his foals won in halter last year. We tried twelve ways of ranking against eight past seasons. "
+               "Several did equally well, and this is the plainest of them.")
+    if foal:
+        how.append("The top-three chance uses two things that were known before each mare was bred: where the sire stood on the leaderboard, and whether the dam "
+                   "had already produced an earner. It was trained on every weanling and yearling shown at the futurity in %d to %d." % (foal["years"][0], foal["years"][-1]))
+    how.append("It is a guide, not a guarantee. We cannot see how many foals each stallion has in total, so nothing here is the chance for every foal born.")
+    return {"label": "Quarter Horse", "sub": "Halter stallions", "detail": "explore.html", "fee_chips": [1000, 1500, 2000, 2500, 3000],
+            "total_chips": [5000, 10000, 20000, 50000], "how": how, "notes": [],
+            "years": recent, "latest": latest, "read_on": dates[-1] if dates else "", "stallions": out,
+            "record": record, "sales": _load("sales_summary.json"),
+            "foal": {"class_size": foal.get("typical_class_size", 21), "proven_at": 10000, "money_at": int(round(foal["money_cutoff"], -3)),
+                     "money_rate": foal["money_rate"], "money_forward": foal["money_score"]["forward"],
+                     "worth": _load("futurity_worth.json"), "proven_rate": foal["dam_rates"]["proven"], "other_rate": foal["dam_rates"]["other"],
+                     "foals": foal["foals"], "sires": foal["sires"], "years": foal["years"], "base": foal["base_rate"], "forward": foal["kept_round"]["forward"],
+                     "split": foal["forward_split"], "rounds": len(foal["scorecard"]), "combinations": (foal.get("search") or {}).get("combinations"),
+                     "scorecard": [{"name": r["round"].split(" ", 1)[1].replace(" (the one kept)", ""), "forward": round(r["forward"], 2), "each_year": round(r["each_year"], 2),
+                                    "kept": r["round"] == foal["kept"]} for r in foal["scorecard"]]} if foal else None, "pricing": dict(pm.summary(), weanlings=ages.get("0", 0), yearlings=ages.get("1", 0),
                             two_year_olds=ages.get("2", 0), top=max(prices, default=0),
                             at_least_10000=sum(1 for x in prices if x >= 10000),
                             at_least_20000=sum(1 for x in prices if x >= 20000)) if pm else None}
@@ -248,7 +328,15 @@ def export(workbook_path, out_path, repo_url="", params=None, dates=None):
         return os.path.getsize(target)
 
     # the front page carries only what the matcher shows; the detailed page carries everything
-    front = {"generated": data["generated"], "repo": repo_url, "match": data["match"]}
+    breeds = {"qh": data["match"]}
+    try:
+        from . import arabian
+        arab = arabian.match_data(os.path.join(os.path.dirname(HERE_DATA), "data", "arabian"))
+        if arab:
+            breeds["arabian"] = arab
+    except FileNotFoundError:
+        pass
+    front = {"generated": data["generated"], "repo": repo_url, "breeds": breeds}
     size = write(TEMPLATE, out_path, front)
     write(EXPLORE, os.path.join(out_dir, "explore.html"), data)
     return data, size

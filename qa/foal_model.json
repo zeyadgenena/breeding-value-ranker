@@ -1,0 +1,242 @@
+{
+ "kept": "16 Sire in the top 20 or not, and the dam's record (the one kept)",
+ "target": "top-three finish in an open futurity class, weanlings and yearlings that were shown",
+ "weights_top3": [
+  -1.8222122652670534,
+  0.6586438228592693,
+  0.6360255811726422
+ ],
+ "weights_win": [
+  -2.8656929034803045,
+  0.6576150190451638,
+  0.0914068528373364
+ ],
+ "weights_money": [
+  -1.7682587412986426,
+  0.23898978774751717,
+  0.5872522898220878
+ ],
+ "money_score": {
+  "forward": 0.6014423076923077,
+  "each_year": 0.5752665458589552,
+  "brier": 0.14575197052068561
+ },
+ "money_cutoff": 15840.0,
+ "money_rate": 0.17803660565723795,
+ "features": [
+  "intercept",
+  "sire_in_top_20",
+  "dam_proven"
+ ],
+ "search": {
+  "combinations": 561,
+  "best": [
+   {
+    "what": "sire in the top 20 + sire tier + sire earners + dam produced an earner",
+    "forward": 0.6538461538461539,
+    "each_year": 0.6097177199218016
+   },
+   {
+    "what": "sire tier + sire earners + dam produced an earner + sire's futurity average",
+    "forward": 0.6508372579801152,
+    "each_year": 0.604648010090187
+   },
+   {
+    "what": "sire tier + sire earners + dam produced an earner",
+    "forward": 0.6508372579801152,
+    "each_year": 0.6043631727305196
+   },
+   {
+    "what": "sire tier + sire earners + dam produced an earner + dam's earlier foal",
+    "forward": 0.6508372579801152,
+    "each_year": 0.6032748682408546
+   },
+   {
+    "what": "sire in the top 20 + sire tier + dam produced an earner + sire's futurity average",
+    "forward": 0.6397174254317112,
+    "each_year": 0.6123799669718037
+   }
+  ]
+ },
+ "base_rate": 0.2113144758735441,
+ "foals": 601,
+ "sires": 71,
+ "dams": 434,
+ "years": [
+  2024,
+  2025,
+  2026
+ ],
+ "scorecard": [
+  {
+   "round": "0 The same chance for every foal",
+   "forward": 0.5,
+   "each_year": 0.5,
+   "brier": 0.16930162331551207
+  },
+  {
+   "round": "1 Sire's leaderboard tier (top 5, 6 to 20, other)",
+   "forward": 0.6041339612768184,
+   "each_year": 0.5907908229336801,
+   "brier": 0.16677006454137652
+  },
+  {
+   "round": "2 Sire's winnings, as a number",
+   "forward": 0.5286499215070644,
+   "each_year": 0.576087882890604,
+   "brier": 0.16770164931359516
+  },
+  {
+   "round": "3 Sire's tier and how many earners he had",
+   "forward": 0.6020408163265306,
+   "each_year": 0.5941285220196785,
+   "brier": 0.16710376070731056
+  },
+  {
+   "round": "4 Sire's tier and whether the dam has produced an earner",
+   "forward": 0.6397174254317112,
+   "each_year": 0.5665326044577745,
+   "brier": 0.16460745404878815
+  },
+  {
+   "round": "5 Round 4 and the finish of the dam's earlier foal",
+   "forward": 0.6397174254317112,
+   "each_year": 0.5665326044577745,
+   "brier": 0.16414143656958569
+  },
+  {
+   "round": "6 Round 5 and whether the dam's sire is a listed broodmare sire",
+   "forward": 0.6184589220303506,
+   "each_year": 0.610142905721137,
+   "brier": 0.163974674439256
+  },
+  {
+   "round": "7 Round 5 and the sire's own futurity average last year",
+   "forward": 0.6397174254317112,
+   "each_year": 0.5665326044577745,
+   "brier": 0.1641394183201755
+  },
+  {
+   "round": "8 Round 5 and age class",
+   "forward": 0.613880167451596,
+   "each_year": 0.5589167886786934,
+   "brier": 0.16447951298937818
+  },
+  {
+   "round": "9 Round 4 with tier and dam working together",
+   "forward": 0.6397174254317112,
+   "each_year": 0.566308137566641,
+   "brier": 0.16527388280969957
+  },
+  {
+   "round": "10 Sire's winnings and the dam's record",
+   "forward": 0.5753532182103611,
+   "each_year": 0.595381357116051,
+   "brier": 0.16568634131818058
+  },
+  {
+   "round": "11 Round 4 and whether the dam was a winner herself",
+   "forward": 0.6278780743066458,
+   "each_year": 0.5814173229139216,
+   "brier": 0.16451664689431567
+  },
+  {
+   "round": "12 Round 4 and whether the sire's winnings are rising or falling",
+   "forward": 0.6291208791208791,
+   "each_year": 0.5652551530102551,
+   "brier": 0.16461102952049253
+  },
+  {
+   "round": "13 Round 4 and how many top-50 foals the sire had last year",
+   "forward": 0.603021978021978,
+   "each_year": 0.5890388397191119,
+   "brier": 0.16382750295859994
+  },
+  {
+   "round": "14 The dam's record and the sire's top-50 foals",
+   "forward": 0.5529173207744636,
+   "each_year": 0.5832652419387113,
+   "brier": 0.16542228658985036
+  },
+  {
+   "round": "15 Sire's tier, his number of earners and the dam's record",
+   "forward": 0.6508372579801152,
+   "each_year": 0.6043631727305196,
+   "brier": 0.16484240648323997
+  },
+  {
+   "round": "16 Sire in the top 20 or not, and the dam's record (the one kept)",
+   "forward": 0.6060308738880168,
+   "each_year": 0.5993920289838657,
+   "brier": 0.16452903931575222
+  }
+ ],
+ "kept_round": {
+  "round": "16 Sire in the top 20 or not, and the dam's record (the one kept)",
+  "forward": 0.6060308738880168,
+  "each_year": 0.5993920289838657,
+  "brier": 0.16452903931575222
+ },
+ "grid": [
+  {
+   "sire": "sire in the top 20",
+   "dam": "dam has produced an earner",
+   "proven": 1,
+   "top3": 0.3710901587414924,
+   "win": 0.10748701321520442,
+   "money": 0.28049316595688584,
+   "foals": 55,
+   "seen_top3": 0.4,
+   "seen_money": 0.23636363636363636
+  },
+  {
+   "sire": "sire in the top 20",
+   "dam": "no record for the dam",
+   "proven": 0,
+   "top3": 0.23801948536591566,
+   "win": 0.09902743413039203,
+   "money": 0.17810067178564526,
+   "foals": 277,
+   "seen_top3": 0.23465703971119134,
+   "seen_money": 0.18772563176895307
+  },
+  {
+   "sire": "other sire",
+   "dam": "dam has produced an earner",
+   "proven": 1,
+   "top3": 0.2339416378836846,
+   "win": 0.058729630009600554,
+   "money": 0.23487128183968195,
+   "foals": 34,
+   "seen_top3": 0.20588235294117646,
+   "seen_money": 0.3235294117647059
+  },
+  {
+   "sire": "other sire",
+   "dam": "no record for the dam",
+   "proven": 0,
+   "top3": 0.13916863036091054,
+   "win": 0.05387577701582442,
+   "money": 0.14575900512850348,
+   "foals": 235,
+   "seen_top3": 0.14042553191489363,
+   "seen_money": 0.13191489361702127
+  }
+ ],
+ "forward_split": {
+  "year": 2026,
+  "foals": 199,
+  "top_third_rate": 0.3484848484848485,
+  "bottom_third_rate": 0.19696969696969696,
+  "top_third_said": 0.25539626702971313,
+  "bottom_third_said": 0.14598110970005695
+ },
+ "typical_class_size": 21,
+ "dam_rates": {
+  "proven": 0.3258426966292135,
+  "other": 0.19140625,
+  "proven_foals": 89,
+  "other_foals": 512,
+  "meaning": "the dam was among the year's top 50 dams by foal winnings in an earlier year (about $10,000 or more won by her foals in one year)"
+ }
+}
