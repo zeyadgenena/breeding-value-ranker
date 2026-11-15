@@ -204,6 +204,11 @@ kept because it is the simplest of the versions that tie, and because the three
 sire tiers did not come out in order: foals of sires ranked 6 to 20 placed a
 little better than foals of the top five. Two groups is all the data supports.
 
+Where to draw the line for a leading sire was tested too. With the dam's record
+in the model, a top-5 line sorts no better than chance (22% of their foals made
+a top three, against 21% for everyone else). A top-20 line is the best of the
+six tried (26% against 15%), and top 30 and top 50 are close behind.
+
 What the kept model says, and what happened:
 
 | Sire | Dam | Chance of a top three | Chance of a top-50 money year | Foals | Top three, actual |
@@ -224,6 +229,11 @@ What the kept model says, and what happened:
 - **A weanling's result lasts a little.** 31% of weanlings came back as
   yearlings. Top-three weanlings made a top three again 31% of the time, others
   20%. Across all ages a horse's finish one year tracked the next (link 0.42).
+
+**What a producing mare costs.** In 108 public mare sales the typical price was
+$3,100. The five that were already listed producers sold for $1,150 to $9,600.
+The four that later produced an earner had sold for $7,100 to $10,100. Small
+numbers, from `python qa/mares.py`.
 
 Three cautions. The model only knows foals that were shown: the ones that never
 reached the ring are missing. A proven dam often comes with an owner who can
