@@ -1,0 +1,834 @@
+{
+ "years": [
+  2024,
+  2025,
+  2026
+ ],
+ "horse_years": 777,
+ "tests": {
+  "carry_over": [
+   {
+    "from": 2024,
+    "to": 2025,
+    "foals": 150,
+    "r": -0.016243025722337965,
+    "low": {
+     "foals": 50,
+     "avg": 53.256,
+     "top3": 0.26
+    },
+    "high": {
+     "foals": 50,
+     "avg": 51.354,
+     "top3": 0.28
+    },
+    "k": 5.371777726511625
+   },
+   {
+    "from": 2025,
+    "to": 2026,
+    "foals": 168,
+    "r": 0.14389878049619959,
+    "low": {
+     "foals": 56,
+     "avg": 46.50892857142857,
+     "top3": 0.30357142857142855
+    },
+    "high": {
+     "foals": 56,
+     "avg": 53.94285714285714,
+     "top3": 0.25
+    },
+    "k": 2.6880729784475297
+   }
+  ],
+  "measures": {
+   "futurity score": {
+    "foals": 318,
+    "link": 0.06121751356845088
+   },
+   "foals he had shown": {
+    "foals": 318,
+    "link": 0.08941306602879052
+   },
+   "leaderboard winnings": {
+    "foals": 361,
+    "link": 0.1048653383773259
+   },
+   "leaderboard earners": {
+    "foals": 361,
+    "link": 0.08857129666514704
+   },
+   "winnings per earner": {
+    "foals": 361,
+    "link": 0.09965760861489395
+   },
+   "stud fee": {
+    "foals": 213,
+    "link": -0.0648974884091714
+   }
+  },
+  "siblings": {
+   "pairs": 186,
+   "link": 0.20523731799167522,
+   "same_sire_pairs": 78,
+   "different_sire_pairs": 108
+  },
+  "same_horse": {
+   "pairs": 136,
+   "link": 0.4198519841696621,
+   "came_back": 136,
+   "shown_first_year": 523
+  }
+ },
+ "k": 3.3435773004361096,
+ "sires": {
+  "AGENT MAN": {
+   "shown": 9,
+   "starts": 10,
+   "avg": 44.4,
+   "score": 45.8,
+   "top3": 3,
+   "wins": 0,
+   "top_half": 4
+  },
+  "BEST KEPT SECRETE": {
+   "shown": 7,
+   "starts": 9,
+   "avg": 54.1,
+   "score": 53.0,
+   "top3": 4,
+   "wins": 0,
+   "top_half": 5
+  },
+  "BIGGER DREAMS": {
+   "shown": 14,
+   "starts": 19,
+   "avg": 52.3,
+   "score": 51.9,
+   "top3": 2,
+   "wins": 1,
+   "top_half": 11
+  },
+  "CHICKS DIG PIRATES": {
+   "shown": 3,
+   "starts": 3,
+   "avg": 12.3,
+   "score": 32.2,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "COOL ADDICITOIN": {
+   "shown": 3,
+   "starts": 3,
+   "avg": 44.7,
+   "score": 47.5,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 1
+  },
+  "COOL ADDICTION": {
+   "shown": 4,
+   "starts": 4,
+   "avg": 70.5,
+   "score": 61.2,
+   "top3": 2,
+   "wins": 0,
+   "top_half": 4
+  },
+  "COOL IN COLOR": {
+   "shown": 6,
+   "starts": 6,
+   "avg": 42.2,
+   "score": 45.0,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 2
+  },
+  "CR PEACEMAKER": {
+   "shown": 36,
+   "starts": 47,
+   "avg": 59.2,
+   "score": 58.5,
+   "top3": 20,
+   "wins": 10,
+   "top_half": 28
+  },
+  "ECREDIBLE": {
+   "shown": 6,
+   "starts": 6,
+   "avg": 56.7,
+   "score": 54.3,
+   "top3": 2,
+   "wins": 1,
+   "top_half": 5
+  },
+  "EL ANTE": {
+   "shown": 23,
+   "starts": 31,
+   "avg": 47.5,
+   "score": 47.7,
+   "top3": 4,
+   "wins": 2,
+   "top_half": 13
+  },
+  "EL FUTURO": {
+   "shown": 9,
+   "starts": 11,
+   "avg": 48.5,
+   "score": 48.9,
+   "top3": 3,
+   "wins": 1,
+   "top_half": 4
+  },
+  "ENCHANT": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 50.0,
+   "score": 50.0,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 1
+  },
+  "ENTENTIONS": {
+   "shown": 4,
+   "starts": 5,
+   "avg": 78.5,
+   "score": 67.1,
+   "top3": 4,
+   "wins": 2,
+   "top_half": 5
+  },
+  "EVINCEBLE": {
+   "shown": 54,
+   "starts": 65,
+   "avg": 52.4,
+   "score": 52.3,
+   "top3": 16,
+   "wins": 5,
+   "top_half": 40
+  },
+  "ESE A LOOKER": {
+   "shown": 3,
+   "starts": 4,
+   "avg": 34.3,
+   "score": 41.4,
+   "top3": 1,
+   "wins": 0,
+   "top_half": 1
+  },
+  "EXECUTE": {
+   "shown": 21,
+   "starts": 26,
+   "avg": 48.8,
+   "score": 48.9,
+   "top3": 9,
+   "wins": 2,
+   "top_half": 13
+  },
+  "EXECUTE IMPRINT": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 54.2,
+   "score": 51.0,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 1
+  },
+  "FG AMBASSADOR": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 87.5,
+   "score": 58.6,
+   "top3": 1,
+   "wins": 1,
+   "top_half": 1
+  },
+  "FG BORN LEGACY": {
+   "shown": 13,
+   "starts": 16,
+   "avg": 48.9,
+   "score": 49.1,
+   "top3": 4,
+   "wins": 3,
+   "top_half": 8
+  },
+  "FG PHENOMENAL FELLA": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 83.3,
+   "score": 57.7,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 1
+  },
+  "FG SPEECHLESS": {
+   "shown": 22,
+   "starts": 33,
+   "avg": 56.7,
+   "score": 56.1,
+   "top3": 7,
+   "wins": 3,
+   "top_half": 21
+  },
+  "FLASHN MY ASSETS": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 20.4,
+   "score": 43.2,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "HEARTZ ON FIRE": {
+   "shown": 8,
+   "starts": 11,
+   "avg": 58.1,
+   "score": 56.2,
+   "top3": 5,
+   "wins": 2,
+   "top_half": 7
+  },
+  "HES SO THAT": {
+   "shown": 16,
+   "starts": 18,
+   "avg": 49.1,
+   "score": 49.3,
+   "top3": 2,
+   "wins": 0,
+   "top_half": 10
+  },
+  "HES STYLIN": {
+   "shown": 3,
+   "starts": 5,
+   "avg": 28.0,
+   "score": 36.8,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "I GOTTA COOL SECRET": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 4.2,
+   "score": 39.5,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "IAM THE ONE AND ONLY": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 26.9,
+   "score": 44.7,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "IB A COOL EGO": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 42.3,
+   "score": 48.2,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "IEM THE ONE": {
+   "shown": 2,
+   "starts": 4,
+   "avg": 29.1,
+   "score": 38.6,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "IMPRESSIN DA LADIES": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 8.8,
+   "score": 40.5,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "INITIALS ONLY": {
+   "shown": 3,
+   "starts": 3,
+   "avg": 35.7,
+   "score": 43.2,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "INTENSIONS": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 28.3,
+   "score": 45.0,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "INTUIT": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 38.0,
+   "score": 47.2,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "KR THE XTREME ONE": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 37.0,
+   "score": 47.0,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "LFL ELIGIANCE": {
+   "shown": 9,
+   "starts": 12,
+   "avg": 42.3,
+   "score": 43.9,
+   "top3": 3,
+   "wins": 1,
+   "top_half": 4
+  },
+  "LWR CLASSIC CHROME": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 35.4,
+   "score": 46.6,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "MMR JINX ON ME": {
+   "shown": 2,
+   "starts": 2,
+   "avg": 15.0,
+   "score": 36.9,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "MY BRAVADO": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 44.3,
+   "score": 48.7,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "MY INTENTION": {
+   "shown": 32,
+   "starts": 39,
+   "avg": 57.8,
+   "score": 57.2,
+   "top3": 12,
+   "wins": 3,
+   "top_half": 23
+  },
+  "RAYLAN GIVENS": {
+   "shown": 36,
+   "starts": 49,
+   "avg": 63.7,
+   "score": 62.8,
+   "top3": 16,
+   "wins": 8,
+   "top_half": 31
+  },
+  "RUMERZ": {
+   "shown": 10,
+   "starts": 10,
+   "avg": 68.2,
+   "score": 63.6,
+   "top3": 3,
+   "wins": 2,
+   "top_half": 7
+  },
+  "SAIL ON SAILOR": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 14.7,
+   "score": 41.9,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "SAIL ON SAILOR TOO": {
+   "shown": 5,
+   "starts": 5,
+   "avg": 40.1,
+   "score": 44.1,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 2
+  },
+  "SECRET GUNFIGHTER": {
+   "shown": 64,
+   "starts": 77,
+   "avg": 55.2,
+   "score": 55.0,
+   "top3": 22,
+   "wins": 5,
+   "top_half": 42
+  },
+  "SOLARIS": {
+   "shown": 41,
+   "starts": 52,
+   "avg": 53.8,
+   "score": 53.6,
+   "top3": 13,
+   "wins": 5,
+   "top_half": 31
+  },
+  "STRATOSFEAR": {
+   "shown": 4,
+   "starts": 4,
+   "avg": 48.2,
+   "score": 49.0,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 1
+  },
+  "SUCHAN EGO": {
+   "shown": 4,
+   "starts": 5,
+   "avg": 47.2,
+   "score": 48.3,
+   "top3": 1,
+   "wins": 1,
+   "top_half": 2
+  },
+  "TEL N TALES": {
+   "shown": 2,
+   "starts": 2,
+   "avg": 54.4,
+   "score": 51.6,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 1
+  },
+  "TELACHROME": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 29.2,
+   "score": 45.2,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "TELASECRET": {
+   "shown": 2,
+   "starts": 2,
+   "avg": 58.9,
+   "score": 53.3,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 2
+  },
+  "TELESTRATOR": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 75.0,
+   "score": 55.8,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 1
+  },
+  "TELL N TALES": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 65.0,
+   "score": 53.5,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 1
+  },
+  "THE FINAL VERSE": {
+   "shown": 12,
+   "starts": 13,
+   "avg": 47.1,
+   "score": 47.7,
+   "top3": 3,
+   "wins": 2,
+   "top_half": 7
+  },
+  "THE HEISMAN LEGEND": {
+   "shown": 5,
+   "starts": 10,
+   "avg": 22.6,
+   "score": 29.5,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 2
+  },
+  "TRILLIONS": {
+   "shown": 19,
+   "starts": 25,
+   "avg": 46.1,
+   "score": 46.5,
+   "top3": 5,
+   "wins": 2,
+   "top_half": 12
+  },
+  "TRU LEGACY": {
+   "shown": 5,
+   "starts": 5,
+   "avg": 31.0,
+   "score": 38.6,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 2
+  },
+  "URGE": {
+   "shown": 3,
+   "starts": 3,
+   "avg": 51.5,
+   "score": 50.7,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 2
+  },
+  "VALENTINO": {
+   "shown": 3,
+   "starts": 3,
+   "avg": 54.6,
+   "score": 52.2,
+   "top3": 1,
+   "wins": 0,
+   "top_half": 2
+  },
+  "VERY COOL": {
+   "shown": 21,
+   "starts": 25,
+   "avg": 48.6,
+   "score": 48.8,
+   "top3": 5,
+   "wins": 2,
+   "top_half": 13
+  },
+  "VIGILANTI": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 20.8,
+   "score": 43.3,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "VIRTUOUS": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 75.0,
+   "score": 55.8,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 1
+  },
+  "WESTERN SON": {
+   "shown": 4,
+   "starts": 5,
+   "avg": 35.5,
+   "score": 41.3,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 1
+  },
+  "COOL PROFILER": {
+   "shown": 4,
+   "starts": 4,
+   "avg": 34.1,
+   "score": 41.3,
+   "top3": 1,
+   "wins": 1,
+   "top_half": 1
+  },
+  "COOPER COLORS": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 64.6,
+   "score": 53.4,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 1
+  },
+  "EVINCING": {
+   "shown": 1,
+   "starts": 2,
+   "avg": 91.0,
+   "score": 65.3,
+   "top3": 1,
+   "wins": 0,
+   "top_half": 2
+  },
+  "EXTREEM": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 64.3,
+   "score": 53.3,
+   "top3": 1,
+   "wins": 0,
+   "top_half": 1
+  },
+  "FG MCDREAMY": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 20.6,
+   "score": 43.2,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "I GOTTA GET RIPPED": {
+   "shown": 11,
+   "starts": 16,
+   "avg": 66.0,
+   "score": 63.3,
+   "top3": 4,
+   "wins": 0,
+   "top_half": 13
+  },
+  "ID TRIPLE KIDS": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 50.0,
+   "score": 50.0,
+   "top3": 1,
+   "wins": 1,
+   "top_half": 1
+  },
+  "LEAVIN YA SPEECHLESS": {
+   "shown": 4,
+   "starts": 7,
+   "avg": 61.3,
+   "score": 57.7,
+   "top3": 2,
+   "wins": 0,
+   "top_half": 6
+  },
+  "NO SIRE ON FILE": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 58.3,
+   "score": 51.9,
+   "top3": 1,
+   "wins": 1,
+   "top_half": 1
+  },
+  "PF PREMO": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 21.4,
+   "score": 43.4,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "PROMINENCE": {
+   "shown": 18,
+   "starts": 20,
+   "avg": 51.7,
+   "score": 51.4,
+   "top3": 3,
+   "wins": 2,
+   "top_half": 10
+  },
+  "SKIPPAFIED": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 20.8,
+   "score": 43.3,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "TELECHROMED": {
+   "shown": 1,
+   "starts": 2,
+   "avg": 6.3,
+   "score": 33.7,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "WHOISIT": {
+   "shown": 3,
+   "starts": 3,
+   "avg": 21.5,
+   "score": 36.5,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "COPPER COLORS": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 50.0,
+   "score": 50.0,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 1
+  },
+  "FG MR MCDREAMY": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 17.9,
+   "score": 42.6,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "HIPPIES N KOWBOYS": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 56.8,
+   "score": 51.6,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 1
+  },
+  "LFL OUTER LIMITS": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 34.4,
+   "score": 46.4,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  },
+  "MR FABULOUS": {
+   "shown": 1,
+   "starts": 1,
+   "avg": 39.3,
+   "score": 47.5,
+   "top3": 1,
+   "wins": 0,
+   "top_half": 0
+  },
+  "QUINLAN": {
+   "shown": 2,
+   "starts": 2,
+   "avg": 48.1,
+   "score": 49.3,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 1
+  },
+  "TWELVE": {
+   "shown": 2,
+   "starts": 2,
+   "avg": 14.8,
+   "score": 36.8,
+   "top3": 0,
+   "wins": 0,
+   "top_half": 0
+  }
+ }
+}

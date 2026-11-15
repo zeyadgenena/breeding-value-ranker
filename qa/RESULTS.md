@@ -25,6 +25,13 @@ now does as a result.
   return on a breeding is highest where the stud fee is lowest.
 - **So the "diamond" is a foal that wins, not a foal that flips.** A top-50 foal
   wins $11,000 to $87,000 in a year. That is where the 10x outcome shows up.
+- **Foal by foal, the mare counts as much as the stallion.** New data lists
+  every horse shown at the futurity, not only the winners. A foal by a top-20
+  sire finished in the top three 24% of the time, against 14% for other sires.
+  A mare that had already produced an earner added as much again: 37%.
+- **Among the leading sires, the foals finish alike.** Once a stallion is in the
+  top 20, nothing we tried says whose foals place higher. The stallion decides
+  whether a foal is in the hunt. The mare and the individual decide the rest.
 
 ## What was tested
 
@@ -88,12 +95,204 @@ one tested on auctions it had not seen. See "What a foal is likely to sell for"
 below. The result: age, sex and the year of sale matter a little. The sire's
 record adds about one point. The stud fee adds nothing.
 
+**Round 8. A wider pool.** The first test used 52 stallions and seven seasons.
+With every public leaderboard pulled in full (2017 to 2026) the test now covers
+86 stallions and eight seasons. The result held. See "The wider backtest".
+
+**Round 9. Every horse shown, not only the winners.** The futurity classes at
+the Halter Million publish each class in full: every horse, its sire, its dam
+and where it finished. 277 classes from 2024 to 2026 give 628 horses by 83
+sires out of 498 dams. This is the first data here with losers in it.
+
+**Round 10. Does the ranking predict futurity results?** Yes, at the stallion
+level. A stallion's leaderboard winnings one year tracked how many top-three
+futurity finishers he had the next (link 0.69 and 0.79). The top five picks held
+48% and 72% of all top-three finishes.
+
+**Round 11. The mare.** A dam that had been among the year's top 50 dams by foal
+winnings before she was bred had foals that finished in the top three 33% of the
+time, against 19% for other dams (2024: 21% of 28 against 15% of 185; 2025: 31% of 26 against 21% of 163; 2026: 43% of 35 against 23% of 164). Her sire's
+record as a broodmare sire added nothing. A first look said it did (0.72), but
+that used lists published after the foal showed. With the hindsight removed the
+effect vanished.
+
+**Round 12. A foal-by-foal model.** Seventeen versions and 561 combinations,
+each allowed only what was public before the mare was bred. See "Foal by foal".
+
+**Round 13. Sale price again, with more detail.** Each sold lot's own page was
+read for height, futurity eligibility, the horse's own record, the dam's sire
+and the dam's produce record: 276 sales by 77 sires. No single addition helped.
+The best of 794 combinations explains 13%, the same as before. The first price
+model stays.
+
 ## The rule the app now uses
 
-    score = what his foals won in halter last year  x  trend
+    score = what his foals won in halter last year
 
-Trend is last year's winnings over the year before, kept between 0.5 and 2.
-Within a budget the highest score is the match. It is in `ranker/matcher.py`.
+Within a budget the highest score is first. Twelve rules were compared on eight
+seasons. Several did equally well, and this is the plainest. The earlier rule
+multiplied by a trend. On the wider pool the trend added nothing.
+
+## The wider backtest
+
+Top 3 picks per season and budget, breeding seasons 2018 to 2025, 86 stallions.
+A hit is a pick that sired a foal in the year's top 50 halter money earners
+from that crop. "Sorting" is how well the rule sorts all stallions in a season
+into those that did and did not: 0.50 is a coin toss, 1.00 is perfect.
+
+| Rule | $1,000 | $1,500 | $2,000 | Any budget | Sorting |
+|---|---|---|---|---|---|
+| Last year's winnings (in use) | 5 of 24 | 5 of 24 | 18 of 24 | 21 of 24 | 0.85 |
+| Last year's winnings x trend (the old rule) | 6 | 5 | 18 | 20 | 0.84 |
+| Number of earners | 4 | 7 | 15 | 19 | 0.83 |
+| Three-year smooth | 4 | 5 | 17 | 20 | 0.84 |
+| Winnings per earner | 6 | 6 | 14 | 17 | 0.84 |
+| Top-50 foals last year | 6 | 7 | 18 | 20 | 0.85 |
+| Young top-50 foals | 6 | 7 | 18 | 20 | 0.85 |
+| Blend of winnings, breadth and young winners | 6 | 7 | 18 | 22 | 0.85 |
+| The dearest you can afford | 3 | 6 | 9 | 14 | 0.82 |
+| Average stallion | 6% | 9% | 16% | 21% | 0.50 |
+
+The figures the app quotes are lower than the best row, on purpose. Each season
+is scored with the rule that did best on the other seven:
+
+| Budget | Picks that sired a top-50 foal | Average stallion at that price |
+|---|---|---|
+| $1,000 | 5 of 24 (21%) | 6% |
+| $1,500 | 6 of 24 (25%) | 9% |
+| $2,000 | 16 of 24 (67%) | 16% |
+| Any | 21 of 24 (88%) | 21% |
+
+Re-run with `python qa/backtest2.py`.
+
+## Foal by foal
+
+Data: `qa/futurity_foals.csv`, 601 weanlings and yearlings shown, 2024 to 2026.
+21% finished in the top three of an open class and 18% were among the year's top
+50 money earners (about $16,000 or more). Re-run with `python qa/foal_model.py`.
+
+**The timing rule.** A weanling shown in 2026 was bred in 2025, so the model may
+use lists only up to 2024. The first draft used the list from the year before
+the show, which a breeder would not have had. Fixing that lowered every score.
+The scores below are the honest ones.
+
+"Forward" trains on 2024 and 2025 and tests on 2026. "Each year" holds every
+year out in turn. 0.50 is a coin toss.
+
+| Version | Forward | Each year |
+|---|---|---|
+| 0 The same chance for every foal | 0.50 | 0.50 |
+| 1 Sire's leaderboard tier (top 5, 6 to 20, other) | 0.60 | 0.59 |
+| 2 Sire's winnings, as a number | 0.53 | 0.58 |
+| 3 Sire's tier and how many earners he had | 0.60 | 0.59 |
+| 4 Sire's tier and whether the dam has produced an earner | 0.64 | 0.57 |
+| 5 Version 4 and the finish of the dam's earlier foal | 0.64 | 0.57 |
+| 6 Version 5 and whether the dam's sire is a listed broodmare sire | 0.62 | 0.61 |
+| 7 Version 5 and the sire's own futurity average | 0.64 | 0.57 |
+| 8 Version 5 and age class | 0.61 | 0.56 |
+| 9 Version 4 with tier and dam working together | 0.64 | 0.57 |
+| 10 Sire's winnings and the dam's record | 0.58 | 0.60 |
+| 11 Version 4 and whether the dam was a winner herself | 0.63 | 0.58 |
+| 12 Version 4 and whether the sire's winnings are rising or falling | 0.63 | 0.57 |
+| 13 Version 4 and the sire's top-50 foals | 0.60 | 0.59 |
+| 14 The dam's record and the sire's top-50 foals | 0.55 | 0.58 |
+| 15 Sire's tier, his number of earners and the dam's record | 0.65 | 0.60 |
+| 16 Sire in the top 20 or not, and the dam's record (kept) | 0.61 | 0.60 |
+
+The search of 561 combinations found nothing above 0.65 and 0.61. Version 16 is
+kept because it is the simplest of the versions that tie, and because the three
+sire tiers did not come out in order: foals of sires ranked 6 to 20 placed a
+little better than foals of the top five. Two groups is all the data supports.
+
+Where to draw the line for a leading sire was tested too. With the dam's record
+in the model, a top-5 line sorts no better than chance (22% of their foals made
+a top three, against 21% for everyone else). A top-20 line is the best of the
+six tried (26% against 15%), and top 30 and top 50 are close behind.
+
+**Is the cheapest leading sire as good a bet?** Per foal shown, yes as far as
+the data can tell: foals of sires ranked 11 to 20 made a top three as often as
+foals of the top 10 (26% each). At the stallion level, no: picking the cheapest
+of the top 20 each season found a sire of a top-50 foal 8 times in 24, against
+18 in 24 for the top-ranked picks. The dearer sires have more foals out there
+and better mares. The app shows both: the ranking by record, and a note when a
+cheaper stallion carries the same chance per foal.
+
+What the kept model says, and what happened:
+
+| Sire | Dam | Chance of a top three | Chance of a top-50 money year | Foals | Top three, actual |
+|---|---|---|---|---|---|
+| In the top 20 | Has produced an earner | 37% | 28% | 55 | 40% |
+| In the top 20 | No record | 24% | 18% | 277 | 23% |
+| Other | Has produced an earner | 23% | 23% | 34 | 21% |
+| Other | No record | 14% | 15% | 235 | 14% |
+
+- **Forward check on 2026:** of the third of foals the model rated highest, 35%
+  made a top three. Of the third it rated lowest, 20%.
+- **How sure are the two effects?** Resampling whole mares 2,000 times: a proven
+  dam is worth +13 points (90% range +5 to +22), a top-20 sire +11 points (+6
+  to +17). Both hold for weanlings and for yearlings.
+- **What a finish is worth.** 58% of class winners were among the year's top 50
+  money earners, and those won a typical $27,600. For foals outside the top
+  three it was 10%.
+- **A weanling's result lasts a little.** 31% of weanlings came back as
+  yearlings. Top-three weanlings made a top three again 31% of the time, others
+  20%. Across all ages a horse's finish one year tracked the next (link 0.42).
+
+**What a producing mare costs.** In 108 public mare sales the typical price was
+$3,100. The five that were already listed producers sold for $1,150 to $9,600.
+The four that later produced an earner had sold for $7,100 to $10,100. Small
+numbers, from `python qa/mares.py`.
+
+**A replication that could not decide.** The same show runs Paint Horse classes
+the model never saw. Run on them unchanged (`python qa/replicate.py`), it
+sorted no better than chance (0.50). But only 44 of those weanlings and
+yearlings were new to it, and four made a top three: 199 others had also shown
+in the training classes. That is too few to confirm the model or to fault it.
+
+Three cautions. The model only knows foals that were shown: the ones that never
+reached the ring are missing. A proven dam often comes with an owner who can
+afford the best trainer, and the data cannot separate the two. Three years is a
+short history.
+
+## The Arabian side (first version)
+
+Added because the horses this tool is now for are Arabian in type. Data is in
+`data/arabian/`, with every source and its rules in `SOURCES.md` there.
+
+| | |
+|---|---|
+| Stallions | 486 listed, 218 with a price |
+| Prices | An advertised fee, or what a breeding sold for at a futurity auction. Opening bids are left out. |
+| Whole-class results | 379 horses by 145 sires, shown at 8 shows, 2024 to 2026. Every horse in the class with its place. |
+| A barn's list of wins | 403 placings, 2016 to 2025. One-sided, so a footnote only. |
+| Sale prices | 153 sold horses, 2010 to 2022 |
+
+How it ranks: by how many of a stallion's foals finished in the top three of a
+class, then by their average finish. Re-run the checks with
+`python qa/arabian_model.py`.
+
+- **One check so far.** The top third of sires by top-three foals in 2025 (34
+  sires) went on to sire 56% of the top-three finishers among new foals in 2026.
+  35% of them had one, against 4% of the other sires. With the thin 2024 season
+  added (one show) the pooled figures are 34%, and 42% against 16%. A third
+  search for earlier seasons on the allowed sources found none.
+- **The mare shows up more than the stallion here too.** Two different foals
+  out of the same mare finished alike (link 0.33 on 74 pairs). Two foals by the
+  same sire did so less (0.14). The same horse a year later: 0.57.
+- **Sale prices.** 113 Arabians sold at public online auction in 2015 to 2022
+  for a typical $4,700 (middle half $2,400 to $10,100). 16 reached $20,000.
+  Thirty-two versions of a price model were tried. The best explains 11%.
+- **It is narrow.** Two seasons of the international-style circuit in North
+  America (GCAT Americas and the Emirates Global Cup). The U.S. Nationals,
+  Canadian Nationals and regional shows are not in it.
+- **Prize money is small.** The U.S. Nationals futurity paid its champion $8,700
+  to $11,500 in 2022 to 2025. For Arabians the money is in the sale.
+- **Sources set aside because their rules forbid automated collection:** the
+  Scottsdale show's own results (full classes, 2016 to 2026), PaddockReport
+  (U.S. Nationals results back to 2016), Arabian Essence, arabianhorseworld.com,
+  and the Arabian Horse Association's results behind its sign-in. Scottsdale's
+  files and PaddockReport's pages can be read by hand in a browser, or used with
+  written permission.
 
 ## How well it did
 
@@ -222,6 +421,11 @@ Only foals that were shown appear, so this says nothing about the ones that
 never reached a show ring.
 
 ## Limits
+
+- **The per-foal chance is for foals that are shown.** It is not the chance for
+  every foal born. That still needs crop sizes.
+- **Three years of futurity results.** Enough to see the mare effect, not enough
+  to tell one leading sire's foals from another's.
 
 - **No crop sizes.** We cannot see how many foals each stallion has, so "sired a
   top-50 foal" is not "your foal's chance". A popular stallion has more chances.

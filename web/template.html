@@ -27,7 +27,7 @@ button,input,select{font:inherit;color:inherit}
 h1{font-size:30px;line-height:1.15;margin:0 0 6px}
 .tag{color:var(--ink2);margin:0 0 30px;font-size:18px}
 h2{font-size:20px;margin:30px 0 12px}
-.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
 @media (max-width:560px){.choices{grid-template-columns:minmax(0,1fr)}}
 .choice{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:14px 16px;cursor:pointer}
 .choice b{display:block;font-size:18px}
@@ -107,9 +107,9 @@ footer li{margin:6px 0}
 <script>
 (function(){
 'use strict';
-var D = window.BVR, M = D.match, S = M.stallions, app = document.getElementById('app');
-var Y = M.years, SPAN = Y.length ? Y[0] + ' to ' + Y[Y.length - 1] : '';
-var PM = M.pricing, MARES = M.sales && M.sales.mares;
+var D = window.BVR, B = D.breeds || {qh: D.match}, KEYS = Object.keys(B), app = document.getElementById('app');
+var M, S, PM, MARES, PRICED, LOWEST;
+var state = {breed: null, have: null, budget: null, sire: '', total: null, mine: '', goal: 'win', all: false, proven: false};
 
 function h(tag, attrs){
   var el = document.createElement(tag), k, i;
@@ -130,22 +130,22 @@ function add(el, kid){
   el.appendChild(typeof kid === 'string' || typeof kid === 'number' ? document.createTextNode(String(kid)) : kid);
 }
 function money(v){ return '$' + Math.round(v).toLocaleString('en-US'); }
-function round(v){
-  if (v >= 1e6) return '$' + (v / 1e6).toFixed(1) + ' million';
-  if (v >= 10000) return '$' + (Math.round(v / 1000) * 1000).toLocaleString('en-US');
-  return money(v);
-}
 function times(v){ return (Math.round(v * 10) / 10).toFixed(1) + 'x'; }
 function pct(v){ return v > 0 && v < 0.01 ? 'under 1%' : Math.round(v * 100) + '%'; }
+function ordinal(n){ var s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 function norm(s){ return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
 function priced(s){ return !!(s.sale && s.sale.tested); }
-
-var PRICED = S.filter(function(s){ return s.price; });
-var LOWEST = PRICED.reduce(function(m, s){ return Math.min(m, s.price.fee); }, Infinity);
-var state = {have: null, budget: null, sire: '', total: null, mine: '', goal: 'sell', all: false};
+function use(b){
+  state.breed = b; M = B[b]; S = M.stallions; PM = M.pricing; MARES = M.sales && M.sales.mares;
+  PRICED = S.filter(function(s){ return s.price; });
+  LOWEST = PRICED.reduce(function(m, s){ return Math.min(m, s.price.fee); }, Infinity);
+  state.goal = 'win'; state.all = false; state.mine = ''; state.sire = ''; state.proven = false;
+}
+function chance(st){ return st.odds ? (state.proven ? st.odds.yes : st.odds.no) : null; }
+function moneyChance(st){ return st.odds ? (state.proven ? st.odds.money_yes : st.odds.money_no) : null; }
 
 /* ---------- two ways to rank ---------- */
-function byWinner(list){            // tested on the 2019 to 2025 seasons: last year's foal winnings x trend
+function byWinner(list){            // by foal record: the rule tested against past seasons
   return list.slice().sort(function(a, b){ return b.score - a.score || a.price.fee - b.price.fee || (a.name < b.name ? -1 : 1); });
 }
 function byReturn(list){            // likely sale price as a yearling, divided by the stud fee
@@ -161,20 +161,12 @@ function badge(st){
   return h('span', {class: 'badge ' + t}, h('i'), t === 'strong' ? 'Strong record' : t === 'some' ? 'Some record' : 'No foal results yet');
 }
 function feeLine(st){
-  return h('span', {class: 'price'}, money(st.price.fee),
-    h('small', {text: st.price.current ? 'stud fee, ' + st.price.year : 'last advertised fee, ' + st.price.year}));
+  var p = st.price;
+  return h('span', {class: 'price'}, money(p.fee),
+    h('small', {text: p.basis === 'auction' ? 'what a breeding sold for at auction, ' + p.year : p.current ? 'stud fee, ' + p.year : 'last advertised fee, ' + p.year}));
 }
 function byLine(st){
   return h('p', {class: 'by', text: [st.sire ? 'by ' + st.sire : null, st.foaled ? 'foaled ' + st.foaled : null].filter(Boolean).join(' · ')});
-}
-function record(st){
-  var r = st.rec;
-  if (r.tier === 'none' || !r.y) return 'None of his foals are on the halter leaderboards for ' + SPAN + '.';
-  if (r.y < M.latest) return 'His foals were last on the leaderboard in ' + r.y + ', when they won ' + round(r.e) + '.';
-  var s = 'His foals won ' + round(r.e) + ' in halter classes in ' + r.y + ', and ' + r.n + ' of them earned money.';
-  if (r.prev > 0 && r.e / r.prev >= 1.2) s += ' That is up from ' + round(r.prev) + ' the year before.';
-  else if (r.prev > 0 && r.e / r.prev <= 0.8) s += ' That is down from ' + round(r.prev) + ' the year before.';
-  return s;
 }
 function num(k, v, s){
   return h('div', {class: 'num'}, h('span', {class: 'k', text: k}), h('span', {class: 'v', text: v}), s ? h('span', {class: 's', text: s}) : null);
@@ -190,11 +182,22 @@ function saleNums(st){
     x.real ? h('p', {class: 'fine', text: 'What actually happened: ' + x.real.n + ' young horses whose sire stood for ' + x.real.label + ' sold for a typical ' + money(x.real.median) +
       ', which was ' + times(x.real.multiple) + ' the fee.' + (x.real.median < x.typical ? ' That counts geldings and older sales, which pulls it below the estimate.' : '')}) : null];
 }
+function prizeNums(st){
+  if (st.odds) return [h('div', {class: 'nums'},
+      num('Chance of a top-three finish', pct(chance(st)), 'at the futurity, if the foal is shown'),
+      num('Chance of a ' + money(M.foal.money_at) + ' year', pct(moneyChance(st)), 'one of the year\u2019s top 50 money earners'),
+      num('Sire rank last year', st.rank ? ordinal(st.rank) : 'not listed', st.hits + (st.hits === 1 ? ' foal' : ' foals') + ' in the top 50 earners')),
+    M.foal && !state.proven && state.have !== 'stallion' ? h('p', {class: 'fine', text: 'With a mare that has already produced an earner, the chance of a top-three finish rises to ' + pct(st.odds.yes) + '.'}) : null,
+    st.fut ? h('p', {class: 'fine', text: 'At the futurity in ' + M.foal.years[0] + ' to ' + M.foal.years[M.foal.years.length - 1] + ', ' + st.fut.shown + ' of his foals were shown. ' +
+      st.fut.top3 + ' of their ' + st.fut.starts + ' starts ended in the top three of an open class, and ' + st.fut.wins + ' in a win.'}) : null];
+  return st.tiles && st.tiles.length ? h('div', {class: 'nums'}, st.tiles.map(function(t){ return num(t[0], t[1], t[2]); })) : null;
+}
 function extras(st){
   return [
     st.shown ? h('p', {class: 'fine', text: 'Of his ' + st.shown.n + ' foals shown in ' + st.shown.y + ', ' + st.shown.big + (st.shown.big === 1 ? ' has' : ' have') + ' won $20,000 or more so far.'}) : null,
     st.sold ? h('p', {class: 'fine', text: st.sold.n + ' of his young foals are in the public sales. Their typical price was ' + money(st.sold.median) + '.'}) : null,
-    h('p', {class: 'fine'}, h('a', {href: 'explore.html?s=' + encodeURIComponent(st.id) + '#stallions', text: 'More about him'}))];
+    st.note ? h('p', {class: 'fine', text: st.note}) : null,
+    M.detail ? h('p', {class: 'fine'}, h('a', {href: M.detail + '?s=' + encodeURIComponent(st.id) + '#stallions', text: 'More about him'})) : null];
 }
 function whyReturn(top, ranked, pool){
   var out = [], t;
@@ -207,7 +210,7 @@ function whyReturn(top, ranked, pool){
       (ranked.every(function(s){ return s.price.fee >= top.price.fee; }) ? 'his is the lowest we can price.' : 'his is among the lowest.');
     var same = ranked.filter(function(s){ return s.price.fee === top.price.fee && s.id !== top.id; }).length;
     if (same) t += ' ' + same + (same === 1 ? ' other costs' : ' others cost') + ' the same. ' +
-      (top.rec.y === M.latest && top.rec.e > 0 ? 'He is first because his foals’ winnings are the strongest of that group.' : 'None of them had foals on last year’s list, so they are level.');
+      (top.rec.active ? 'He is first because his foals’ winnings are the strongest of that group.' : 'None of them had foals on last year’s list, so they are level.');
   }
   out.push(h('p', {class: 'why', text: t}));
   var star = byWinner(pool)[0];
@@ -219,6 +222,16 @@ function whyReturn(top, ranked, pool){
   }
   return out;
 }
+function whyWinner(top, ranked){
+  if (ranked.length === 1) return 'He is the only stallion in your budget.';
+  var next = ranked[1], t;
+  if (top.rank)
+    t = 'His foals won more in halter last year than those of any other stallion in your budget' + (next.rank ? ' (next is ' + next.name + ')' : '') +
+      '. He stood ' + ordinal(top.rank) + ' among all halter sires. Tested on past seasons, last year\u2019s winnings were as good a guide as anything we tried.';
+  else if (top.hits != null) t = 'No stallion in your budget was among last year\u2019s top 50 halter sires, so they are level on record. He is listed first by price.';
+  else t = 'He has the strongest foal record of the ' + ranked.length + ' stallions in your budget.';
+  return t;
+}
 function returnCard(top, ranked, pool, split){
   return h('article', {class: 'card best'},
     h('p', {class: 'name', text: top.name}), byLine(top),
@@ -226,23 +239,25 @@ function returnCard(top, ranked, pool, split){
     split, saleNums(top),
     h('p', {class: 'eyebrow', style: 'margin-top:14px', text: 'Why he ranks first'}),
     whyReturn(top, ranked, pool),
-    h('p', {class: 'fine', text: record(top)}),
+    h('p', {class: 'fine', text: top.rec.text}),
     extras(top));
 }
-function winnerCard(st, label, split){
+function winnerCard(st, label, split, ranked){
   return h('article', {class: 'card best'},
     label ? h('p', {class: 'eyebrow', text: label}) : null,
     h('p', {class: 'name', text: st.name}), byLine(st),
     h('div', {class: 'row'}, feeLine(st), badge(st)),
-    split,
-    h('p', {class: 'why', text: record(st)}),
-    priced(st) ? h('p', {class: 'why', text: 'If you sell the foal instead of showing it: likely ' + money(st.sale.typical) + ' as a yearling, a return of ' + times(st.sale.multiple) + ' on the fee.'}) : null,
+    split, prizeNums(st),
+    ranked ? [h('p', {class: 'eyebrow', style: 'margin-top:14px', text: 'Why he ranks first'}), h('p', {class: 'why', text: whyWinner(st, ranked)})] : null,
+    h('p', {class: ranked ? 'fine' : 'why', text: st.rec.text}),
+    priced(st) ? h('p', {class: 'fine', text: 'If you sell the foal instead of showing it: likely ' + money(st.sale.typical) + ' as a yearling, a return of ' + times(st.sale.multiple) + ' on the fee.'}) : null,
     extras(st));
 }
 function rankTable(ranked, cols, starId){
   var rows = ranked.map(function(s, i){ return {s: s, i: i}; });
   var cut = !state.all && rows.length > 12;
   var vis = cut ? rows.filter(function(r){ return r.i < 10 || r.s.id === starId; }) : rows;
+  cols = cols.filter(Boolean);
   return [h('div', {class: 'tablewrap'}, h('table', null,
       h('thead', null, h('tr', null, h('th', {text: '#'}), h('th', {text: 'Stallion'}), cols.map(function(c){ return h('th', {class: 'n' + (c[2] ? ' ' + c[2] : ''), text: c[0]}); }))),
       h('tbody', null, vis.map(function(r){
@@ -257,9 +272,11 @@ function rankTable(ranked, cols, starId){
 var COL = {
   fee: ['Stud fee', function(s){ return money(s.price.fee); }],
   sale: ['Yearling sells for', function(s){ return priced(s) ? money(s.sale.typical) : 'no estimate'; }],
-  ret: ['Return', function(s){ return priced(s) ? times(s.sale.multiple) : 'no estimate'; }],
-  won: ['Foal winnings last year', function(s){ return s.rec.y === M.latest && s.rec.e > 0 ? round(s.rec.e) : 'not listed'; }]
+  ret: ['Return', function(s){ return priced(s) ? times(s.sale.multiple) : 'no estimate'; }]
 };
+function statCol(){
+  return M.foal ? ['Top three', function(s){ return s.odds ? pct(chance(s)) : ''; }] : [M.stat_label || 'Record', function(s){ return s.stat || ''; }];
+}
 function moneyInput(id, value, onset, label){
   var input = h('input', {id: id, type: 'text', inputmode: 'numeric', autocomplete: 'off', placeholder: '0', 'aria-label': label,
     value: value == null ? '' : Math.round(value).toLocaleString('en-US')});
@@ -274,42 +291,72 @@ function chips(values, current, onpick){
     return h('button', {type: 'button', class: 'chip', 'aria-pressed': current === v ? 'true' : 'false', text: money(v), onclick: function(){ onpick(v); }});
   }));
 }
-function goalToggle(){
-  function b(key, label){
-    return h('button', {type: 'button', 'aria-pressed': state.goal === key ? 'true' : 'false', text: label, onclick: function(){ state.goal = key; state.all = false; results(); }});
-  }
-  return h('div', {class: 'field'}, h('span', {class: 'lab', text: 'Rank by'}),
-    h('div', {class: 'seg', role: 'group', 'aria-label': 'Rank by'}, b('sell', 'Return if I sell the foal'), b('win', 'Chance of a prize winner')));
+function seg(label, options, current, onpick){
+  return h('div', {class: 'field'}, h('span', {class: 'lab', text: label}),
+    h('div', {class: 'seg', role: 'group', 'aria-label': label}, options.map(function(o){
+      return h('button', {type: 'button', 'aria-pressed': current === o[0] ? 'true' : 'false', text: o[1], onclick: function(){ onpick(o[0]); }});
+    })));
 }
-function scorecard(){
+function goalToggle(){
+  if (!PM) return null;
+  return seg('Rank by', [['win', 'Chance of a prize winner'], ['sell', 'Return if I sell the foal']], state.goal, function(g){ state.goal = g; state.all = false; results(); });
+}
+function provenToggle(){
+  if (!M.foal) return null;
+  return [seg('Has she produced a foal that won ' + money(M.foal.proven_at) + ' or more in halter in one year?', [[true, 'Yes'], [false, 'No, or not yet']], state.proven,
+    function(p){ state.proven = p; results(); }), h('p', {class: 'fine', text: 'It matters as much as the stallion. Foals of mares like that finished in the top three ' +
+      pct(M.foal.proven_rate) + ' of the time, against ' + pct(M.foal.other_rate) + ' for other mares.'})];
+}
+function cardTable(rows, kept){
+  return h('div', {class: 'tablewrap', style: 'margin-top:10px'}, h('table', null,
+    h('thead', null, h('tr', null, h('th', {text: 'Version'}), rows.head.map(function(t){ return h('th', {class: 'n', text: t}); }))),
+    h('tbody', null, rows.body.map(function(r){ return h('tr', {class: r.kept ? 'top' : null}, h('td', {text: r.name}), r.cells.map(function(c){ return h('td', {class: 'n', text: c}); })); }))));
+}
+function priceCard(){
   if (!PM || !PM.scorecard) return null;
-  return h('details', null, h('summary', {text: 'See all ' + PM.scorecard.length + ' versions we trained'}),
-    h('p', {class: 'fine', text: 'Each version was trained with one auction left out, then scored on that auction, for every auction in turn. A version was kept only if it predicted sales it had not seen better than the one before.'}),
-    h('div', {class: 'tablewrap', style: 'margin-top:10px'}, h('table', null,
-      h('thead', null, h('tr', null, h('th', {text: 'Version'}), h('th', {class: 'n', text: 'Typical miss'}), h('th', {class: 'n', text: 'Price differences explained'}))),
-      h('tbody', null, PM.scorecard.map(function(r){
-        var e = Math.round(r.explained * 100);
-        return h('tr', {class: r.kept ? 'top' : null}, h('td', {text: r.name}), h('td', {class: 'n', text: Math.round(r.typical_miss * 100) + '%'}),
-          h('td', {class: 'n', text: e > 0 ? e + '%' : 'none'}));
-      })))));
+  return h('details', null, h('summary', {text: 'See all ' + PM.scorecard.length + ' versions of the price model'}),
+    h('p', {class: 'fine', text: 'Each version was trained with one auction left out, then scored on that auction, for every auction in turn.'}),
+    cardTable({head: ['Typical miss', 'Price differences explained'], body: PM.scorecard.map(function(r){
+      var e = Math.round(r.explained * 100);
+      return {name: r.name, kept: r.kept, cells: [Math.round(r.typical_miss * 100) + '%', e > 0 ? e + '%' : 'none']};
+    })}));
+}
+function foalCard(){
+  var F = M.foal;
+  if (!F || !F.scorecard) return null;
+  return h('details', null, h('summary', {text: 'See all ' + F.scorecard.length + ' versions of the foal model'}),
+    h('p', {class: 'fine', text: 'The score is how well a version sorts foals it has not seen: 0.50 is a coin toss, 1.00 is perfect. "Forward" trains on the earlier years and tests on ' +
+      F.years[F.years.length - 1] + '. "Each year" holds every year out in turn.'}),
+    cardTable({head: ['Forward', 'Each year'], body: F.scorecard.map(function(r){ return {name: r.name, kept: r.kept, cells: [r.forward.toFixed(2), r.each_year.toFixed(2)]}; })}));
 }
 function expectBox(budget){
-  var items = [], R = M.record;
-  if (PM){
+  var items = [], R = M.record, F = M.foal;
+  if (PM && state.goal === 'sell'){
     items.push(h('li', null, 'The sale prices are rough. We trained ' + PM.rounds + ' versions of a price model on ' + PM.sales + ' public sales and tried ' + PM.combinations +
-      ' combinations of factors. The best explains about ' + Math.round(PM.explained * 100) + '% of the difference between one sale and the next, and nearly all of that is the horse\u2019s age, sex and the year it sold, not its sire. Two sales in three landed between half and double its estimate.',
-      scorecard()));
+      ' combinations of factors. The best explains about ' + Math.round(PM.explained * 100) + '% of the difference between one sale and the next, and nearly all of that is the horse’s age, sex and the year it sold, not its sire. Two sales in three landed between half and double its estimate.',
+      priceCard()));
     items.push(h('li', {text: 'They are public online auction prices. The best halter prospects usually change hands privately, at prices nobody publishes, so a top sire’s best foals can be worth more than this shows.'}));
     items.push(h('li', {text: 'A big resale is rare. Of the ' + PM.sales + ' sales, ' + PM.at_least_10000 + ' reached $10,000 and ' + (PM.at_least_20000 || 'none') +
       ' reached $20,000. The best was ' + money(PM.top) + '. The cost of raising the foal is not included.'}));
   }
+  if (F && state.goal === 'win'){
+    items.push(h('li', null, 'The top-three chance comes from ' + F.foals + ' weanlings and yearlings shown at the futurity in ' + F.years[0] + ' to ' + F.years[F.years.length - 1] +
+      ', each with its sire, dam and finishing place. We trained ' + F.rounds + ' versions and tried ' + F.combinations + ' combinations of factors. Tested on ' + F.split.year +
+      ' foals it had not seen: of the third it rated highest, ' + pct(F.split.top_third_rate) + ' made a top three. Of the third it rated lowest, ' + pct(F.split.bottom_third_rate) + '.', foalCard()));
+    if (F.worth) items.push(h('li', {text: 'What a finish is worth: of the futurity class winners, ' + pct(F.worth['won an open class'].top50_share) +
+      ' were among that year\u2019s top 50 money earners, and those won a typical ' + money(F.worth['won an open class'].typical) + '. Of the foals outside the top three, ' +
+      pct(F.worth['shown, outside the top three'].top50_share) + ' were.'}));
+    items.push(h('li', {text: 'It only covers foals that were shown. We cannot see the foals that never reached the ring, so this is not the chance for every foal born.'}));
+  }
   if (R){
     var rows = R.by_budget, row = rows[0];
     rows.forEach(function(x){ if (x.budget === null ? budget >= 2500 : budget >= x.budget) row = x; });
-    items.push(h('li', {text: 'The big results come as prize money. Tested on the ' + R.first_season + ' to ' + R.last_season + ' seasons, ' + row.hit + ' of ' + row.picks +
+    items.push(h('li', {text: (state.goal === 'sell' ? 'The big results come as prize money. ' : '') + 'Tested on the ' + R.first_season + ' to ' + R.last_season + ' seasons' +
+      (R.stallions ? ' and ' + R.stallions + ' stallions' : '') + ', ' + row.hit + ' of ' + row.picks +
       ' top picks by "chance of a prize winner" ' + (row.budget === null ? 'with no budget limit' : 'at a ' + money(row.budget) + ' budget') +
       ' went on to sire a foal in the year’s top 50 halter money earners. For the average stallion at that price it was ' + Math.round(row.base * 100) + '%.'}));
   }
+  (M.notes || []).forEach(function(t){ items.push(h('li', {text: t})); });
   return items.length ? h('div', {class: 'card', style: 'margin-top:26px'}, h('p', {class: 'eyebrow', text: 'How sure is this?'}), h('ul', {class: 'plain'}, items)) : null;
 }
 function noEstimate(list){
@@ -319,13 +366,38 @@ function noEstimate(list){
       '. Outside that range there is nothing to estimate a sale price from.'}),
     h('ul', {class: 'plain'}, list.map(function(s){ return h('li', null, s.name + ', ' + money(s.price.fee) + ' ', badge(s)); })));
 }
+function noPrice(){
+  var list = S.filter(function(s){ return !s.price && s.rec.tier !== 'none'; }).sort(function(a, b){ return b.score - a.score; }).slice(0, 10);
+  if (!list.length) return null;
+  return h('details', null, h('summary', {text: list.length + ' with a record but no public price'}),
+    h('p', {class: 'fine', text: 'We found no advertised fee or auction price for these, so they are not ranked by budget. Ask the farm.'}),
+    h('ul', {class: 'plain'}, list.map(function(s){ return h('li', null, s.name + (s.stat ? ', ' + s.stat : '') + ' ', badge(s)); })));
+}
+function mareFacts(){
+  var f = M.mare_facts;
+  if (!f || !f.already_producers || !f.already_producers.n) return '';
+  var a = f.already_producers, l = f.became_producers;
+  return ' What such mares cost: in ' + f.mares_sold + ' public mare sales the typical price was ' + money(f.typical) + '. The ' + a.n + ' that were already listed producers sold for ' +
+    money(a.low) + ' to ' + money(a.high) + (l && l.n ? ', and the ' + l.n + ' that later produced an earner had sold for ' + money(l.low) + ' to ' + money(l.high) : '') + '. Small numbers, so take them as a rough guide.';
+}
+function sameForLess(top, pool){
+  if (!top.odds || !M.foal) return null;
+  var same = pool.filter(function(s){ return s.odds && Math.abs(chance(s) - chance(top)) < 0.005 && s.price.fee <= top.price.fee - 250; })
+    .sort(function(a, b){ return a.price.fee - b.price.fee || b.score - a.score; })[0];
+  if (!same) return null;
+  var r = M.foal.rank_split;
+  return h('div', {class: 'note'}, h('b', {text: 'The same chance per foal for less. '}),
+    same.name + ' at ' + money(same.price.fee) + ' is also one of the top 20 sires, so his foal gets the same ' + pct(chance(same)) + ' and you keep ' + money(top.price.fee - same.price.fee) + '. ' +
+    (r ? 'Among foals that were shown, those by sires ranked 11 to 20 made a top three as often as those by the top 10 (' + pct(r.next10) + ' and ' + pct(r.top10) + '). ' : '') +
+    'What the dearer stallion has is more foals winning in total, partly because more and better mares go to him.');
+}
 function useButton(v){ return h('button', {class: 'linkbtn', type: 'button', text: 'Use ' + money(v), onclick: function(){ state[state.have === 'mare' ? 'budget' : 'total'] = v; render(); }}); }
 
 /* ---------- a mare ---------- */
 function mareFlow(){
   return [h('h2', {text: 'What can you spend on the breeding?'}),
     moneyInput('budget', state.budget, function(n, typing){ state.budget = n; results(typing); }, 'Your budget for the stud fee, in dollars'),
-    chips([1000, 1500, 2000, 2500, 3000], state.budget, function(v){ state.budget = v; render(); }),
+    chips(M.fee_chips, state.budget, function(v){ state.budget = v; render(); }),
     h('div', {class: 'field'}, h('label', {for: 'sire', text: 'Who is her sire? (optional)'}),
       h('input', {id: 'sire', type: 'text', list: 'sires', value: state.sire, placeholder: 'Her sire’s name', autocomplete: 'off',
         oninput: function(e){ state.sire = e.target.value; results(true); }}),
@@ -365,10 +437,13 @@ function mareResults(){
     out.push(noEstimate(unpriced(fit)));
   } else {
     var w = byWinner(fit);
-    out.push(h('h2', {text: 'Your best chance of a prize winner'}));
-    out.push(winnerCard(w[0]));
-    out.push(h('h2', {text: 'All ' + w.length + ' options, ranked by foal winnings and their trend'}));
-    out.push(rankTable(w, [COL.fee, COL.won, COL.ret]));
+    out.push(provenToggle());
+    out.push(h('h2', {text: M.win_heading || 'Your best chance of a prize winner'}));
+    out.push(winnerCard(w[0], null, null, w));
+    out.push(sameForLess(w[0], w));
+    out.push(h('h2', {text: w.length === 1 ? 'The one option in your budget' : 'All ' + w.length + ' options, ranked by foal record'}));
+    out.push(rankTable(w, [[M.fee_label || 'Stud fee', COL.fee[1]], statCol(), PM ? COL.ret : null]));
+    if (!PM) out.push(noPrice());
   }
   if (related.length) out.push(h('p', {class: 'fine', text: 'Left out as close relatives of your mare: ' + related.join(', ') + '.'}));
   out.push(expectBox(b));
@@ -379,7 +454,7 @@ function mareResults(){
 function noneFlow(){
   return [h('h2', {text: 'What is your total budget?'}),
     moneyInput('total', state.total, function(n, typing){ state.total = n; results(typing); }, 'Your total budget for the breeding and the mare, in dollars'),
-    chips([5000, 10000, 20000, 50000], state.total, function(v){ state.total = v; render(); }),
+    chips(M.total_chips, state.total, function(v){ state.total = v; render(); }),
     h('div', {id: 'results'})];
 }
 function split(st, total){
@@ -394,17 +469,20 @@ function noneResults(){
   var sell = state.goal === 'sell', ranked = sell ? byReturn(fit) : byWinner(fit);
   if (!ranked.length)
     return [h('div', {class: 'note'}, h('b', {text: 'That will not cover a breeding yet. '}),
-      'The lowest stud fee we can price is ' + money(PM ? PM.fee_range[0] : LOWEST) + ', before the cost of a mare.')];
+      'The lowest stud fee we can ' + (sell && PM ? 'price is ' + money(PM.fee_range[0]) : 'find is ' + money(LOWEST)) + ', before the cost of a mare.')];
   var top = ranked[0], star = byWinner(fit)[0], out = [goalToggle()];
-  out.push(h('h2', {text: sell ? 'Your best return' : 'Your best chance of a prize winner'}));
-  out.push(sell ? returnCard(top, ranked, fit, split(top, t)) : winnerCard(top, null, split(top, t)));
+  out.push(h('h2', {text: sell ? 'Your best return' : (M.win_heading || 'Your best chance of a prize winner')}));
+  out.push(sell ? returnCard(top, ranked, fit, split(top, t)) : winnerCard(top, null, split(top, t), ranked));
+  if (!sell) out.push(sameForLess(top, ranked));
   out.push(h('h2', {text: 'All ' + ranked.length + ' ways to split ' + money(t) + ', ranked'}));
   out.push(rankTable(ranked, [['Breeding', COL.fee[1]], ['Left for the mare', function(s){ return money(t - s.price.fee); }, 'wide'],
-    ['Yearling sells for', COL.sale[1]], ['Return', COL.ret[1]]], sell ? star.id : null));
+    sell ? ['Yearling sells for', COL.sale[1]] : statCol(), PM ? ['Return', COL.ret[1]] : null], sell ? star.id : null));
   if (sell) out.push(noEstimate(unpriced(fit)));
-  out.push(h('p', {class: 'fine', text: 'The return compares the yearling\u2019s likely price with the stud fee. The mare is still yours to breed again or sell' +
+  if (sell) out.push(h('p', {class: 'fine', text: 'The return compares the yearling’s likely price with the stud fee. The mare is still yours to breed again or sell' +
     (MARES ? ': at public online sales most halter mares sold for ' + money(MARES.q1) + ' to ' + money(MARES.q3) + ' (' + MARES.n + ' sales).' : '.') +
     ' A better mare should give a better foal, but the public sales do not show by how much, so the foal’s price here does not change with what you spend on her.'}));
+  else if (M.foal) out.push(h('p', {class: 'fine', text: 'Spend what is left on the mare with care: a mare that has already produced an earner lifts the top-three chance from ' +
+    pct(top.odds.no) + ' to ' + pct(top.odds.yes) + ' with this stallion. That is as big a step as moving from an ordinary stallion to a leading one.' + mareFacts()}));
   out.push(expectBox(t));
   return out;
 }
@@ -415,7 +493,8 @@ function stallionFlow(){
   var sel = h('select', {id: 'mine', onchange: function(e){ state.mine = e.target.value; results(); }},
     h('option', {value: '', text: 'Choose a stallion'}), names.map(function(s){ return h('option', {value: s.id, selected: s.id === state.mine, text: s.name}); }));
   return [h('div', {class: 'note'}, h('b', {text: 'We cannot match mares yet. '}),
-      MARES ? 'We know what halter mares have sold for (most between ' + money(MARES.q1) + ' and ' + money(MARES.q3) + '), but not which mares are for sale.' : 'So far the data covers stallions only.'),
+      MARES ? 'We know what halter mares have sold for (most between ' + money(MARES.q1) + ' and ' + money(MARES.q3) + '), but not which mares are for sale.' : 'So far the data covers stallions only.',
+      M.foal ? ' What to look for: a mare that has already produced an earner. Her foals finished in the top three ' + pct(M.foal.proven_rate) + ' of the time, against ' + pct(M.foal.other_rate) + ' for other mares.' : ''),
     h('div', {class: 'field'}, h('label', {for: 'mine', text: 'See how your stallion compares'}), sel,
       h('small', {text: 'If he is one of the ' + S.length + ' stallions we track.'})),
     h('div', {id: 'results'})];
@@ -423,7 +502,7 @@ function stallionFlow(){
 function stallionResults(){
   var st = S.filter(function(s){ return s.id === state.mine; })[0];
   if (!st) return [];
-  if (!st.price) return [h('div', {class: 'note'}, h('b', {text: st.name + ' has no published price. '}), record(st))];
+  if (!st.price) return [h('div', {class: 'note'}, h('b', {text: st.name + ' has no published price. '}), st.rec.text)];
   var out = [winnerCard(st, 'Your stallion')];
   var peers = PRICED.filter(function(s){ return s.rec.tier === st.rec.tier && s.id !== st.id; }).map(function(s){ return s.price.fee; });
   if (peers.length){
@@ -446,26 +525,33 @@ function results(typing){
     c.setAttribute('aria-pressed', c.textContent === (v == null ? '' : money(v)) ? 'true' : 'false');
   });
 }
+function choices(label, opts, current, onpick, top){
+  return [h('h2', {text: label, style: top ? 'margin-top:0' : null}),
+    h('div', {class: 'choices', role: 'group', 'aria-label': label}, opts.map(function(o){
+      return h('button', {type: 'button', class: 'choice', 'aria-pressed': current === o[0] ? 'true' : 'false', onclick: function(){ onpick(o[0]); }}, h('b', {text: o[1]}), h('span', {text: o[2]}));
+    }))];
+}
 function render(){
   app.replaceChildren();
-  var opts = [['mare', 'A mare', 'Find a stallion for her'], ['stallion', 'A stallion', 'Find a mare for him'], ['none', 'No horse yet', 'Plan the stallion and the mare']];
-  add(app, [h('h2', {text: 'What do you have?', style: 'margin-top:0'}),
-    h('div', {class: 'choices', role: 'group', 'aria-label': 'What do you have?'}, opts.map(function(o){
-      return h('button', {type: 'button', class: 'choice', 'aria-pressed': state.have === o[0] ? 'true' : 'false',
-        onclick: function(){ state.have = o[0]; state.all = false; render(); }}, h('b', {text: o[1]}), h('span', {text: o[2]}));
-    }))]);
-  if (state.have){ add(app, FLOWS[state.have][0]()); results(); }
+  if (KEYS.length > 1) add(app, choices('Which breed?', KEYS.map(function(k){ return [k, B[k].label, B[k].sub]; }), state.breed,
+    function(k){ use(k); state.budget = null; state.total = null; render(); }, true));
+  if (state.breed){
+    if (M.intro) add(app, h('div', {class: 'note'}, M.intro));
+    add(app, choices('What do you have?', [['mare', 'A mare', 'Find a stallion for her'], ['stallion', 'A stallion', 'Find a mare for him'], ['none', 'No horse yet', 'Plan the stallion and the mare']],
+      state.have, function(k){ state.have = k; state.all = false; state.proven = false; render(); }, KEYS.length < 2));
+    if (state.have){ add(app, FLOWS[state.have][0]()); results(); }
+  }
+  foot();
 }
-var foot = document.getElementById('foot');
-add(foot, [h('details', null, h('summary', {text: 'How this works'}), h('ul', null,
-    h('li', {text: 'We track ' + S.length + ' halter stallions and what each has charged for a breeding. ' + PRICED.length + ' have a published price.'}),
-    PM ? h('li', {text: 'The sale price comes from ' + PM.sales + ' young horses sold at public online auctions, by ' + PM.sires + ' stallions: ' + PM.weanlings + ' weanlings, ' +
-      PM.yearlings + ' yearlings and ' + PM.two_year_olds + ' two-year-olds. Return is that price divided by the stud fee. It leaves out the cost of raising the foal.'}) : null,
-    h('li', {text: 'A record is prize money won by a stallion’s foals in halter classes, from the public QData leaderboards for ' + SPAN + '. Strong record: in the top ten in at least one of those years. Some record: on the top-50 list.'}),
-    h('li', {text: 'Chance of a prize winner ranks by what his foals won last year, moved up if that is rising and down if it is falling. We tried ten ways of ranking against past seasons and kept the best.'}),
-    h('li', {text: 'It is a guide, not a guarantee. We cannot yet see how many foals each stallion has, so we cannot give one foal’s odds.'}))),
-  h('p', null, h('a', {href: 'explore.html', text: 'See all the data behind this'}), D.repo ? ' · ' : null, D.repo ? h('a', {href: D.repo, text: 'Source'}) : null,
-    ' · Updated ' + D.generated)]);
+function foot(){
+  var f = document.getElementById('foot');
+  f.replaceChildren();
+  var how = state.breed ? (M.how || []) : ['Choose a breed to see how its ranking works and what data is behind it.'];
+  add(f, [h('details', null, h('summary', {text: 'How this works'}), h('ul', null, how.map(function(t){ return h('li', {text: t}); }))),
+    h('p', null, h('a', {href: 'explore.html', text: 'See all the Quarter Horse data'}), D.repo ? ' · ' : null, D.repo ? h('a', {href: D.repo, text: 'Source'}) : null,
+      ' · Updated ' + D.generated)]);
+}
+if (KEYS.length === 1) use(KEYS[0]);
 render();
 })();
 </script>

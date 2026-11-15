@@ -1,0 +1,17 @@
+{
+ "won an open class": {
+  "foals": 48,
+  "top50_share": 0.5833333333333334,
+  "typical": 27624.5
+ },
+ "top three, no win": {
+  "foals": 79,
+  "top50_share": 0.4177215189873418,
+  "typical": 28534.0
+ },
+ "shown, outside the top three": {
+  "foals": 474,
+  "top50_share": 0.0970464135021097,
+  "typical": 24100.5
+ }
+}

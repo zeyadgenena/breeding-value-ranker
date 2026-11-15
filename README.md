@@ -1,8 +1,9 @@
 # Breeding Value Ranker (Phase 1)
 
-Personal tool. It ranks American Quarter Horse halter stallions by expected foal
-quality per dollar of stud fee, and backtests whether that ranking would have
-worked using only what was known at each past date.
+Personal tool. It ranks halter stallions by expected foal quality per dollar of
+stud fee, and tests whether that ranking would have worked using only what was
+known at each past date. Quarter Horses have the full treatment. Arabians have a
+first version on much thinner data.
 
 **The app:** open `docs/index.html`, or the hosted copy if this repository has
 GitHub Pages turned on. Say what you have (a mare, a stallion, or no horse yet)
@@ -29,11 +30,17 @@ foal-level data has to come through your own AQHA member login.
 | `web/` | The two page templates and the stored simulation results. Edit these, not the files in `docs/`. |
 | `qa/` | The test of the matcher against past seasons: scripts, the data they use, and [RESULTS.md](qa/RESULTS.md). |
 | `ranker/matcher.py` | The matcher's ranking rule: last year's foal winnings times their trend. |
+| `ranker/arabian.py` | The Arabian ranking, from the files in `data/arabian/`. |
+| `data/arabian/` | Arabian stallions, prices, halter placings and sale prices, with `SOURCES.md`. |
+| `qa/leaders/` | Every public QData halter leaderboard, 2017 to 2026: sires, top-50 earners with dam and dam's sire, dams, broodmare sires. |
+| `qa/futurity_results.csv` | Every horse shown in 277 futurity classes, 2024 to 2026, with sire, dam and finishing place. |
+| `qa/backtest2.py`, `qa/foal_model.py`, `qa/futurity.py`, `qa/price_model2.py` | The second round of tests: a wider backtest, the foal-by-foal model, the futurity checks, and the price model retried. |
+| `qa/arabian_model.py`, `qa/mares.py` | The Arabian checks (sale prices, whole-class results), and what producing mares have cost. |
 | `ranker/pricing.py` | The expected sale price of a foal and the return on the stud fee. Reads the model that `qa/price_model.py` trains. |
 | `bvr.py` | The command-line script. |
 | `ranker/` | The calculations (`core.py`), Excel reading and writing (`workbook.py`), synthetic test data (`synth.py`). |
 | `synthetic/` | Three made-up datasets and their results, so you can see what the output looks like. These horses do not exist. |
-| `tests/` | 26 checks, including one that proves the backtest cannot see the future and one that proves the price model does not find effects that are not there. |
+| `tests/` | 37 checks, including one that proves the backtest cannot see the future and one that proves the price model does not find effects that are not there. |
 | `FINDINGS.md` | Findings, limitations and the decision note. |
 
 ## Setup (once)
@@ -80,6 +87,18 @@ After changing the workbook, re-run the matcher's test and rebuild the pages:
 
 ```bash
 .venv/bin/python qa/price_model.py --write
+```
+
+```bash
+.venv/bin/python qa/backtest2.py --write
+```
+
+```bash
+.venv/bin/python qa/futurity.py --write
+```
+
+```bash
+.venv/bin/python qa/foal_model.py --write
 ```
 
 ```bash

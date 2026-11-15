@@ -1,0 +1,16 @@
+{
+ "mares_sold": 108,
+ "typical": 3100.0,
+ "already_producers": {
+  "n": 5,
+  "low": 1150.0,
+  "high": 9600.0,
+  "median": 5700.0
+ },
+ "became_producers": {
+  "n": 4,
+  "low": 7100.0,
+  "high": 10100.0,
+  "median": 8950.0
+ }
+}

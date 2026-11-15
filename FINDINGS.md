@@ -42,6 +42,25 @@ and 128 combinations of factors were searched. Findings:
 - These are public online auction prices. The best prospects sell privately, so the figures understate what a top sire's best foal can bring.
 - One year after breeding there is no sale price, because the foal has only just been born. The first sale points are weanling (about 18 months) and yearling (about 2 years).
 
+**More data and a foal-by-foal model (added 2026-11-15).** Three new public
+sources: every QData halter leaderboard in full, every horse shown in the
+futurity classes at the Halter Million in 2024 to 2026, and each sold lot's own
+page. Findings:
+
+- The ranking held on a wider pool: 86 stallions, eight seasons, 16 of 24 picks at a $2,000 budget against 16% for the average stallion.
+- Foal by foal, a top-20 sire and a mare that has already produced an earner each add about 12 points to the chance of a top-three futurity finish: 14% with neither, 37% with both.
+- Among top-20 sires, nothing tried tells whose foals place higher.
+- The sale-price model did not improve with more detail. It still explains about 13%.
+- Everything per foal is for foals that were shown. Crop sizes are still missing.
+
+**Arabians (added 2026-11-15).** A first version exists because the horses this
+tool is for are Arabian in type. It has prices for 218 stallions and whole-class
+results for 379 horses by 145 sires, from two seasons of one show circuit. One
+check held: the sires with the most top-three foals in 2025 sired most of the
+new top-three foals in 2026. It is still a list to check by hand. The fuller
+sources (Scottsdale's own results, PaddockReport's U.S. Nationals results)
+forbid automated collection in their terms and were not used.
+
 This matcher is separate from the backtest described in the rest of this note,
 which waits on foal-by-foal records.
 

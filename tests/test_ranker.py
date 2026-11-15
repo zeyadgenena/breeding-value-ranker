@@ -261,5 +261,132 @@ class Pricing(unittest.TestCase):
             self.assertGreater(s["sale"]["weanling"], s["sale"]["typical"])
 
 
+class SecondRound(unittest.TestCase):
+    HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    def setUp(self):
+        sys.path.insert(0, os.path.join(self.HERE, "qa"))
+
+    def test_spelling_variants_are_one_stallion(self):
+        import v2data
+        self.assertEqual(v2data.norm("Rumerez"), "RUMERZ")
+        self.assertEqual(v2data.norm("hes  so that (P)"), "HES SO THAT")
+        self.assertEqual(v2data.norm("FG; SPEECHLESS"), "FG SPEECHLESS")
+
+    def test_wider_backtest_beats_the_average_stallion(self):
+        import backtest2
+        from v2data import V2
+        v = V2()
+        years = [d for d in v.years if d + 2 <= v.years[-1]]
+        self.assertGreaterEqual(len(years), 8)
+        got = backtest2.evaluate(v, backtest2.RULES["last year's winnings"], years, 2000)
+        self.assertGreater(got["hit"] / got["picks"], 2 * got["base"])
+        self.assertGreater(got["auc"], 0.7)
+
+    def test_rules_cannot_see_the_crop_they_are_judged_on(self):
+        import backtest2
+        from v2data import V2
+        v = V2()
+        d = 2020
+        before = {s: backtest2.RULES["last year's winnings"](v, s, d) for s in v.universe(d)}
+        for k in [k for k in v.board if k[1] > d]:
+            v.board[k] = dict(v.board[k], earnings=9e9)                # rewrite every later leaderboard
+        after = {s: backtest2.RULES["last year's winnings"](v, s, d) for s in v.universe(d)}
+        self.assertEqual(before, after)
+
+    def test_foal_model_uses_only_what_was_known_before_breeding(self):
+        import foal_model
+        from v2data import V2
+        v = V2()
+        rows = foal_model.build(v)
+        self.assertGreater(len(rows), 400)
+        for k in [k for k in v.board if k[1] >= 2025]:
+            v.board[k] = dict(v.board[k], rank=1)                      # pretend every sire topped the 2025 and 2026 lists
+        again = foal_model.build(v)
+        weanlings_2026 = [(a["sire_rank"], b["sire_rank"]) for a, b in zip(rows, again) if a["year"] == 2026 and a["age"] == "weanling"]
+        self.assertTrue(weanlings_2026)
+        self.assertTrue(all(a == b for a, b in weanlings_2026))        # a 2026 weanling was bred in 2025: only lists up to 2024 count
+
+    def test_foal_model_finds_a_planted_effect(self):
+        import random
+        import foal_model
+        rng = random.Random(3)
+        rows = []
+        for i in range(600):
+            dam = rng.random() < 0.3
+            rows.append({"year": 2024 + i % 3, "dam_proven": int(dam), "sire_rank": 99, "top3": int(rng.random() < (0.5 if dam else 0.1))})
+        self.assertGreater(foal_model.score(rows, [foal_model.f_dam])["forward"], 0.62)
+        for r in rows:
+            r["top3"] = int(rng.random() < 0.2)
+        self.assertLess(abs(foal_model.score(rows, [foal_model.f_dam])["forward"] - 0.5), 0.08)
+
+    def test_app_gives_each_quarter_horse_stallion_a_foal_chance(self):
+        from ranker import web
+        ds, _, _ = workbook.load(os.path.join(self.HERE, "data", "breeding_data.xlsx"))
+        m = web.match_data(ds, Params())
+        priced = [s for s in m["stallions"] if s["price"]]
+        for s in priced:
+            self.assertLess(s["odds"]["no"], s["odds"]["yes"])         # a proven mare always helps
+            self.assertTrue(s["rec"]["text"])
+        listed = [s for s in priced if s["rank"] and s["rank"] <= 20]
+        others = [s for s in priced if not s["rank"]]
+        self.assertGreater(min(s["odds"]["no"] for s in listed), max(s["odds"]["no"] for s in others))
+
+    def test_arabian_prices_leave_out_opening_bids(self):
+        from ranker import arabian
+        rows = [{"season_year": "2023", "fee_usd": "1000", "basis": "auction", "fee_note": "PRELIMINARY online auction"},
+                {"season_year": "2021", "fee_usd": "4600", "basis": "auction", "fee_note": "final"}]
+        price, extra = arabian.price_of(rows, 2026)
+        self.assertEqual(price["fee"], 4600.0)
+        self.assertEqual(price["basis"], "auction")
+        rows.append({"season_year": "2026", "fee_usd": "7500", "basis": "listed", "fee_note": ""})
+        price, extra = arabian.price_of(rows, 2026)
+        self.assertEqual((price["fee"], price["basis"]), (7500.0, "listed"))
+        self.assertEqual(extra["fee"], 4600.0)
+
+    def test_arabian_ranking_counts_whole_classes_only(self):
+        from ranker import arabian
+        classes = [{"source_kind": "full_class", "year": "2025", "class_name": "Yearling Fillies 1A", "placing": str(i + 1), "entries_in_class": "10",
+                    "horse": "H%d" % i, "sire": "GOOD SIRE" if i < 3 else "OTHER SIRE", "dam": "D%d" % i, "age_class": "yearling"} for i in range(10)]
+        classes.append(dict(classes[0], class_name="Yearling Fillies Championship", placing="1"))      # the same filly again, in the final
+        classes.append({"source_kind": "winners_only", "year": "2025", "class_name": "Brag list", "placing": "1", "entries_in_class": "", "horse": "X", "sire": "OTHER SIRE", "dam": "Y"})
+        foals = arabian.foal_years(classes)
+        self.assertEqual(len(foals), 10)                               # ten horses: the final and the brag list add none
+        table = arabian.sire_table(foals)
+        self.assertEqual((table["GOOD SIRE"]["shown"], table["GOOD SIRE"]["top3"]), (3, 3))
+        self.assertEqual((table["OTHER SIRE"]["shown"], table["OTHER SIRE"]["top3"]), (7, 0))
+        self.assertGreater(table["GOOD SIRE"]["avg"], table["OTHER SIRE"]["avg"])
+
+    def test_arabian_season_check_only_counts_new_foals(self):
+        from ranker import arabian
+        foals = []
+        for y in (2024, 2025):
+            for i in range(40):
+                sire = "S%d" % (i % 14)
+                foals.append({"horse": "H%d_%d" % (y, i), "year": y, "sire": sire, "dam": "", "pct": 90.0 if i % 14 < 4 else 30.0,
+                              "top3": 1 if i % 14 < 4 else 0, "medal": 0, "starts": 1})
+        foals.append(dict(foals[0], year=2025))                        # a 2024 horse shown again: not a new foal
+        check = arabian.carry_over(foals)
+        self.assertEqual(check["pairs"][0]["new_foals"], 40)
+        self.assertGreater(check["top_placed_again"], check["rest_placed_again"])
+        self.assertEqual(check["top_share_of_top3"], 1.0)              # the four planted sires took every top three again
+
+    def test_mare_facts_are_counts_not_rates(self):
+        import json
+        with open(os.path.join(self.HERE, "qa", "mare_facts.json")) as fh:
+            f = json.load(fh)
+        self.assertLessEqual(f["already_producers"]["n"] + f["became_producers"]["n"], f["mares_sold"])
+        self.assertLessEqual(f["already_producers"]["low"], f["already_producers"]["high"])
+
+    def test_arabian_page_says_how_narrow_it_is(self):
+        from ranker import arabian
+        m = arabian.match_data(os.path.join(self.HERE, "data", "arabian"))
+        self.assertGreater(len([s for s in m["stallions"] if s["price"]]), 100)
+        self.assertTrue(any("narrow" in n for n in m["notes"]))
+        self.assertIsNone(m["pricing"])                                # no sale estimates for Arabians
+        best = max((s for s in m["stallions"] if s["price"]), key=lambda s: s["score"])
+        self.assertIn("were shown", best["rec"]["text"])
+
+
 if __name__ == "__main__":
     unittest.main()

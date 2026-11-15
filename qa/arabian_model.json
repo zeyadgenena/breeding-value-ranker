@@ -1,0 +1,103 @@
+{
+ "sales": 153,
+ "median": 4250.0,
+ "q1": 2100.0,
+ "q3": 9000.0,
+ "top": 100000.0,
+ "young": 73,
+ "young_median": 4200.0,
+ "with_sire": 140,
+ "sires": 82,
+ "auctions": 23,
+ "at_opening_bid": 16,
+ "price_versions": 32,
+ "price_best": {
+  "what": "sex + sire's halter placings before the sale",
+  "typical_miss": 0.9847833167657445,
+  "explained": 0.11047760594164646,
+  "within_double_or_half": 0.5098039215686274
+ },
+ "price_scorecard": [
+  {
+   "what": "sex + sire's halter placings before the sale",
+   "typical_miss": 0.9847833167657445,
+   "explained": 0.11047760594164646,
+   "within_double_or_half": 0.5098039215686274
+  },
+  {
+   "what": "sex + sire's halter placings before the sale + sold in 2010 or later years",
+   "typical_miss": 1.0912426094937109,
+   "explained": 0.10936834254433114,
+   "within_double_or_half": 0.49019607843137253
+  },
+  {
+   "what": "age + sex + sire's halter placings before the sale",
+   "typical_miss": 0.9289336644040249,
+   "explained": 0.10222425517117906,
+   "within_double_or_half": 0.5163398692810458
+  },
+  {
+   "what": "sex + purebred or half-Arabian + sire's halter placings before the sale + sold in 2010 or later years",
+   "typical_miss": 1.0795317136794025,
+   "explained": 0.09683572675433294,
+   "within_double_or_half": 0.477124183006536
+  },
+  {
+   "what": "sex + purebred or half-Arabian + sire's halter placings before the sale",
+   "typical_miss": 0.9951213904716023,
+   "explained": 0.09650036799845507,
+   "within_double_or_half": 0.5032679738562091
+  },
+  {
+   "what": "age + sex + purebred or half-Arabian + sire's halter placings before the sale",
+   "typical_miss": 0.9656391512290867,
+   "explained": 0.08987079228126293,
+   "within_double_or_half": 0.5098039215686274
+  },
+  {
+   "what": "age + sex + sire's halter placings before the sale + sold in 2010 or later years",
+   "typical_miss": 0.9335943583659443,
+   "explained": 0.08852452881555695,
+   "within_double_or_half": 0.5032679738562091
+  },
+  {
+   "what": "age + sire's halter placings before the sale",
+   "typical_miss": 1.0364408010436037,
+   "explained": 0.08510621912631411,
+   "within_double_or_half": 0.48366013071895425
+  }
+ ],
+ "full_class_rows": 1060,
+ "carry_over": {
+  "split": 2024,
+  "sires": 28,
+  "top_third_kept": 0.8888888888888888,
+  "rest_kept": 0.7368421052631579,
+  "top_third_later": 31.666666666666668,
+  "rest_later": 10.789473684210526
+ },
+ "groups": {
+  "all_recent": {
+   "n": 113,
+   "median": 4710.0,
+   "q1": 2400.0,
+   "q3": 10100.0
+  },
+  "young": {
+   "n": 61,
+   "median": 4351.0,
+   "q1": 2200.0,
+   "q3": 11900.0
+  },
+  "over_20000": 16,
+  "over_50000": 3
+ },
+ "family": {
+  "horses": 379,
+  "dam_pairs": 74,
+  "dam_link": 0.3267135430681987,
+  "sire_link": 0.1413168558203066,
+  "same_horse_pairs": 47,
+  "same_horse_link": 0.5735042379525199
+ }
+}
