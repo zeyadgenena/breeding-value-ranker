@@ -111,6 +111,15 @@ def _name(x):
     return {"ELANTE": "EL ANTE", "ENVINCEBLE": "EVINCEBLE", "LFL ELIGANCE": "LFL ELIGIANCE", "RUMEREZ": "RUMERZ", "SAIL ON SAILER": "SAIL ON SAILOR"}.get(s, s)
 
 
+def _own_sales(rows):
+    """A stallion's own foals at public sale: how many, the typical price, and the sales themselves, dearest first."""
+    if not rows:
+        return None
+    rows = sorted(rows, key=lambda r: -r["price"])
+    prices = [r["price"] for r in rows]
+    return {"n": len(rows), "median": _median(prices), "low": min(prices), "high": max(prices), "list": rows[:6]}
+
+
 def _dollars(v):
     if v >= 1e6:
         return "$%.1f million" % (v / 1e6)
@@ -163,6 +172,16 @@ def match_data(ds, p):
             for r in _csv.DictReader(fh):
                 if r["period"] == str(latest):
                     top50[_name(r["sire"])] = top50.get(_name(r["sire"]), 0) + 1
+
+    own = {}                                      # each stallion's young foals sold at public auction, as they happened
+    lots_csv = os.path.join(QA, "price_training2.csv")
+    if os.path.exists(lots_csv):
+        import csv as _csv2
+        with open(lots_csv, newline="") as fh:
+            for r in _csv2.DictReader(fh):
+                if r["sold"] == "1":
+                    own.setdefault(_name(r["sire"]), []).append({"price": float(r["price"]), "year": int(r["sale_date"][:4]),
+                                                               "age": {"0": "weanling", "1": "yearling", "2": "two-year-old"}.get(r["age_at_sale"], "")})
 
     def chance(weights, rank, proven):
         z = weights[0] + weights[1] * (1.0 if rank <= 20 else 0.0) + weights[2] * proven
@@ -235,7 +254,8 @@ def match_data(ds, p):
             "hits": hits, "rank": rank_now if rank_now < 99 else None, "odds": odds,
             "fut": {"shown": f["shown"], "starts": f["starts"], "top3": f["top3"], "wins": f["wins"]} if f else None,
             "sale": sale,
-            "sold": {"n": len(mine_sold), "median": _median(mine_sold)} if len(mine_sold) >= 3 else None,
+            "sold": None,
+            "sales": _own_sales(own.get(_name(st.get("name")))),
             "rec": _rec({"tier": "strong" if best is not None and best <= 10 else "some" if seen else "none",
                          "y": int(lastrow["period"]) if lastrow else None, "e": lastrow["earnings"] if lastrow else 0,
                          "n": lastrow["earners"] if lastrow else 0,
@@ -266,6 +286,9 @@ def match_data(ds, p):
             "total_chips": [5000, 10000, 20000, 50000], "how": how, "notes": [],
             "years": recent, "latest": latest, "read_on": dates[-1] if dates else "", "stallions": out,
             "record": record, "sales": _load("sales_summary.json"), "mare_facts": _load("mare_facts.json"),
+            "young_word": "yearling", "sale_col": "Yearling sells for",
+            "sell_why": "At public auction a yearling's price barely depends on his sire.",
+            "sire_test": ((_load("sire_sales.json") or {}).get("Quarter Horse")),
             "foal": {"class_size": foal.get("typical_class_size", 21), "proven_at": 10000, "money_at": int(round(foal["money_cutoff"], -3)),
                      "money_rate": foal["money_rate"], "money_forward": foal["money_score"]["forward"],
                      "worth": _load("futurity_worth.json"), "rank_split": foal.get("rank_split"), "proven_rate": foal["dam_rates"]["proven"], "other_rate": foal["dam_rates"]["other"],
