@@ -1,0 +1,24 @@
+{
+ "note": "Public online auction results from internethorseauctions.com listings, 2017 to 2025, read 2026-11-15. Young = weanling to two-year-old by a stallion in the workbook. Mares = aged three and up, by a halter sire.",
+ "young": {
+  "n": 122,
+  "median": 2600.0,
+  "q1": 1550,
+  "q3": 4200,
+  "top": 18100,
+  "at_least_10000": 4,
+  "at_least_20000": 0,
+  "with_fee": 85,
+  "median_multiple": 1.67,
+  "at_least_3x": 22,
+  "at_least_10x": 0,
+  "best_multiple": 9.1
+ },
+ "mares": {
+  "n": 108,
+  "median": 3100.0,
+  "q1": 1750,
+  "q3": 6200,
+  "top": 20300
+ }
+}

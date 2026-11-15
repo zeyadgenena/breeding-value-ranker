@@ -7,7 +7,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from ranker import synth, workbook  # noqa: E402
+from ranker import matcher, synth, workbook  # noqa: E402
 from ranker.core import (Dataset, Params, _midrank_percentiles, backtest, fee_at, fit_effects,  # noqa: E402
                          foal_totals, rank_stallions)
 
@@ -75,6 +75,34 @@ class Fees(unittest.TestCase):
         self.assertIn("seasons old", skipped[0]["status"])
         ranked, _, _ = rank_stallions(ds, None, Params(fee_fallback="latest"))
         self.assertEqual(len(ranked), 2)
+
+
+class Matcher(unittest.TestCase):
+    def test_rising_beats_flat_beats_falling(self):
+        self.assertGreater(matcher.score(100000, 50000), matcher.score(100000, 100000))
+        self.assertGreater(matcher.score(100000, 100000), matcher.score(100000, 300000))
+
+    def test_trend_is_capped(self):
+        self.assertEqual(matcher.trend(100000, 1), 2.0)
+        self.assertEqual(matcher.trend(1, 100000), 0.5)
+        self.assertEqual(matcher.trend(100000, None), 1.0)      # no earlier list to compare with
+
+    def test_score_ignores_later_years(self):
+        ds = tiny([], snapshots=[{"stallion_id": "S1", "year": 2021, "fee": 1500.0, "basis": "listed", "date": ""}])
+        ds.sire_stats = [{"stallion_id": "S1", "period": str(y), "rank": 5, "earners": 10, "earnings": e}
+                         for y, e in ((2019, 40000.0), (2020, 80000.0), (2021, 10.0), (2022, 999999.0))]
+        h = matcher.History(ds)
+        self.assertEqual(h.score("S1", 2020), 80000.0 * 2.0)
+        self.assertEqual(h.fee("S1", 2020), 1500.0)
+
+    def test_real_workbook_has_a_track_record_file(self):
+        here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        ds, review, _ = workbook.load(os.path.join(here, "data", "breeding_data.xlsx"))
+        self.assertEqual(review, [])
+        self.assertGreater(len(ds.sire_stats), 100)
+        rec = matcher.track_record(matcher.History(ds, os.path.join(here, "qa", "top_earners.json")))
+        at_2000 = [r for r in rec["by_budget"] if r["budget"] == 2000][0]
+        self.assertGreater(at_2000["share"], 2 * at_2000["base"])   # picks beat the average stallion clearly
 
 
 class NoHindsight(unittest.TestCase):

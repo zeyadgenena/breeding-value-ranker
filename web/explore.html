@@ -1,0 +1,974 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Breeding Value Ranker: the data</title>
+<meta name="description" content="Halter stallions: what a breeding costs, season by season, and a backtest of ranking them by foal quality per dollar.">
+<style>
+:root{
+  color-scheme:light;
+  --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10); --wash:rgba(11,11,11,.04);
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300;
+  --good:#0ca30c; --warn:#fab219; --crit:#d03b3b; --seq-lo:#cde2fb; --seq-hi:#0d366b;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --page:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --wash:rgba(255,255,255,.05);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#0ca30c;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --page:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --wash:rgba(255,255,255,.05);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#0ca30c;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--page);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header.top{border-bottom:1px solid var(--border);background:var(--surface)}
+.brand{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:18px 0 10px}
+.brand h1{margin:0;font-size:20px;line-height:1.2}
+.brand p{margin:2px 0 0;color:var(--ink2);font-size:14px}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{border:0;background:none;padding:10px 12px;cursor:pointer;color:var(--ink2);border-bottom:2px solid transparent;white-space:nowrap}
+nav.tabs button:hover{color:var(--ink)}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+.btn{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer}
+.btn:hover{background:var(--wash)}
+.btn.small{padding:3px 9px;font-size:13px}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+main{padding:20px 0 48px}
+h2{font-size:22px;line-height:1.25;margin:0 0 6px}
+h3{font-size:16px;margin:0 0 2px}
+.lede{color:var(--ink2);max-width:72ch;margin:0 0 18px}
+.grid{display:grid;gap:16px}
+.cols2{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
+.cols-even{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:900px){.cols2,.cols-even{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;min-width:0}
+.card > .sub{color:var(--ink2);font-size:14px;margin:0 0 10px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 16px}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.tile .label{color:var(--ink2);font-size:13px}
+.tile .value{font-size:26px;font-weight:600;line-height:1.2}
+.tile .foot{color:var(--muted);font-size:12px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+.filters input[type=search],.filters select{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:7px 10px;min-width:0}
+.filters input[type=search]{width:240px;max-width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:6px 11px;cursor:pointer;color:var(--ink2)}
+.seg button + button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--grid);vertical-align:middle}
+th{color:var(--ink2);font-weight:600;font-size:13px;white-space:nowrap}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--ink)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr.rowlink{cursor:pointer}
+tbody tr.rowlink:hover{background:var(--wash)}
+tbody tr[aria-selected="true"]{background:var(--wash);box-shadow:inset 3px 0 0 var(--s1)}
+.name{font-weight:600}
+.dim{color:var(--muted);font-size:12.5px}
+.star{border:0;background:none;cursor:pointer;font-size:17px;line-height:1;padding:2px 4px;color:var(--muted)}
+.star[aria-pressed="true"]{color:var(--s4)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink2);margin:2px 0 6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.key-line{width:16px;height:0;border-top:2px solid currentColor;display:inline-block}
+.key-dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:currentColor}
+.key-tick{width:14px;height:0;border-top:3px solid var(--ink);display:inline-block}
+.chart{position:relative;width:100%}
+.chart svg{display:block;overflow:visible}
+.chart svg text{font:12px system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--muted)}
+.chart svg text.strong{fill:var(--ink);font-weight:600}
+.chart svg text.label{fill:var(--ink2)}
+.chart svg:focus{outline:2px solid var(--s1);outline-offset:2px;border-radius:6px}
+details.tv{margin-top:10px}
+details.tv summary{cursor:pointer;color:var(--ink2);font-size:13px}
+details.tv .tablewrap{margin-top:8px;max-height:340px;overflow:auto}
+#tip{position:fixed;z-index:20;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.14);padding:8px 10px;font-size:13px;max-width:280px;display:none}
+#tip .t{color:var(--ink2);margin-bottom:4px}
+#tip .r{display:flex;align-items:center;gap:8px;justify-content:space-between}
+#tip .r b{font-weight:600}
+#tip .r span{color:var(--ink2);display:inline-flex;align-items:center;gap:6px}
+.status{display:inline-flex;align-items:center;gap:8px;font-weight:600}
+.status svg{flex:none}
+.banner{border:1px solid var(--border);border-left:4px solid var(--warn);background:var(--surface);border-radius:8px;padding:10px 12px;margin:0 0 14px;color:var(--ink2)}
+.banner b{color:var(--ink)}
+.checklist{list-style:none;margin:0;padding:0}
+.checklist li{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--grid)}
+.checklist li:last-child{border-bottom:0}
+.checklist small{display:block;color:var(--ink2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:999px;padding:4px 6px 4px 10px;background:var(--surface);font-size:13.5px}
+.chip button{border:0;background:none;cursor:pointer;color:var(--muted);font-size:15px;line-height:1;padding:0 4px}
+.empty{color:var(--ink2);padding:18px 4px}
+.meta{color:var(--ink2);font-size:14px;margin:2px 0 10px}
+.note{color:var(--ink2);font-size:13.5px;margin:10px 0 0}
+.heat td,.heat th{text-align:center;border:0;padding:4px}
+.heat td.cell{border-radius:8px;font-weight:600;font-size:16px;padding:16px 6px;min-width:56px}
+.heat{table-layout:fixed}
+.heat th.rowh{text-align:right;color:var(--ink2);font-weight:500;white-space:nowrap;padding-right:10px}
+input[type=range]{width:220px;max-width:100%;accent-color:var(--s1)}
+ol.steps{margin:6px 0 0;padding-left:20px;color:var(--ink2)}
+ol.steps li{margin:4px 0}
+ol.steps b{color:var(--ink)}
+footer{border-top:1px solid var(--border);padding:16px 0 32px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div>
+        <h1>Breeding Value Ranker: the data</h1>
+        <p><a href="./">Back to the matcher</a> · Fees season by season, the whole market, and the backtest.</p>
+      </div>
+      <button class="btn small" id="theme" type="button" aria-label="Switch between light and dark">Dark</button>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Sections"></nav>
+  </div>
+</header>
+<main><div class="wrap" id="app"></div></main>
+<footer><div class="wrap" id="foot"></div></footer>
+<div id="tip" role="status" aria-live="polite"></div>
+<script>/*__BVR_DATA__*/</script>
+<script>
+(function(){
+'use strict';
+var D = window.BVR;
+var app = document.getElementById('app');
+var NS = 'http://www.w3.org/2000/svg';
+var SERIES = ['--s1','--s2','--s3','--s4','--s5','--s6'];
+
+/* ---------- small helpers ---------- */
+function h(tag, attrs){
+  var el = document.createElement(tag), i, k;
+  attrs = attrs || {};
+  for (k in attrs){
+    if (attrs[k] == null || attrs[k] === false) continue;
+    if (k === 'text') el.textContent = attrs[k];
+    else if (k === 'class') el.className = attrs[k];
+    else if (k.slice(0,2) === 'on') el.addEventListener(k.slice(2), attrs[k]);
+    else if (k === 'style') el.style.cssText = attrs[k];
+    else el.setAttribute(k, attrs[k] === true ? '' : attrs[k]);
+  }
+  for (i = 2; i < arguments.length; i++) add(el, arguments[i]);
+  return el;
+}
+function add(el, kid){
+  if (kid == null || kid === false) return;
+  if (Array.isArray(kid)) { kid.forEach(function(k){ add(el, k); }); return; }
+  el.appendChild(typeof kid === 'string' || typeof kid === 'number' ? document.createTextNode(String(kid)) : kid);
+}
+function s(tag, attrs, parent){
+  var el = document.createElementNS(NS, tag), k, v;
+  for (k in attrs){
+    v = attrs[k];
+    if (v == null) continue;
+    if (k === 'text') el.textContent = v;
+    else if ((k === 'fill' || k === 'stroke') && String(v).indexOf('var(') === 0) el.style[k] = v;
+    else el.setAttribute(k, v);
+  }
+  if (parent) parent.appendChild(el);
+  return el;
+}
+function cv(name){ return 'var(' + name + ')'; }
+function money(v){ return v == null ? '' : '$' + Math.round(v).toLocaleString('en-US'); }
+function pct(v){ return v == null ? '' : Math.round(v * 100) + '%'; }
+function num(v, d){ return v == null ? '' : Number(v).toFixed(d == null ? 1 : d); }
+function median(a){
+  if (!a.length) return null;
+  var b = a.slice().sort(function(x, y){ return x - y; }), m = Math.floor(b.length / 2);
+  return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2;
+}
+function niceTicks(max, want){
+  if (!(max > 0)) return [0, 1];
+  var raw = max / (want || 4), pow = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), n = raw / pow;
+  var step = (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * pow, out = [], v;
+  for (v = 0; v < max + step * 0.999; v += step) out.push(Math.round(v * 1e6) / 1e6);
+  return out;
+}
+function range(a, b){ var o = []; for (var i = a; i <= b; i++) o.push(i); return o; }
+function store(key, val){
+  try {
+    if (val === undefined) return JSON.parse(localStorage.getItem(key));
+    localStorage.setItem(key, JSON.stringify(val));
+  } catch (e) { return null; }
+}
+
+/* ---------- tooltip ---------- */
+var tipEl = document.getElementById('tip');
+var tip = {
+  show: function(evt, title, rows){
+    tipEl.replaceChildren();
+    if (title) tipEl.appendChild(h('div', {class: 't', text: title}));
+    (rows || []).forEach(function(r){
+      var key = r.color ? h('i', {class: r.dot ? 'key-dot' : 'key-line', style: 'color:' + r.color}) : null;
+      tipEl.appendChild(h('div', {class: 'r'}, h('span', null, key, r.label), h('b', {text: r.value})));
+    });
+    tipEl.style.display = 'block';
+    var w = tipEl.offsetWidth, hh = tipEl.offsetHeight, x = evt.clientX + 14, y = evt.clientY + 14;
+    if (x + w > window.innerWidth - 8) x = evt.clientX - w - 14;
+    if (y + hh > window.innerHeight - 8) y = evt.clientY - hh - 14;
+    tipEl.style.left = Math.max(8, x) + 'px';
+    tipEl.style.top = Math.max(8, y) + 'px';
+  },
+  hide: function(){ tipEl.style.display = 'none'; }
+};
+
+/* ---------- prepare the stallion data ---------- */
+var minY = Infinity, maxY = -Infinity, byId = {};
+D.stallions.forEach(function(st){ st.fees.forEach(function(r){ if (r.y < minY) minY = r.y; if (r.y > maxY) maxY = r.y; }); });
+var SEASONS = range(minY, maxY);
+D.stallions.forEach(function(st){
+  byId[st.id] = st;
+  var bySeason = {}, newest = null;
+  st.listed = {}; st.pt = {}; st.conflict = {}; st.bids = []; st.medBid = {};
+  st.fees.forEach(function(r){
+    if (r.basis === 'auction') { if (r.fee != null) st.bids.push(r); return; }
+    (bySeason[r.y] = bySeason[r.y] || []).push(r);
+    if (r.y >= maxY - D.fee_staleness && (!newest || r.y > newest.y || (r.y === newest.y && r.d > newest.d))) newest = r;
+  });
+  Object.keys(bySeason).forEach(function(y){
+    var rows = bySeason[y].sort(function(a, b){ return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+    var last = rows[rows.length - 1], seen = {};
+    rows.forEach(function(r){ if (r.fee != null) seen[r.fee] = 1; });
+    if (last.fee != null) st.listed[y] = last.fee; else st.pt[y] = 1;
+    if (Object.keys(seen).length > 1) st.conflict[y] = Object.keys(seen).map(Number).sort(function(a, b){ return a - b; });
+  });
+  st.seasons = Object.keys(st.listed).map(Number).sort(function(a, b){ return a - b; });
+  st.latest = st.seasons.length ? {y: st.seasons[st.seasons.length - 1], fee: st.listed[st.seasons[st.seasons.length - 1]]} : null;
+  st.current = newest && newest.fee != null ? {y: newest.y, fee: newest.fee} : null;
+  var ratios = [], per = {};
+  st.bids.forEach(function(b){
+    (per[b.y] = per[b.y] || []).push(b.fee);
+    if (st.listed[b.y]) ratios.push(b.fee / st.listed[b.y]);
+  });
+  Object.keys(per).forEach(function(y){ st.medBid[y] = median(per[y]); });
+  st.bidShare = median(ratios);
+});
+var rankById = {};
+D.real.ranking.forEach(function(r){ rankById[r.id] = r; });
+
+/* ---------- state ---------- */
+var TABS = [['overview','Overview'],['stallions','Stallions'],['shortlist','Shortlist'],['market','Market'],
+            ['backtest','Backtest'],['sample','Sample size'],['about','About']];
+var state = {
+  tab: 'overview', selected: null, query: '', filter: 'all', sort: {key: 'name', dir: 1},
+  shortlist: (store('bvr.shortlist') || []).filter(function(id){ return byId[id]; }).slice(0, 6),
+  basis: 'listed', dataset: D.real.ranking.length ? 'real' : D.synthetic[0].key, mare: 50
+};
+function setHash(){ try { history.replaceState(null, '', '#' + state.tab); } catch (e) {} }
+function go(tab){ state.tab = tab; setHash(); render(); window.scrollTo(0, 0); }
+function toggleShort(id){
+  var i = state.shortlist.indexOf(id);
+  if (i >= 0) state.shortlist.splice(i, 1);
+  else if (state.shortlist.length < 6) state.shortlist.push(id);
+  else { alert('The shortlist holds six stallions. Remove one first.'); return; }
+  store('bvr.shortlist', state.shortlist);
+  render();
+}
+function colorOf(id){ var i = state.shortlist.indexOf(id); return i < 0 ? null : cv(SERIES[i]); }
+
+/* ---------- shared pieces ---------- */
+function card(title, sub){
+  var c = h('section', {class: 'card'}, title ? h('h3', {text: title}) : null, sub ? h('p', {class: 'sub', text: sub}) : null);
+  for (var i = 2; i < arguments.length; i++) add(c, arguments[i]);
+  return c;
+}
+function tile(label, value, foot){
+  return h('div', {class: 'tile'}, h('div', {class: 'label', text: label}), h('div', {class: 'value', text: value}),
+           foot ? h('div', {class: 'foot', text: foot}) : null);
+}
+function tableView(headers, rows, label){
+  var t = h('table'), tr = h('tr');
+  headers.forEach(function(x){ tr.appendChild(h('th', {text: x.t || x, class: x.num ? 'num' : null})); });
+  t.appendChild(h('thead', null, tr));
+  var tb = h('tbody');
+  rows.forEach(function(r){
+    var row = h('tr');
+    r.forEach(function(c, i){
+      var td = h('td', {class: headers[i] && headers[i].num ? 'num' : null});
+      if (c && c.href) td.appendChild(h('a', {href: c.href, target: '_blank', rel: 'noopener', text: c.text}));
+      else td.textContent = c == null ? '' : c;
+      row.appendChild(td);
+    });
+    tb.appendChild(row);
+  });
+  t.appendChild(tb);
+  return h('details', {class: 'tv'}, h('summary', {text: label || 'Show as table'}), h('div', {class: 'tablewrap'}, t));
+}
+function legend(items){
+  return h('div', {class: 'legend'}, items.map(function(it){
+    return h('span', null, h('i', {class: it.kind === 'dot' ? 'key-dot' : it.kind === 'tick' ? 'key-tick' : 'key-line',
+                                   style: it.color ? 'color:' + it.color : null}), it.label);
+  }));
+}
+function statusIcon(kind){
+  var col = kind === 'good' ? '--good' : kind === 'bad' ? '--crit' : '--muted';
+  var g = s('svg', {width: 18, height: 18, viewBox: '0 0 18 18', 'aria-hidden': 'true'});
+  s('circle', {cx: 9, cy: 9, r: 8, fill: kind === 'todo' ? 'none' : cv(col), stroke: cv(col), 'stroke-width': 1.5}, g);
+  if (kind === 'good') s('path', {d: 'M5 9.4l2.6 2.6L13 6.6', fill: 'none', stroke: '#fff', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round'}, g);
+  if (kind === 'bad') s('path', {d: 'M6 6l6 6M12 6l-6 6', fill: 'none', stroke: '#fff', 'stroke-width': 2, 'stroke-linecap': 'round'}, g);
+  return g;
+}
+function chartBox(draw){
+  var box = h('div', {class: 'chart'});
+  box._draw = function(){ if (box.clientWidth) draw(box, box.clientWidth); };
+  return box;
+}
+function drawAll(){ app.querySelectorAll('.chart').forEach(function(b){ if (b._draw) b._draw(); }); }
+
+/* ---------- chart primitives ---------- */
+function frame(box, W, H, m, label){
+  var svg = s('svg', {width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': label});
+  box.replaceChildren(svg);
+  return {svg: svg, W: W, H: H, m: m, iw: W - m.l - m.r, ih: H - m.t - m.b};
+}
+function yAxis(f, ticks, fmt, top){
+  var y = function(v){ return f.m.t + f.ih - (v / top) * f.ih; };
+  ticks.forEach(function(t){
+    s('line', {x1: f.m.l, x2: f.m.l + f.iw, y1: y(t), y2: y(t), stroke: cv(t === 0 ? '--axis' : '--grid'), 'stroke-width': 1}, f.svg);
+    s('text', {x: f.m.l - 8, y: y(t) + 4, 'text-anchor': 'end', text: fmt(t)}, f.svg);
+  });
+  return y;
+}
+function xPoints(f, cats, pad){
+  var p = pad == null ? 24 : pad, n = cats.length, span = f.iw - 2 * p, x = {};
+  cats.forEach(function(c, i){ x[c] = f.m.l + p + (n > 1 ? span * i / (n - 1) : span / 2); });
+  var every = Math.ceil(n / Math.max(2, Math.floor(f.iw / 46)));
+  cats.forEach(function(c, i){
+    if ((n - 1 - i) % every === 0) s('text', {x: x[c], y: f.m.t + f.ih + 18, 'text-anchor': 'middle', text: c}, f.svg);
+  });
+  return x;
+}
+function lineSegments(svg, pts, color){
+  var seg = [], i;
+  function flush(){
+    if (seg.length > 1) s('path', {d: 'M' + seg.map(function(p){ return p.x.toFixed(1) + ' ' + p.y.toFixed(1); }).join('L'),
+      fill: 'none', stroke: color, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}, svg);
+    seg = [];
+  }
+  for (i = 0; i < pts.length; i++){
+    if (i && pts[i].i !== pts[i - 1].i + 1) flush();
+    seg.push(pts[i]);
+  }
+  flush();
+  pts.forEach(function(p){ s('circle', {cx: p.x, cy: p.y, r: 4, fill: color, stroke: cv('--surface'), 'stroke-width': 2}, svg); });
+}
+function hoverX(f, cats, x, onShow){
+  var cross = s('line', {y1: f.m.t, y2: f.m.t + f.ih, stroke: cv('--axis'), 'stroke-width': 1, visibility: 'hidden'}, f.svg);
+  var hit = s('rect', {x: f.m.l, y: f.m.t, width: f.iw, height: f.ih, fill: 'transparent'}, f.svg), cur = -1;
+  function at(i, evt){
+    cur = i; cross.setAttribute('x1', x[cats[i]]); cross.setAttribute('x2', x[cats[i]]); cross.setAttribute('visibility', 'visible');
+    onShow(cats[i], evt);
+  }
+  function nearest(evt){
+    var r = f.svg.getBoundingClientRect(), px = evt.clientX - r.left, best = 0, bd = Infinity;
+    cats.forEach(function(c, i){ var d = Math.abs(x[c] - px); if (d < bd){ bd = d; best = i; } });
+    return best;
+  }
+  hit.addEventListener('pointermove', function(e){ at(nearest(e), e); });
+  hit.addEventListener('pointerleave', function(){ cross.setAttribute('visibility', 'hidden'); tip.hide(); });
+  f.svg.setAttribute('tabindex', '0');
+  f.svg.addEventListener('keydown', function(e){
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    var i = Math.max(0, Math.min(cats.length - 1, (cur < 0 ? 0 : cur) + (e.key === 'ArrowRight' ? 1 : -1)));
+    var r = f.svg.getBoundingClientRect();
+    at(i, {clientX: r.left + x[cats[i]], clientY: r.top + f.m.t + 20});
+  });
+  f.svg.addEventListener('blur', function(){ cross.setAttribute('visibility', 'hidden'); tip.hide(); });
+}
+function nearestPoint(f, pts, onShow, onClick){
+  var ring = s('circle', {r: 7, fill: 'none', stroke: cv('--ink'), 'stroke-width': 1.5, visibility: 'hidden'}, f.svg);
+  var hit = s('rect', {x: f.m.l - 10, y: f.m.t - 10, width: f.iw + 20, height: f.ih + 20, fill: 'transparent'}, f.svg), cur = null;
+  function find(evt){
+    var r = f.svg.getBoundingClientRect(), px = evt.clientX - r.left, py = evt.clientY - r.top, best = null, bd = 30 * 30;
+    pts.forEach(function(p){ var d = (p.x - px) * (p.x - px) + (p.y - py) * (p.y - py); if (d < bd){ bd = d; best = p; } });
+    return best;
+  }
+  hit.addEventListener('pointermove', function(e){
+    cur = find(e);
+    if (!cur){ ring.setAttribute('visibility', 'hidden'); tip.hide(); hit.style.cursor = ''; return; }
+    ring.setAttribute('cx', cur.x); ring.setAttribute('cy', cur.y); ring.setAttribute('visibility', 'visible');
+    hit.style.cursor = onClick ? 'pointer' : '';
+    onShow(cur, e);
+  });
+  hit.addEventListener('pointerleave', function(){ ring.setAttribute('visibility', 'hidden'); tip.hide(); });
+  if (onClick) hit.addEventListener('click', function(e){ var p = find(e); if (p) onClick(p); });
+}
+
+/* ---------- charts ---------- */
+function feeHistoryChart(st){
+  return chartBox(function(box, W){
+    var years = st.fees.map(function(r){ return r.y; });
+    var cats = range(Math.min.apply(null, years.concat([maxY - 3])), Math.max.apply(null, years));
+    var f = frame(box, W, 260, {t: 14, r: 58, b: 30, l: 56}, 'Fee history for ' + st.name);
+    var top = Math.max.apply(null, st.fees.map(function(r){ return r.fee || 0; }).concat([500]));
+    var ticks = niceTicks(top, 4); top = ticks[ticks.length - 1];
+    var y = yAxis(f, ticks, money, top), x = xPoints(f, cats);
+    var pts = [];
+    cats.forEach(function(c, i){ if (st.listed[c] != null) pts.push({i: i, x: x[c], y: y(st.listed[c]), v: st.listed[c]}); });
+    cats.forEach(function(c){ if (st.pt[c]) s('text', {x: x[c], y: f.m.t + f.ih - 6, 'text-anchor': 'middle', class: 'label', text: 'PT'}, f.svg); });
+    lineSegments(f.svg, pts, cv('--s1'));
+    var count = {};
+    st.bids.forEach(function(b){
+      var k = count[b.y] = (count[b.y] || 0) + 1;
+      s('circle', {cx: x[b.y] + (k > 1 ? 9 * (k - 1) : 0), cy: y(b.fee), r: 4, fill: cv('--s2'), stroke: cv('--surface'), 'stroke-width': 2}, f.svg);
+    });
+    if (pts.length) s('text', {x: pts[pts.length - 1].x + 9, y: pts[pts.length - 1].y + 4, class: 'strong', text: money(pts[pts.length - 1].v)}, f.svg);
+    hoverX(f, cats, x, function(c, evt){
+      var rows = [];
+      if (st.conflict[c]) rows.push({color: cv('--s1'), label: 'Advertised (sources differ)', value: st.conflict[c].map(money).join(' or ')});
+      else if (st.listed[c] != null) rows.push({color: cv('--s1'), label: 'Advertised fee', value: money(st.listed[c])});
+      if (st.pt[c]) rows.push({label: 'Advertised fee', value: 'Private treaty'});
+      st.bids.filter(function(b){ return b.y === c; }).forEach(function(b){ rows.push({color: cv('--s2'), dot: true, label: 'Auction bid', value: money(b.fee)}); });
+      if (!rows.length) rows.push({label: 'No figure found', value: ''});
+      tip.show(evt, c + ' season', rows);
+    });
+  });
+}
+function multiLine(o){
+  return chartBox(function(box, W){
+    var f = frame(box, W, o.height || 300, {t: 14, r: o.endLabels ? 150 : 24, b: 30, l: 56}, o.label);
+    var all = [];
+    o.series.forEach(function(se){ o.cats.forEach(function(c){ if (se.vals[c] != null) all.push(se.vals[c]); }); });
+    var lo = o.zero === false ? Math.min.apply(null, all) : 0, hi = Math.max.apply(null, all.concat([lo + 1]));
+    var ticks, top, y;
+    if (o.zero === false){
+      var pad = (hi - lo) * 0.15 || 1; lo = Math.floor(lo - pad); hi = Math.ceil(hi + pad);
+      var stp = Math.max(1, Math.round((hi - lo) / 4)); ticks = []; for (var t = lo; t <= hi; t += stp) ticks.push(t);
+      y = function(v){ return f.m.t + f.ih - ((v - lo) / (hi - lo)) * f.ih; };
+      ticks.forEach(function(tk){
+        s('line', {x1: f.m.l, x2: f.m.l + f.iw, y1: y(tk), y2: y(tk), stroke: cv('--grid'), 'stroke-width': 1}, f.svg);
+        s('text', {x: f.m.l - 8, y: y(tk) + 4, 'text-anchor': 'end', text: o.fmt(tk)}, f.svg);
+      });
+    } else {
+      ticks = niceTicks(hi, 4); top = ticks[ticks.length - 1]; y = yAxis(f, ticks, o.fmt, top);
+    }
+    var x = xPoints(f, o.cats), ends = [];
+    o.series.forEach(function(se){
+      var pts = [];
+      o.cats.forEach(function(c, i){ if (se.vals[c] != null) pts.push({i: i, x: x[c], y: y(se.vals[c])}); });
+      lineSegments(f.svg, pts, se.color);
+      if (pts.length) ends.push({name: se.name, x: pts[pts.length - 1].x, y: pts[pts.length - 1].y, ly: pts[pts.length - 1].y});
+    });
+    if (o.endLabels){
+      ends.sort(function(a, b){ return a.ly - b.ly; });
+      ends.forEach(function(e, i){ if (i && e.ly < ends[i - 1].ly + 15) e.ly = ends[i - 1].ly + 15; });
+      var over = ends.length ? ends[ends.length - 1].ly - (f.m.t + f.ih) : 0;
+      if (over > 0) ends.forEach(function(e){ e.ly -= over; });
+      var lx = f.m.l + f.iw + 14;
+      ends.forEach(function(e){
+        s('line', {x1: e.x + 6, y1: e.y, x2: lx - 4, y2: e.ly, stroke: cv('--axis'), 'stroke-width': 1}, f.svg);
+        s('text', {x: lx, y: e.ly + 4, class: 'label', text: e.name.length > 20 ? e.name.slice(0, 19) + '…' : e.name}, f.svg);
+      });
+    }
+    hoverX(f, o.cats, x, function(c, evt){
+      tip.show(evt, o.title ? o.title(c) : String(c), o.series.map(function(se){
+        return {color: se.color, label: se.name, value: se.vals[c] == null ? 'no figure' : o.fmt(se.vals[c])};
+      }));
+    });
+  });
+}
+function barChart(cats, vals, label, fmt){
+  return chartBox(function(box, W){
+    var f = frame(box, W, 220, {t: 22, r: 12, b: 30, l: 12}, label);
+    var top = Math.max.apply(null, vals), band = f.iw / cats.length, bw = Math.min(24, band * 0.6);
+    s('line', {x1: f.m.l, x2: f.m.l + f.iw, y1: f.m.t + f.ih, y2: f.m.t + f.ih, stroke: cv('--axis'), 'stroke-width': 1}, f.svg);
+    cats.forEach(function(c, i){
+      var cx = f.m.l + band * (i + 0.5), bh = Math.max(vals[i] ? 2 : 0, f.ih * vals[i] / top), y0 = f.m.t + f.ih - bh, r = Math.min(4, bh);
+      var bar = s('path', {d: 'M' + (cx - bw / 2) + ' ' + (f.m.t + f.ih) + 'V' + (y0 + r) + 'q0 -' + r + ' ' + r + ' -' + r + 'h' + (bw - 2 * r) +
+        'q' + r + ' 0 ' + r + ' ' + r + 'V' + (f.m.t + f.ih) + 'Z', fill: cv('--s1')}, f.svg);
+      s('text', {x: cx, y: y0 - 6, 'text-anchor': 'middle', class: 'label', text: fmt(vals[i])}, f.svg);
+      s('text', {x: cx, y: f.m.t + f.ih + 18, 'text-anchor': 'middle', text: c}, f.svg);
+      var hit = s('rect', {x: cx - band / 2, y: f.m.t, width: band, height: f.ih, fill: 'transparent'}, f.svg);
+      hit.addEventListener('pointermove', function(e){ bar.style.opacity = 0.8; tip.show(e, c + ' season', [{color: cv('--s1'), dot: true, label: 'Stallions with a fee', value: fmt(vals[i])}]); });
+      hit.addEventListener('pointerleave', function(){ bar.style.opacity = 1; tip.hide(); });
+    });
+  });
+}
+function stripChart(){
+  return chartBox(function(box, W){
+    var cats = SEASONS.filter(function(yv){ return D.stallions.some(function(st){ return st.listed[yv] != null; }); });
+    var f = frame(box, W, 320, {t: 14, r: 12, b: 30, l: 56}, 'Advertised fees by season, one dot per stallion');
+    var top = 0; D.stallions.forEach(function(st){ cats.forEach(function(c){ if (st.listed[c] > top) top = st.listed[c]; }); });
+    var ticks = niceTicks(top, 5); top = ticks[ticks.length - 1];
+    var y = yAxis(f, ticks, money, top), band = f.iw / cats.length, pts = [];
+    cats.forEach(function(c, ci){
+      var cx = f.m.l + band * (ci + 0.5), groups = {}, vals = [];
+      s('text', {x: cx, y: f.m.t + f.ih + 18, 'text-anchor': 'middle', text: c}, f.svg);
+      D.stallions.forEach(function(st){ if (st.listed[c] != null){ (groups[st.listed[c]] = groups[st.listed[c]] || []).push(st); vals.push(st.listed[c]); } });
+      Object.keys(groups).forEach(function(fee){
+        var g = groups[fee], step = Math.min(9, (band - 14) / g.length);
+        g.forEach(function(st, k){ pts.push({x: cx + (k - (g.length - 1) / 2) * step, y: y(Number(fee)), st: st, c: c, fee: Number(fee)}); });
+      });
+      var md = median(vals);
+      s('line', {x1: cx - Math.min(22, band / 2 - 4), x2: cx + Math.min(22, band / 2 - 4), y1: y(md), y2: y(md), stroke: cv('--ink'), 'stroke-width': 3, 'stroke-linecap': 'round'}, f.svg);
+    });
+    pts.sort(function(a, b){ return (colorOf(a.st.id) ? 1 : 0) - (colorOf(b.st.id) ? 1 : 0); });
+    pts.forEach(function(p){
+      var on = state.shortlist.indexOf(p.st.id) >= 0;
+      s('circle', {cx: p.x, cy: p.y, r: 4, fill: cv(on ? '--s2' : '--s1'), 'fill-opacity': on ? 1 : 0.55, stroke: cv('--surface'), 'stroke-width': 1.5}, f.svg);
+    });
+    nearestPoint(f, pts, function(p, e){
+      tip.show(e, p.c + ' season', [{color: cv(state.shortlist.indexOf(p.st.id) >= 0 ? '--s2' : '--s1'), dot: true, label: p.st.name, value: money(p.fee)}]);
+    }, function(p){ state.selected = p.st.id; go('stallions'); });
+  });
+}
+function scatterChart(pairs){
+  return chartBox(function(box, W){
+    var f = frame(box, W, 320, {t: 14, r: 16, b: 44, l: 56}, 'Winning auction bid against the advertised fee');
+    var top = 0; pairs.forEach(function(p){ top = Math.max(top, p.fee, p.bid); });
+    var ticks = niceTicks(top, 5); top = ticks[ticks.length - 1];
+    var y = yAxis(f, ticks, money, top), x = function(v){ return f.m.l + (v / top) * f.iw; };
+    ticks.forEach(function(t){ if (t) s('text', {x: x(t), y: f.m.t + f.ih + 18, 'text-anchor': 'middle', text: money(t)}, f.svg); });
+    s('text', {x: f.m.l + f.iw / 2, y: f.H - 4, 'text-anchor': 'middle', class: 'label', text: 'Advertised fee that season'}, f.svg);
+    s('line', {x1: x(0), y1: y(0), x2: x(top), y2: y(top), stroke: cv('--axis'), 'stroke-width': 1}, f.svg);
+    s('text', {x: x(top) - 6, y: y(top) + 16, 'text-anchor': 'end', class: 'label', text: 'bid = fee'}, f.svg);
+    var pts = pairs.map(function(p){ return {x: x(p.fee), y: y(p.bid), p: p}; });
+    pts.forEach(function(p){ s('circle', {cx: p.x, cy: p.y, r: 4, fill: cv('--s1'), 'fill-opacity': 0.6, stroke: cv('--surface'), 'stroke-width': 1.5}, f.svg); });
+    nearestPoint(f, pts, function(q, e){
+      tip.show(e, q.p.st.name + ', ' + q.p.y, [{color: cv('--s1'), dot: true, label: 'Winning bid', value: money(q.p.bid)},
+        {label: 'Advertised fee', value: money(q.p.fee)}, {label: 'Bid as share of fee', value: pct(q.p.bid / q.p.fee)}]);
+    }, function(q){ state.selected = q.p.st.id; go('stallions'); });
+  });
+}
+function intervalChart(rows, base, label){
+  return chartBox(function(box, W){
+    var rh = 26, left = Math.min(190, Math.max(120, W * 0.3));
+    var f = frame(box, W, rows.length * rh + 44, {t: 8, r: 20, b: 36, l: left}, label);
+    var lo = Infinity, hi = -Infinity;
+    rows.forEach(function(r){ lo = Math.min(lo, base + r.effect - 1.28 * r.se); hi = Math.max(hi, base + r.effect + 1.28 * r.se); });
+    lo = Math.floor(Math.min(lo, base) - 1); hi = Math.ceil(Math.max(hi, base) + 1);
+    var x = function(v){ return f.m.l + (v - lo) / (hi - lo) * f.iw; }, stp = Math.max(1, Math.round((hi - lo) / 5));
+    for (var t = Math.ceil(lo); t <= hi; t += stp){
+      s('line', {x1: x(t), x2: x(t), y1: f.m.t, y2: f.m.t + f.ih, stroke: cv('--grid'), 'stroke-width': 1}, f.svg);
+      s('text', {x: x(t), y: f.m.t + f.ih + 16, 'text-anchor': 'middle', text: t}, f.svg);
+    }
+    s('line', {x1: x(base), x2: x(base), y1: f.m.t, y2: f.m.t + f.ih, stroke: cv('--axis'), 'stroke-width': 1.5}, f.svg);
+    s('text', {x: x(base), y: f.H - 4, 'text-anchor': 'middle', class: 'label', text: 'average stallion: ' + num(base)}, f.svg);
+    rows.forEach(function(r, i){
+      var cy = f.m.t + rh * (i + 0.5), a = base + r.effect - 1.28 * r.se, b = base + r.effect + 1.28 * r.se;
+      s('text', {x: f.m.l - 10, y: cy + 4, 'text-anchor': 'end', class: 'label', text: r.name.length > 24 ? r.name.slice(0, 23) + '…' : r.name}, f.svg);
+      s('line', {x1: x(a), x2: x(b), y1: cy, y2: cy, stroke: cv('--s1'), 'stroke-width': 2, 'stroke-opacity': 0.45, 'stroke-linecap': 'round'}, f.svg);
+      s('circle', {cx: x(base + r.effect), cy: cy, r: 4.5, fill: cv('--s1'), stroke: cv('--surface'), 'stroke-width': 2}, f.svg);
+      var hit = s('rect', {x: 0, y: cy - rh / 2, width: W, height: rh, fill: 'transparent'}, f.svg);
+      hit.addEventListener('pointermove', function(e){
+        tip.show(e, r.name, [{color: cv('--s1'), dot: true, label: 'Expected foal score', value: num(base + r.effect)},
+          {label: 'Likely range (80%)', value: num(a) + ' to ' + num(b)}, {label: 'Foals behind it', value: String(r.foals)},
+          {label: 'Stud fee', value: money(r.fee)}, {label: 'Score points per $1,000', value: num(r.value, 2)}]);
+      });
+      hit.addEventListener('pointerleave', tip.hide);
+    });
+  });
+}
+function truthChart(rows){
+  return chartBox(function(box, W){
+    var f = frame(box, W, 300, {t: 14, r: 16, b: 44, l: 56}, 'Estimated effect against the planted true effect');
+    var xs = rows.map(function(r){ return r.truth; }), ys = rows.map(function(r){ return r.effect; });
+    var xl = Math.max.apply(null, xs.map(Math.abs)) * 1.15 || 1, yl = Math.ceil(Math.max.apply(null, ys.map(Math.abs)) * 1.15) || 1;
+    var x = function(v){ return f.m.l + (v + xl) / (2 * xl) * f.iw; }, y = function(v){ return f.m.t + f.ih - (v + yl) / (2 * yl) * f.ih; };
+    [-yl, -yl / 2, 0, yl / 2, yl].forEach(function(t){
+      s('line', {x1: f.m.l, x2: f.m.l + f.iw, y1: y(t), y2: y(t), stroke: cv(t === 0 ? '--axis' : '--grid'), 'stroke-width': 1}, f.svg);
+      s('text', {x: f.m.l - 8, y: y(t) + 4, 'text-anchor': 'end', text: (t > 0 ? '+' : '') + num(t, 0)}, f.svg);
+    });
+    s('line', {x1: x(0), x2: x(0), y1: f.m.t, y2: f.m.t + f.ih, stroke: cv('--axis'), 'stroke-width': 1}, f.svg);
+    s('text', {x: x(-xl) + 2, y: f.m.t + f.ih + 18, text: 'truly worse'}, f.svg);
+    s('text', {x: x(xl) - 2, y: f.m.t + f.ih + 18, 'text-anchor': 'end', text: 'truly better'}, f.svg);
+    s('text', {x: f.m.l + f.iw / 2, y: f.H - 4, 'text-anchor': 'middle', class: 'label', text: 'True effect planted in the made-up data'}, f.svg);
+    var pts = rows.map(function(r){ return {x: x(r.truth), y: y(r.effect), r: r}; });
+    pts.forEach(function(p){ s('circle', {cx: p.x, cy: p.y, r: 4, fill: cv('--s1'), 'fill-opacity': 0.7, stroke: cv('--surface'), 'stroke-width': 1.5}, f.svg); });
+    nearestPoint(f, pts, function(q, e){
+      tip.show(e, q.r.name, [{color: cv('--s1'), dot: true, label: 'Estimated effect', value: (q.r.effect > 0 ? '+' : '') + num(q.r.effect)},
+        {label: 'Foals behind it', value: String(q.r.foals)}]);
+    });
+  });
+}
+function sparkline(st){
+  var W = 96, H = 24, g = s('svg', {width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, 'aria-hidden': 'true'});
+  if (!st.seasons.length) return g;
+  var vals = st.seasons.map(function(yv){ return st.listed[yv]; }), lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+  var x = function(yv){ return 4 + (yv - minY) / Math.max(1, maxY - minY) * (W - 8); };
+  var y = function(v){ return hi === lo ? H / 2 : H - 4 - (v - lo) / (hi - lo) * (H - 8); };
+  var d = st.seasons.map(function(yv, i){ return (i ? 'L' : 'M') + x(yv).toFixed(1) + ' ' + y(st.listed[yv]).toFixed(1); }).join('');
+  s('path', {d: d, fill: 'none', stroke: cv('--muted'), 'stroke-width': 1.5, 'stroke-linejoin': 'round'}, g);
+  var last = st.seasons[st.seasons.length - 1];
+  s('circle', {cx: x(last), cy: y(st.listed[last]), r: 2.5, fill: cv('--s1')}, g);
+  return g;
+}
+
+/* ---------- views ---------- */
+function viewOverview(){
+  var st = D.stallions, three = st.filter(function(x){ return x.seasons.length >= 3; }).length;
+  var listed = 0, bids = 0, fees = [], shares = [];
+  st.forEach(function(x){
+    x.fees.forEach(function(r){ if (r.basis === 'auction') bids++; else if (r.fee != null){ listed++; fees.push(r.fee); } });
+    x.bids.forEach(function(b){ if (x.listed[b.y]) shares.push(b.fee / x.listed[b.y]); });
+  });
+  var cats = SEASONS.filter(function(yv){ return st.some(function(x){ return x.listed[yv] != null; }); });
+  var counts = cats.map(function(yv){ return st.filter(function(x){ return x.listed[yv] != null; }).length; });
+  var ranked = D.real.ranking.length, foals = D.real.counts.foals;
+  var list = h('ul', {class: 'checklist'});
+  [['good', 'Workbook and data model', 'Stallions, fee snapshots, mares, foals and outcomes, with link checks.'],
+   ['good', 'Fee history', st.length + ' stallions with dated fees, ' + SEASONS[0] + ' to ' + SEASONS[SEASONS.length - 1] + '.'],
+   ['good', 'Method tested on made-up data', 'It finds planted effects and mostly stays quiet when there is nothing to find.'],
+   [foals ? 'good' : 'todo', 'Foal records', foals ? foals + ' foals linked to a sire.' : 'None yet. They come from AQHA through a member login.'],
+   [D.real.verdict.status === 'PASS' || D.real.verdict.status === 'FAIL' ? 'good' : 'todo', 'Backtest on real horses',
+    D.real.verdict.status === 'NOT ENOUGH DATA' ? 'Waiting on foal records.' : 'Verdict: ' + D.real.verdict.status + '.']
+  ].forEach(function(it){
+    list.appendChild(h('li', null, statusIcon(it[0]), h('div', null, h('b', {text: it[1]}), h('small', {text: it[2]}))));
+  });
+  return [
+    h('h2', {text: ranked ? ranked + ' stallions ranked' : 'Prices are in. Foal records are not.'}),
+    h('p', {class: 'lede', text: ranked
+      ? 'The ranking and backtest below use your foal records. Open Backtest for the verdict.'
+      : 'This page shows what a breeding to each stallion has cost, season by season. Ranking them by foal quality per dollar needs foal show records, which are not in the workbook yet. Until then the Backtest tab runs on made-up horses so you can see how it will work.'}),
+    h('div', {class: 'tiles'},
+      tile('Stallions', String(st.length), three + ' with three or more priced seasons'),
+      tile('Advertised fees', String(listed), 'median ' + money(median(fees))),
+      tile('Auction bids', String(bids), 'median ' + pct(median(shares)) + ' of the advertised fee'),
+      tile('Foal records', String(foals), foals ? ranked + ' stallions ranked' : 'needed before anything is ranked')),
+    h('div', {class: 'grid cols-even'},
+      card('Stallions with an advertised fee, by season', 'How many could be priced in each breeding season.',
+        barChart(cats, counts, 'Stallions with an advertised fee, by season', String),
+        tableView(['Season', {t: 'Stallions', num: true}], cats.map(function(c, i){ return [c, counts[i]]; }))),
+      card('Where the project stands', null, list,
+        h('p', {class: 'note'}, h('button', {class: 'btn small', type: 'button', onclick: function(){ go('stallions'); }, text: 'Browse the stallions'}), ' ',
+          h('button', {class: 'btn small', type: 'button', onclick: function(){ go('backtest'); }, text: 'See the backtest demo'}))))
+  ];
+}
+
+function feeTable(st){
+  return tableView(['Season', 'Seen on', 'Kind', {t: 'Amount', num: true}, 'Chute or booking fee', 'Source'],
+    st.fees.slice().sort(function(a, b){ return b.y - a.y || (a.d < b.d ? 1 : -1); }).map(function(r){
+      return [r.y, r.d, r.basis === 'listed' ? 'Advertised' : r.basis === 'auction' ? 'Auction bid' : 'Private treaty',
+              r.fee == null ? '' : money(r.fee), r.chute, r.src ? {href: r.src, text: r.src.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]} : ''];
+    }), 'Show every fee row and its source (' + st.fees.length + ')');
+}
+function detail(st){
+  var on = state.shortlist.indexOf(st.id) >= 0, r = rankById[st.id];
+  var ped = [st.sire, st.dam ? 'out of ' + st.dam : null, st.dam_sire ? '(by ' + st.dam_sire + ')' : null].filter(Boolean).join(' ');
+  return card(null, null,
+    h('div', {style: 'display:flex;justify-content:space-between;gap:10px;align-items:flex-start'},
+      h('div', null, h('h3', {text: st.name, style: 'font-size:19px'}),
+        h('p', {class: 'meta', text: [st.foaled ? 'Foaled ' + st.foaled : null, st.color, ped ? 'by ' + ped : null].filter(Boolean).join(' · ')})),
+      h('button', {class: 'btn small', type: 'button', 'aria-pressed': on ? 'true' : 'false', onclick: function(){ toggleShort(st.id); },
+        text: on ? 'On shortlist' : 'Add to shortlist'})),
+    h('div', {class: 'tiles'},
+      tile('Current fee', st.current ? money(st.current.fee) : 'None', st.current ? st.current.y + ' season' : (st.latest ? 'last priced ' + st.latest.y : 'private treaty')),
+      tile('Priced seasons', String(st.seasons.length), st.seasons.length ? st.seasons[0] + ' to ' + st.seasons[st.seasons.length - 1] : ''),
+      tile('Auction price', st.bidShare == null ? 'n/a' : pct(st.bidShare), st.bids.length + ' winning bid' + (st.bids.length === 1 ? '' : 's') + ', as share of fee'),
+      tile('Foal quality', r ? (r.effect > 0 ? '+' : '') + num(r.effect) : 'n/a', r ? 'rank ' + r.rank + ', ' + r.foals + ' foals' : 'needs foal records')),
+    legend([{label: 'Advertised fee', color: cv('--s1')}, {label: 'Winning auction bid', color: cv('--s2'), kind: 'dot'}]),
+    feeHistoryChart(st),
+    h('p', {class: 'note', text: 'PT marks a season at private treaty. Gaps are seasons with no figure found.'}),
+    h('p', {class: 'meta', text: 'AQHA registration number: ' + (st.reg || 'not found')}),
+    st.notes ? h('p', {class: 'note', text: st.notes}) : null,
+    feeTable(st));
+}
+function viewStallions(){
+  var q = state.query.trim().toUpperCase();
+  var rows = D.stallions.filter(function(st){
+    if (q && [st.name, st.sire, st.dam, st.dam_sire, st.reg].join(' ').toUpperCase().indexOf(q) < 0) return false;
+    if (state.filter === 'current') return !!st.current;
+    if (state.filter === 'three') return st.seasons.length >= 3;
+    if (state.filter === 'short') return state.shortlist.indexOf(st.id) >= 0;
+    return true;
+  });
+  var keyFn = {name: function(x){ return x.name; }, foaled: function(x){ return x.foaled || 0; },
+    fee: function(x){ return x.latest ? x.latest.fee : -1; }, seasons: function(x){ return x.seasons.length; },
+    share: function(x){ return x.bidShare == null ? -1 : x.bidShare; }}[state.sort.key];
+  rows.sort(function(a, b){ var x = keyFn(a), y = keyFn(b); return (x < y ? -1 : x > y ? 1 : 0) * state.sort.dir; });
+  if (!state.selected || !byId[state.selected]) state.selected = (rows[0] || D.stallions[0]).id;
+
+  function th(label, key, numeric){
+    var arrow = state.sort.key === key ? (state.sort.dir > 0 ? ' ▲' : ' ▼') : '';
+    return h('th', {class: 'sortable' + (numeric ? ' num' : ''), text: label + arrow, tabindex: 0, role: 'button',
+      onclick: function(){ state.sort = {key: key, dir: state.sort.key === key ? -state.sort.dir : (key === 'name' ? 1 : -1)}; render(); },
+      onkeydown: function(e){ if (e.key === 'Enter') e.currentTarget.click(); }});
+  }
+  var tb = h('tbody');
+  rows.forEach(function(st){
+    var on = state.shortlist.indexOf(st.id) >= 0;
+    var tr = h('tr', {class: 'rowlink', 'aria-selected': st.id === state.selected ? 'true' : 'false', tabindex: 0,
+      onclick: function(){ state.selected = st.id; render(); var d = document.getElementById('detail'); if (d && window.innerWidth <= 900) d.scrollIntoView({behavior: 'smooth'}); },
+      onkeydown: function(e){ if (e.key === 'Enter') e.currentTarget.click(); }},
+      h('td', null, h('button', {class: 'star', type: 'button', 'aria-pressed': on ? 'true' : 'false', title: on ? 'Remove from shortlist' : 'Add to shortlist',
+        'aria-label': (on ? 'Remove ' : 'Add ') + st.name + (on ? ' from' : ' to') + ' shortlist',
+        onclick: function(e){ e.stopPropagation(); toggleShort(st.id); }, text: on ? '★' : '☆'})),
+      h('td', null, h('div', {class: 'name', text: st.name}), h('div', {class: 'dim', text: [st.sire, st.foaled].filter(Boolean).join(' · ')})),
+      h('td', {class: 'num'}, st.latest ? money(st.latest.fee) : 'PT', h('div', {class: 'dim', text: st.latest ? String(st.latest.y) : ''})),
+      h('td', {class: 'num', text: String(st.seasons.length)}),
+      h('td', {class: 'num', text: st.bidShare == null ? '' : pct(st.bidShare)}),
+      h('td', null, sparkline(st)));
+    tb.appendChild(tr);
+  });
+  var table = h('table', null, h('thead', null, h('tr', null, h('th', {'aria-label': 'Shortlist'}), th('Stallion', 'name'),
+    th('Latest fee', 'fee', true), th('Seasons', 'seasons', true), th('Auction', 'share', true), h('th', {text: 'Fee trend'}))), tb);
+  var search = h('input', {type: 'search', placeholder: 'Search name, sire, dam, number', value: state.query, 'aria-label': 'Search stallions',
+    oninput: function(e){ state.query = e.target.value; render(); var el = app.querySelector('input[type=search]'); if (el){ el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }});
+  function fbtn(key, label){ return h('button', {type: 'button', 'aria-pressed': state.filter === key ? 'true' : 'false', text: label, onclick: function(){ state.filter = key; render(); }}); }
+  return [
+    h('h2', {text: 'Stallions'}),
+    h('p', {class: 'lede', text: 'Every stallion in the workbook with its advertised fee by season and what breedings sold for at auction. Pick one to see its history. Star up to six to compare them.'}),
+    h('div', {class: 'filters'}, search,
+      h('div', {class: 'seg', role: 'group', 'aria-label': 'Filter'}, fbtn('all', 'All ' + D.stallions.length), fbtn('current', 'Has a current fee'), fbtn('three', '3+ priced seasons'), fbtn('short', 'Shortlist'))),
+    h('div', {class: 'grid cols2'},
+      h('section', {class: 'card', style: 'padding:6px 6px 2px'}, rows.length ? h('div', {class: 'tablewrap', id: 'list', style: 'max-height:78vh;overflow:auto'}, table) : h('p', {class: 'empty', text: 'No stallion matches.'})),
+      h('div', {id: 'detail'}, detail(byId[state.selected])))
+  ];
+}
+
+function viewShortlist(){
+  var picks = state.shortlist.map(function(id){ return byId[id]; });
+  var head = [h('h2', {text: 'Shortlist'}),
+    h('p', {class: 'lede', text: 'Compare up to six stallions side by side. Each keeps its colour while it stays on the list.'})];
+  if (!picks.length){
+    var seven = D.stallions.slice(0, 6);
+    return head.concat([card(null, null, h('p', {class: 'empty', text: 'Nothing on the shortlist yet. Star stallions on the Stallions tab, or start with a few.'}),
+      h('p', null, h('button', {class: 'btn', type: 'button', text: 'Start with ' + seven.map(function(x){ return x.name; }).slice(0, 3).join(', ') + ' and three more',
+        onclick: function(){ state.shortlist = seven.map(function(x){ return x.id; }); store('bvr.shortlist', state.shortlist); render(); }}), ' ',
+        h('button', {class: 'btn', type: 'button', text: 'Go to Stallions', onclick: function(){ go('stallions'); }})))]);
+  }
+  var auction = state.basis === 'auction';
+  var series = picks.map(function(st){ return {name: st.name, color: colorOf(st.id), vals: auction ? st.medBid : st.listed}; });
+  var cats = SEASONS.filter(function(yv){ return series.some(function(se){ return se.vals[yv] != null; }); });
+  if (cats.length) cats = range(cats[0], cats[cats.length - 1]);
+  var chips = h('div', {class: 'chips'}, picks.map(function(st){
+    return h('span', {class: 'chip'}, h('i', {class: 'key-dot', style: 'color:' + colorOf(st.id)}), st.name,
+      h('button', {type: 'button', 'aria-label': 'Remove ' + st.name, text: '×', onclick: function(){ toggleShort(st.id); }}));
+  }));
+  function bbtn(key, label){ return h('button', {type: 'button', 'aria-pressed': state.basis === key ? 'true' : 'false', text: label, onclick: function(){ state.basis = key; render(); }}); }
+  var hasRank = picks.some(function(st){ return rankById[st.id]; });
+  var rows = picks.map(function(st){
+    var first = st.seasons.length ? st.listed[st.seasons[0]] : null, r = rankById[st.id];
+    return [st.name, st.current ? money(st.current.fee) + ' (' + st.current.y + ')' : 'none',
+      st.latest ? money(st.latest.fee) + ' (' + st.latest.y + ')' : 'private treaty',
+      first && st.latest && st.seasons.length > 1 ? (st.latest.fee === first ? 'No change since ' : (st.latest.fee > first ? '+' : '') + Math.round((st.latest.fee / first - 1) * 100) + '% since ') + st.seasons[0] : '',
+      st.bidShare == null ? '' : pct(st.bidShare), st.seasons.length,
+      r ? (r.effect > 0 ? '+' : '') + num(r.effect) + ' ± ' + num(1.28 * r.se) : 'needs foal records',
+      r ? num(r.value, 2) : ''];
+  });
+  var cmp = tableView(['Stallion', 'Current fee', 'Latest advertised', 'Fee change', {t: 'Auction share', num: true}, {t: 'Seasons', num: true}, 'Foal quality', {t: 'Per $1,000', num: true}], rows);
+  cmp.open = true; cmp.querySelector('summary').textContent = 'Side by side';
+  return head.concat([
+    h('div', {class: 'filters'}, h('div', {class: 'seg', role: 'group', 'aria-label': 'Price shown'}, bbtn('listed', 'Advertised fee'), bbtn('auction', 'Auction price'))),
+    chips,
+    card(auction ? 'What a breeding sold for at auction' : 'Advertised fee by season',
+      auction ? 'Median winning bid per season at stallion-service auctions.' : 'The newest advertised figure for each breeding season.',
+      legend(series.map(function(se){ return {label: se.name, color: se.color}; })),
+      cats.length ? multiLine({cats: cats, series: series, fmt: money, endLabels: W_WIDE(), label: 'Shortlist prices by season', title: function(c){ return c + ' season'; }})
+                  : h('p', {class: 'empty', text: 'None of these stallions has a figure of this kind.'}),
+      cmp,
+      hasRank ? null : h('p', {class: 'note', text: 'Foal quality and score per $1,000 fill in once foal records are in the workbook.'}))
+  ]);
+}
+function W_WIDE(){ return window.innerWidth > 700; }
+
+function viewMarket(){
+  var pairs = [];
+  D.stallions.forEach(function(st){ st.bids.forEach(function(b){ if (st.listed[b.y]) pairs.push({st: st, y: b.y, fee: st.listed[b.y], bid: b.fee}); }); });
+  var cats = SEASONS.filter(function(yv){ return D.stallions.some(function(st){ return st.listed[yv] != null; }); });
+  var med = cats.map(function(c){
+    var v = []; D.stallions.forEach(function(st){ if (st.listed[c] != null) v.push(st.listed[c]); });
+    return [c, v.length, money(Math.min.apply(null, v)), money(median(v)), money(Math.max.apply(null, v))];
+  });
+  var share = median(pairs.map(function(p){ return p.bid / p.fee; }));
+  var under = pairs.filter(function(p){ return p.bid < p.fee; }).length;
+  return [
+    h('h2', {text: 'Market'}),
+    h('p', {class: 'lede', text: 'The whole pool at once. Fees differ a lot between stallions and change little from year to year. Breedings bought at auction usually cost well under the advertised fee.'}),
+    h('div', {class: 'grid cols-even'},
+      card('Advertised fees by season', 'One dot per stallion. The bar is that season’s median. Click a dot to open the stallion.',
+        legend([{label: 'A stallion', color: cv('--s1'), kind: 'dot'}, {label: 'On your shortlist', color: cv('--s2'), kind: 'dot'}, {label: 'Median', kind: 'tick'}]),
+        stripChart(),
+        tableView(['Season', {t: 'Stallions', num: true}, {t: 'Lowest', num: true}, {t: 'Median', num: true}, {t: 'Highest', num: true}], med)),
+      card('Auction bid against advertised fee', pairs.length + ' breedings sold at auction. ' + under + ' went for less than the advertised fee; the median was ' + pct(share) + ' of it.',
+        scatterChart(pairs),
+        tableView(['Stallion', 'Season', {t: 'Advertised', num: true}, {t: 'Winning bid', num: true}, {t: 'Share', num: true}],
+          pairs.slice().sort(function(a, b){ return a.bid / a.fee - b.bid / b.fee; }).map(function(p){ return [p.st.name, p.y, money(p.fee), money(p.bid), pct(p.bid / p.fee)]; }))))
+  ];
+}
+
+var GROUPS = [['Top value picks', '--s1'], ['Cheap but average', '--s2'], ['Random, similar fee (median)', '--s3']];
+function viewBacktest(){
+  var sets = [{key: 'real', title: 'Your data', res: D.real}].concat(D.synthetic.map(function(x){ return {key: x.key, title: 'Made-up: ' + x.title, res: x}; }));
+  var cur = sets.filter(function(x){ return x.key === state.dataset; })[0] || sets[0], R = cur.res, synth = cur.key !== 'real';
+  var sel = h('select', {'aria-label': 'Dataset', onchange: function(e){ state.dataset = e.target.value; render(); }},
+    sets.map(function(x){ return h('option', {value: x.key, selected: x.key === cur.key, text: x.title}); }));
+  var out = [h('h2', {text: 'Backtest'}),
+    h('p', {class: 'lede', text: 'Would ranking stallions by foal quality per dollar have worked? For each past year the ranking uses only what was known then, and is judged on the foals born two and three years later.'}),
+    h('div', {class: 'filters'}, h('label', {for: 'ds', text: 'Dataset'}), sel)];
+  sel.id = 'ds';
+  if (synth) out.push(h('div', {class: 'banner'}, h('b', {text: 'Made-up horses. '}), R.blurb + ' ' + R.counts.stallions + ' stallions, ' + R.counts.foals.toLocaleString('en-US') + ' foals.'));
+  var usable = R.windows.filter(function(w){ return w.groups['Top value picks']; });
+  if (!usable.length){
+    out.push(card('No verdict yet', null,
+      h('p', {class: 'status'}, statusIcon('todo'), 'Not enough data'),
+      h('p', {class: 'lede', style: 'margin-top:8px', text: 'The workbook has ' + R.counts.stallions + ' stallions with fees and ' + R.counts.foals + ' foals. The backtest needs foal show records for at least three time windows. Choose one of the made-up datasets above to see what the result will look like.'})));
+    return out;
+  }
+  var v = R.verdict, kind = v.status === 'PASS' ? 'good' : v.status === 'FAIL' ? 'bad' : 'todo';
+  var key = R.primary === 'adj' || R.primary === 'fwd_adj' ? 'adj' : 'score';
+  var cats = usable.map(function(w){ return w.asof; });
+  var series = GROUPS.map(function(g){
+    var vals = {}; usable.forEach(function(w){ if (w.groups[g[0]]) vals[w.asof] = w.groups[g[0]][key]; });
+    return {name: g[0].replace(' (median)', ''), color: cv(g[1]), vals: vals};
+  });
+  out.push(h('div', {class: 'tiles'},
+    h('div', {class: 'tile'}, h('div', {class: 'label', text: 'Verdict'}), h('div', {class: 'value status'}, statusIcon(kind), v.status === 'PASS' ? 'Pass' : v.status === 'FAIL' ? 'Fail' : 'No verdict'),
+      h('div', {class: 'foot', text: usable.length + ' time windows'})),
+    tile('Against same-price picks', v.pct == null ? 'n/a' : num(v.pct, 0) + 'th', 'percentile on average; the bar is ' + num(v.bar, 0)),
+    tile('Beat cheap-but-average', v.wins_cheap + ' of ' + usable.length, 'windows'),
+    tile('Dam adjustment', R.model.mare_active ? 'On' : 'Off', R.model.mare_active ? 'each dam point is worth ' + num(R.model.slope, 2) : 'too little dam data')));
+  if (cur.key === 'planted' && v.status === 'FAIL')
+    out.push(h('div', {class: 'banner'}, h('b', {text: 'A near miss, and a useful one. '}),
+      'The effect in this made-up world is real, yet this run fell just short of the bar. With this much data the test misses a real effect about 1 time in 5. The Sample size tab shows why.'));
+  out.push(h('div', {class: 'grid cols-even'},
+    card('How the picks’ foals turned out', 'Average later foal score' + (key === 'adj' ? ', adjusted for the dam' : '') + '. 50 is a typical foal.',
+      legend(series.map(function(se){ return {label: se.name, color: se.color}; })),
+      multiLine({cats: cats, series: series, fmt: function(x){ return num(x); }, zero: false, endLabels: W_WIDE(), height: 280, label: 'Later foal score by group and as-of year',
+        title: function(c){ var w = usable.filter(function(q){ return q.asof === c; })[0]; return 'Ranked in ' + c + ', foals born ' + w.crops; }}),
+      tableView(['Ranked in', 'Foals born', {t: 'Pool', num: true}, {t: 'Top picks', num: true}, {t: 'Cheap but average', num: true}, {t: 'Random, similar fee', num: true}, {t: 'Picks beat', num: true}],
+        usable.map(function(w){ return [w.asof, w.crops, w.pool, num(w.groups['Top value picks'][key]), num(w.groups['Cheap but average'][key]),
+          num(w.groups['Random, similar fee (median)'][key]), w.pct == null ? '' : num(w.pct, 0) + '%']; }))),
+    card('What the verdict means', null,
+      h('p', {class: 'lede', text: v.why}),
+      h('ol', {class: 'steps'},
+        h('li', null, h('b', {text: 'Top value picks'}), ' are the top quarter of stallions by estimated foal quality per $1,000 of stud fee.'),
+        h('li', null, h('b', {text: 'Cheap but average'}), ' are stallions at or below the median fee with a middling estimate.'),
+        h('li', null, h('b', {text: 'Random, similar fee'}), ' is the median of 2,000 random picks at about the same price as each top pick.'),
+        h('li', null, 'A pass needs the picks to beat cheap-but-average in more than half the windows and to stand high enough against same-price picks that luck would do it about 1 time in 20.')))));
+
+  /* ranking with a pairing slider */
+  var top = R.ranking.slice(0, 15);
+  if (top.length){
+    var base = R.model.grand_mean + R.model.slope * (state.mare - R.model.mare_mean);
+    var slider = h('input', {type: 'range', min: 0, max: 100, step: 1, value: state.mare, id: 'mare', 'aria-label': 'Quality of your mare, 0 to 100',
+      oninput: function(e){ state.mare = Number(e.target.value); render(); var el = document.getElementById('mare'); if (el) el.focus(); }});
+    out.push(h('div', {style: 'height:16px'}));
+    out.push(card('Try a pairing', 'Expected foal score for each of today’s top ' + top.length + ' stallions by value, bred to a mare of the quality you set. The line is the likely range.',
+      h('div', {class: 'filters'}, h('label', {for: 'mare', text: 'Your mare’s quality'}), slider, h('b', {text: String(state.mare)}),
+        h('span', {class: 'dim', text: '50 is a typical mare. She shifts every stallion by the same amount, so she moves the level, not the order.'})),
+      intervalChart(top, base, 'Expected foal score by stallion'),
+      tableView(['Rank', 'Stallion', {t: 'Fee', num: true}, {t: 'Foals', num: true}, {t: 'Expected score', num: true}, {t: 'Low', num: true}, {t: 'High', num: true}, {t: 'Per $1,000', num: true}],
+        R.ranking.map(function(r){ return [r.rank, r.name, money(r.fee), r.foals, num(base + r.effect), num(base + r.effect - 1.28 * r.se), num(base + r.effect + 1.28 * r.se), num(r.value, 2)]; }),
+        'Show all ' + R.ranking.length + ' ranked stallions')));
+  }
+  var withTruth = R.ranking.filter(function(r){ return r.truth != null; });
+  if (synth && withTruth.some(function(r){ return r.truth !== 0; })){
+    out.push(h('div', {style: 'height:16px'}));
+    out.push(card('Does the estimate find the truth?', 'Each dot is a made-up stallion. Dots rising from lower left to upper right mean the method recovered the effect that was planted. Correlation across all stallions: ' + num(R.model.truth_corr, 2) + '.',
+      truthChart(withTruth),
+      tableView(['Stallion', {t: 'Planted effect', num: true}, {t: 'Estimated effect', num: true}, {t: 'Foals', num: true}],
+        withTruth.map(function(r){ return [r.name, num(r.truth, 2), num(r.effect), r.foals]; }))));
+  }
+  return out;
+}
+
+function viewSample(){
+  var P = D.power;
+  if (!P) return [h('h2', {text: 'Sample size'}), h('p', {class: 'lede', text: 'No simulation results in this build.'})];
+  function shade(v){
+    var t = v / 100, mix = Math.round(t * 100);
+    return 'background:color-mix(in srgb, var(--seq-hi) ' + mix + '%, var(--seq-lo));color:' + (t > 0.45 ? '#fff' : '#0b0b0b');
+  }
+  var t = h('table', {class: 'heat'}), hr = h('tr', null, h('th'));
+  P.foals.forEach(function(n){ hr.appendChild(h('th', {text: n + ' foals'})); });
+  t.appendChild(h('thead', null, hr));
+  var tb = h('tbody');
+  P.planted.forEach(function(row){
+    var tr = h('tr', null, h('th', {class: 'rowh', text: 'Sire ' + row.share + '%'}));
+    row.pass.forEach(function(v){ tr.appendChild(h('td', {class: 'cell', style: shade(v), text: v + '%'})); });
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+  return [
+    h('h2', {text: 'How much data the backtest needs'}),
+    h('p', {class: 'lede', text: 'Before trusting a verdict, ask how often the test gets it right. These figures come from running the whole backtest on 100 made-up datasets per cell, with about 40 stallions each.'}),
+    h('div', {class: 'grid cols-even'},
+      card('When underpriced stallions really exist', 'How often the backtest passes. Columns are scored foals per stallion. Rows are the share of foal quality that comes from the sire. Darker is better.',
+        h('div', {class: 'tablewrap'}, t),
+        h('p', {class: 'note', text: 'A trait with heritability near 0.3 puts the sire at about 8%. Show points are a noisy stand-in, so the real figure is probably at or below that. Aim for roughly 100 scored foals per stallion.'})),
+      card('When there is nothing to find', 'How often the backtest passes anyway. Lower is better.',
+        (function(){ var tv = tableView(['Made-up world'].concat(P.foals.slice(1).map(function(n){ return {t: n + ' foals', num: true}; })),
+          P.nulls.map(function(r){ return [r.world].concat(r.pass.slice(1).map(function(v){ return v + '%'; })); })); tv.open = true; tv.querySelector('summary').textContent = 'False passes'; return tv; })(),
+        h('p', {class: 'note', text: 'Better mares going to pricier stallions is the real threat. The dam adjustment removes only part of it, and more data makes the false signal easier to detect, not harder.'})))
+  ];
+}
+
+function viewAbout(){
+  var links = D.repo ? h('p', {class: 'note'}, 'Full write-up: ', h('a', {href: D.repo + '/blob/main/FINDINGS.md', text: 'findings and decision note'}), ' · ',
+    h('a', {href: D.repo + '#readme', text: 'how to run it'}), ' · ', h('a', {href: D.repo, text: 'source'})) : null;
+  return [
+    h('h2', {text: 'About this page'}),
+    h('p', {class: 'lede', text: 'A personal research tool. It asks whether some halter stallions are underpriced for the foals they sire, and tests the idea on past data before trusting it.'}),
+    h('div', {class: 'grid cols-even'},
+      card('How the ranking works', null, h('ol', {class: 'steps'},
+        h('li', null, h('b', {text: 'Link. '}), 'Each foal is matched to its sire and dam by registration number.'),
+        h('li', null, h('b', {text: 'Score. '}), 'Halter points become a 0 to 100 percentile within the foal’s own crop year. Unshown foals count as zero.'),
+        h('li', null, h('b', {text: 'Effect. '}), 'How far a stallion’s foals sit above what their crop and their dams predict, shrunk toward zero when he has few foals.'),
+        h('li', null, h('b', {text: 'Value. '}), 'Effect divided by stud fee, per $1,000. A below-average stallion is never good value.'),
+        h('li', null, h('b', {text: 'Backtest. '}), 'Rank with data through one year, pay the next season’s fee, judge the foals born two and three years on.')), links),
+      card('Where the prices come from', null,
+        h('p', {class: 'lede', text: 'Advertised fees and winning bids come from public stallion-service auction pages, archived copies of the QStallions directory and each stallion’s own directory page. Every figure links to its source in the fee table on the Stallions tab.'}),
+        h('p', {class: 'note', text: 'Sources disagree on whether a fee includes the chute or booking fee. Registration numbers on auction pages are typed by consignors, so check them before ordering records. The stallions here are those offered at a futurity auction in at least three seasons, plus seven from the directory; they are not a random sample.'}),
+        h('p', {class: 'note', text: 'Foal show records are not public per foal. They come from AQHA through a member login and are not in this page yet.'})))
+  ];
+}
+
+/* ---------- render ---------- */
+var VIEWS = {overview: viewOverview, stallions: viewStallions, shortlist: viewShortlist, market: viewMarket, backtest: viewBacktest, sample: viewSample, about: viewAbout};
+function render(){
+  tip.hide();
+  var nav = document.getElementById('tabs');
+  nav.replaceChildren();
+  TABS.forEach(function(t){
+    var label = t[1] + (t[0] === 'shortlist' && state.shortlist.length ? ' (' + state.shortlist.length + ')' : '');
+    nav.appendChild(h('button', {type: 'button', role: 'tab', 'aria-selected': state.tab === t[0] ? 'true' : 'false', text: label, onclick: function(){ go(t[0]); }}));
+  });
+  var list = document.getElementById('list'), keep = list ? list.scrollTop : 0;
+  app.replaceChildren();
+  add(app, VIEWS[state.tab]());
+  list = document.getElementById('list');
+  if (list) list.scrollTop = keep;
+  drawAll();
+}
+var foot = document.getElementById('foot');
+foot.textContent = 'Built ' + D.generated + ' from ' + D.source + '. ' + D.stallions.length + ' stallions. Personal research, not advice. ';
+if (D.repo) foot.appendChild(h('a', {href: D.repo, text: 'Source on GitHub'}));
+
+var themeBtn = document.getElementById('theme');
+function isDark(){
+  var t = document.documentElement.getAttribute('data-theme');
+  return t ? t === 'dark' : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+function paintTheme(){ themeBtn.textContent = isDark() ? 'Light' : 'Dark'; }
+var saved = store('bvr.theme'); if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+themeBtn.addEventListener('click', function(){ var next = isDark() ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', next); store('bvr.theme', next); paintTheme(); });
+paintTheme();
+if (window.matchMedia) try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintTheme); } catch (e) {}
+
+var fromHash = (location.hash || '').slice(1);
+if (VIEWS[fromHash]) state.tab = fromHash;
+try { var want = new URLSearchParams(location.search).get('s'); if (want && byId[want]){ state.selected = want; if (!VIEWS[fromHash]) state.tab = 'stallions'; } } catch (e) {}
+window.addEventListener('hashchange', function(){ var t = location.hash.slice(1); if (VIEWS[t] && t !== state.tab){ state.tab = t; render(); } });
+var rz; window.addEventListener('resize', function(){ clearTimeout(rz); rz = setTimeout(drawAll, 120); });
+render();
+})();
+</script>
+</body>
+</html>

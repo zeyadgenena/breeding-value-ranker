@@ -18,6 +18,7 @@ NOTE_FILL = PatternFill("solid", fgColor="FFF2CC")
 EXAMPLE_NOTE = "Example row showing the format. The script ignores it. Delete it or leave it."
 
 INPUT_TABS = ("Stallions", "Snapshots", "Mares", "Foals", "Outcomes")
+EXTRA_TABS = ("Sire stats",)   # stallion-level results copied from public leaderboards
 RESULT_TABS = ("Results summary", "Ranking", "Backtest", "Backtest picks",
                "Foal scores", "Link review")
 
@@ -79,6 +80,19 @@ COLUMNS = {
         ("coat_color", 12, "Coat color."),
         ("notes", 60, "Anything worth remembering."),
     ],
+    "Sire stats": [
+        ("stallion_id", 12, "Must match Stallions (id, registration number or name)."),
+        ("as_of_date", 13, "Date the leaderboard was read (YYYY-MM-DD)."),
+        ("period", 10, "The year the figures cover, or all-time."),
+        ("rank", 7, "The stallion's place on that list."),
+        ("money_earners", 13, "Number of his foals that earned halter money in that period."),
+        ("progeny_earnings", 15, "Total halter money his foals earned in that period, US dollars."),
+        ("list_size", 9, "How many stallions the list shows. A stallion missing from it earned less "
+                         "than list_cutoff, or nothing."),
+        ("list_cutoff", 11, "Earnings of the last stallion on that list, US dollars."),
+        ("source", 46, "URL or publication."),
+        ("notes", 52, "Anything worth remembering."),
+    ],
     "Outcomes": [
         ("foal_id", 12, "The foal's id or registration number."),
         ("year", 8, "Year the results were earned. Leave blank if the row is a lifetime total."),
@@ -133,8 +147,10 @@ SOURCES = [
      "Also dams, broodmare sires and individual earners.",
      "Free.",
      "Nine small tables. Copy by hand.",
-     "Lists exist for all-time and for each year 2018 to 2026, which gives nine dated stallion-level "
-     "snapshots. Top 50 only, so stallions that did poorly are invisible."),
+     "Lists exist for all-time and for each year 2018 to 2026. Read on 2026-11-15 for all-time and "
+     "2022 to 2026; the rows for stallions in this workbook are in the Sire stats tab. Top 50 only, "
+     "so a stallion missing from a list earned less than its cutoff, or nothing. These are totals: "
+     "a stallion with more foals has more chances to be on the list."),
     ("AQHA Records (aqha.com, member login)",
      "Record 70 Get of Sire Totals, All Foals: every registered foal with its race and show summary. "
      "Record 80 Produce of Dam. Record 40 Open Show Detail by class and year.",
@@ -287,7 +303,7 @@ def build_workbook(seed_real_rows=True, banner=None):
             ln for ln in lines if "seven real stallions" not in ln[0]]
     _text_sheet(ws, lines)
 
-    for tab in INPUT_TABS:
+    for tab in INPUT_TABS + EXTRA_TABS:
         ws = wb.create_sheet(tab)
         cols = COLUMNS[tab]
         _header(ws, [c[0] for c in cols], [c[1] for c in cols], INPUT_FILL)
@@ -328,7 +344,7 @@ def build_workbook(seed_real_rows=True, banner=None):
 
     ws = wb.create_sheet("Dictionary")
     _header(ws, ["tab", "column", "meaning"], [14, 26, 110], INPUT_FILL)
-    for tab in INPUT_TABS:
+    for tab in INPUT_TABS + EXTRA_TABS:
         for name, _, meaning in COLUMNS[tab]:
             r = _append(ws, [tab, name, meaning])
             ws.cell(row=r, column=3).alignment = Alignment(wrap_text=True, vertical="top")
@@ -485,6 +501,24 @@ def load(path):
                           "date": seen, "note": _txt(r.get("notes")),
                           "chute": _txt(r.get("chute_or_booking_fee"))})
 
+    sire_stats = []
+    for r in _rows(wb, "Sire stats"):
+        ref = _txt(r.get("stallion_id"))
+        sid = ref if ref in stallions else by_reg.get(_reg(ref)) or by_name.get(_name(ref))
+        period = _txt(r.get("period"))
+        if sid is None or period is None:
+            flag("Sire stats", r["_row"], ref, None,
+                 "stallion not found in Stallions" if sid is None else "no period", "row ignored")
+            continue
+        if isinstance(r.get("period"), float) and r["period"].is_integer():
+            period = str(int(r["period"]))
+        seen = r.get("as_of_date")
+        seen = seen.strftime("%Y-%m-%d") if isinstance(seen, (dt.date, dt.datetime)) else (_txt(seen) or "")
+        sire_stats.append({"stallion_id": sid, "period": period.lower(), "rank": _int(r.get("rank")),
+                           "earners": _int(r.get("money_earners")), "earnings": _num(r.get("progeny_earnings")),
+                           "list_size": _int(r.get("list_size")), "cutoff": _num(r.get("list_cutoff")),
+                           "date": seen, "source": _txt(r.get("source"))})
+
     mares, mare_by_reg, mare_by_name = {}, {}, {}
     for r in _rows(wb, "Mares"):
         reg, name = _reg(r.get("reg_number")), _txt(r.get("name"))
@@ -599,7 +633,7 @@ def load(path):
             "The two scales are not comparable; use one kind." % (kinds["points"], kinds["placing"]))
     wb.close()
     return (Dataset(stallions=stallions, snapshots=snapshots, mares=mares, foals=foals,
-                    outcomes=outcomes), review, info)
+                    outcomes=outcomes, sire_stats=sire_stats), review, info)
 
 
 # --------------------------------------------------------------------------
