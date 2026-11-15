@@ -148,6 +148,37 @@ def match_data(folder):
         d["n"] += 1
         if r["year"].isdigit():
             d["years"].add(int(r["year"]))
+    # ---- what young Arabians sold for at public auction, and each stallion's own foals among them ----
+    young, own = [], {}
+    for r in sales:
+        if r.get("lot_kind", "horse") not in ("horse", "") or r.get("sold", "Y") == "N" or not r.get("price_usd"):
+            continue
+        year = int(r["sale_date"][:4]) if r["sale_date"][:4].isdigit() else None
+        born = int(r["foaled"][:4]) if r.get("foaled", "")[:4].isdigit() else None
+        if year is None or born is None or year < 2015 or year - born > 3:
+            continue
+        price = float(r["price_usd"])
+        age = year - born
+        own.setdefault(norm(r.get("sire")), []).append({"price": price, "year": year, "age": "weanling" if age <= 0 else "yearling" if age == 1 else "%d-year-old" % age})
+        if price <= 500000:                         # one $1.55 million filly is kept in her sire's list but out of the typical figures
+            young.append(price)
+    young.sort()
+    typical = st.median(young) if young else None
+    q = lambda p: young[int(p * (len(young) - 1))] if young else None
+
+    def estimate(fee):
+        if not young or not fee:
+            return None
+        return {"typical": round(typical, -2), "low": round(q(0.25), -2), "high": round(q(0.75), -2), "multiple": round(typical / fee, 2),
+                "p3": round(sum(1 for x in young if x >= 3 * fee) / len(young), 3), "p10": round(sum(1 for x in young if x >= 10 * fee) / len(young), 3), "tested": True}
+
+    def own_sales(name):
+        rows = sorted(own.get(name, []), key=lambda r: -r["price"])
+        if not rows:
+            return None
+        prices = [r["price"] for r in rows]
+        return {"n": len(rows), "median": st.median(prices), "low": min(prices), "high": max(prices), "list": rows[:6]}
+
     rank = sorted(table, key=lambda s: (-table[s]["top3"], -table[s]["score"]))
     strong = set(rank[:10])
     span = "%d to %d" % (years[0], years[-1]) if years else ""
@@ -184,7 +215,8 @@ def match_data(folder):
                     "score": round(d["top3"] + d["score"] / 1000.0, 4) if d else 0.0,
                     "stat": ("%d of %d" % (d["top3"], d["shown"])) if d else "none shown",
                     "rec": {"tier": "strong" if d and name in strong and d["top3"] > 0 else "some" if d else "none", "text": text, "active": bool(d and years and years[-1] in d["years"])},
-                    "tiles": tiles, "note": " ".join(extra) or None, "sale": None, "odds": None, "hits": None, "rank": None, "fut": None, "sold": None, "shown": None})
+                    "tiles": tiles, "note": " ".join(extra) or None, "sale": estimate(price["fee"]) if price else None, "sales": own_sales(name),
+                    "odds": None, "hits": None, "rank": None, "fut": None, "sold": None, "shown": None})
     priced = [s for s in out if s["price"]]
     with_rec = [s for s in priced if s["rec"]["tier"] != "none"]
     prices = sorted(float(r["price_usd"]) for r in sales if r.get("price_usd") and r.get("sold", "Y") != "N" and r.get("lot_kind", "horse") in ("horse", ""))
@@ -231,16 +263,43 @@ def match_data(folder):
         notes.append("We found %d public sale prices for Arabian horses, too few to estimate what a foal sells for. Their typical price was %s." % (len(prices), "${:,.0f}".format(st.median(prices))))
     notes.append("A foal's market depends on its papers. If the mare is not a registered purebred, a foal by a registered purebred stallion can usually be registered as a Half-Arabian. "
                  "Check with the Arabian Horse Association before you breed.")
+    test = None
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(folder))), "qa", "sire_sales.json")
+    if os.path.exists(path):
+        with open(path) as fh:
+            test = json.load(fh).get("Arabian")
+    best = (model or {}).get("price_best")
+    g = (model or {}).get("groups") or {}
+    pricing = None
+    sell_notes = []
+    if young:
+        dollars = lambda v: "${:,.0f}".format(round(v, -2))
+        pricing = {"simple": True, "sales": len(young), "sires": len(own), "typical": typical, "q1": q(0.25), "q3": q(0.75), "fee_range": [0, 10 ** 9],
+                   "top": young[-1], "at_least_20000": sum(1 for x in young if x >= 20000)}
+        sell_notes.append("The sale price is one figure for every stallion: the typical price of the %d Arabians aged three or under sold at public online auction, 2015 to 2022. "
+                          "Half sold between %s and %s, and %d reached $20,000." % (len(young), dollars(q(0.25)), dollars(q(0.75)), pricing["at_least_20000"]))
+        if best:
+            sell_notes.append("We tried %d versions of a price model. None could tell one stallion's foals from another's: the best explains %.0f%% of the difference between sales."
+                              % (model["price_versions"], max(0.0, 100 * best["explained"])))
+        if test:
+            sell_notes.append("We also tested whether a stallion's own foal sales predict his next one. On %d sales by %d sires they did not, so the list of what his foals sold for is history, not a forecast."
+                              % (test["sales"], test["sires"]))
+        sell_notes.append("These are mixed online auctions, not sales of halter prospects only, and the best horses usually sell privately. The cost of raising the foal is not included.")
+        sell_notes.append("Many breeding prices are what a breeding sold for at a futurity auction, which is usually below the advertised stud fee.")
+        sell_notes.append(notes[-1])               # the note on papers applies to selling above all
     how = ["We list %d Arabian stallions. %d have a price." % (len(out), len(priced)),
            "The price is the advertised stud fee where we found one. Otherwise it is what a breeding to him sold for at a futurity auction.",
            "A record counts his foals shown in whole classes at %d shows in %s, and how many finished in the top three of a class. Stallions are ranked by that count, then by their foals' average finish."
            % (len(shows), span),
            "Strong record: one of the ten best by that count. Some record: at least one foal shown.",
+           "Return if you sell is the typical public sale price of a young Arabian divided by the price of the breeding. It is the same sale price for every stallion, so the cheaper breeding gives the better return.",
            "It is a shortlist to check by hand, not a forecast."]
     return {"label": "Arabian", "sub": "Halter stallions, first version", "detail": None, "fee_chips": [1000, 2500, 5000, 7500, 10000],
             "total_chips": [10000, 25000, 50000, 100000], "stat_label": "Top three, of shown", "fee_label": "Price",
             "win_heading": "Strongest known foal record in your budget",
             "intro": "First version for Arabians: two seasons of one show circuit. Treat the ranking as a list to check by hand. The Quarter Horse side has far more data behind it.",
-            "how": how, "notes": notes, "stallions": out, "record": None, "sales": None, "pricing": None, "foal": None,
+            "how": how, "notes": notes, "sell_notes": sell_notes, "stallions": out, "record": None, "sales": None, "pricing": pricing, "foal": None,
+            "young_word": "young horse", "sale_col": "Likely sale price", "sire_test": test,
+            "sell_why": "Public sale prices for young Arabians vary widely, and nothing we tried tells one stallion's foals from another's.",
             "summary": {"stallions": len(out), "priced": len(priced), "with_record": len(with_rec), "horses_shown": len({f["horse"] for f in foals}), "sires_shown": len(table),
                         "shows": shows, "years": [years[0], years[-1]] if years else [], "sales": len(prices), "check": check}}

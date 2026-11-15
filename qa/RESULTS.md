@@ -125,6 +125,24 @@ and the dam's produce record: 276 sales by 77 sires. No single addition helped.
 The best of 794 combinations explains 13%, the same as before. The first price
 model stays.
 
+**Round 14. Should a stallion's own foal sales move his estimate?** The app now
+lists what each stallion's foals actually sold for, and sale price is the main
+ranking. The question was whether that list should also change his estimate.
+His estimate was pulled toward his own foals' prices by eight different
+amounts, each scored on auctions it had not seen (`python qa/sire_sales.py`).
+
+| Data | Sales | Sires | Best setting against ignoring his own sales |
+|---|---|---|---|
+| Quarter Horse halter stallions | 203 | 56 | no gain (between -5% and +0.5%) |
+| The same with pleasure-bred sires mixed in | 276 | 77 | +15% |
+| Arabian, aged three or under | 58 | 36 | no gain (every setting was worse) |
+
+The +15% was a trap. A few pleasure-bred sires appear on the halter lists, and
+their foals sell for more because they are a different kind of horse (typical
+$3,800 against $2,500). Among halter stallions a sire's past foal prices did
+not predict his next one. So the list is shown as history, the estimate is the
+same for every stallion, and the cheaper breeding gives the better return.
+
 ## The rule the app now uses
 
     score = what his foals won in halter last year

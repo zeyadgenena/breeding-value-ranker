@@ -7,9 +7,10 @@ first version on much thinner data.
 
 **The app:** open `docs/index.html`, or the hosted copy if this repository has
 GitHub Pages turned on. Say what you have (a mare, a stallion, or no horse yet)
-and what you can spend. It ranks every stallion in your budget, either by the
-return if you sell the foal or by the chance of a prize winner, and says why the
-first one is first. `docs/explore.html` holds the detail: every stallion's fee
+and what you can spend. It ranks every stallion in your budget by what the foal
+is likely to sell for against the price of the breeding, lists what each
+stallion's foals have actually sold for, and says why the first one is first.
+The other ranking is by the chance of a prize winner. `docs/explore.html` holds the detail: every stallion's fee
 history, the market as a whole and the backtest.
 
 **Does it work?** [qa/RESULTS.md](qa/RESULTS.md) tests the matcher against the
@@ -36,11 +37,12 @@ foal-level data has to come through your own AQHA member login.
 | `qa/futurity_results.csv` | Every horse shown in 277 futurity classes, 2024 to 2026, with sire, dam and finishing place. |
 | `qa/backtest2.py`, `qa/foal_model.py`, `qa/futurity.py`, `qa/price_model2.py` | The second round of tests: a wider backtest, the foal-by-foal model, the futurity checks, and the price model retried. |
 | `qa/arabian_model.py`, `qa/mares.py` | The Arabian checks (sale prices, whole-class results), and what producing mares have cost. |
+| `qa/sire_sales.py` | The test of whether a stallion's own foal sales should move his sale estimate. They should not. |
 | `ranker/pricing.py` | The expected sale price of a foal and the return on the stud fee. Reads the model that `qa/price_model.py` trains. |
 | `bvr.py` | The command-line script. |
 | `ranker/` | The calculations (`core.py`), Excel reading and writing (`workbook.py`), synthetic test data (`synth.py`). |
 | `synthetic/` | Three made-up datasets and their results, so you can see what the output looks like. These horses do not exist. |
-| `tests/` | 37 checks, including one that proves the backtest cannot see the future and one that proves the price model does not find effects that are not there. |
+| `tests/` | 39 checks, including one that proves the backtest cannot see the future and one that proves the price model does not find effects that are not there. |
 | `FINDINGS.md` | Findings, limitations and the decision note. |
 
 ## Setup (once)

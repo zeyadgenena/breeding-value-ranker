@@ -371,6 +371,32 @@ class SecondRound(unittest.TestCase):
         self.assertGreater(check["top_placed_again"], check["rest_placed_again"])
         self.assertEqual(check["top_share_of_top3"], 1.0)              # the four planted sires took every top three again
 
+    def test_own_foal_sales_are_listed_dearest_first(self):
+        from ranker import arabian, web
+        got = web._own_sales([{"price": 2000.0, "year": 2021, "age": "yearling"}, {"price": 9000.0, "year": 2022, "age": "weanling"}, {"price": 4000.0, "year": 2020, "age": "yearling"}])
+        self.assertEqual((got["n"], got["median"], got["high"], got["list"][0]["price"]), (3, 4000.0, 9000.0, 9000.0))
+        self.assertIsNone(web._own_sales([]))
+        m = arabian.match_data(os.path.join(self.HERE, "data", "arabian"))
+        with_sales = [s for s in m["stallions"] if s["sales"]]
+        self.assertGreater(len(with_sales), 10)
+        for s in with_sales:
+            prices = [r["price"] for r in s["sales"]["list"]]
+            self.assertEqual(prices, sorted(prices, reverse=True))
+
+    def test_a_sires_own_sales_help_only_when_they_really_do(self):
+        import random
+        import sire_sales
+        rng = random.Random(4)
+        rows = []
+        for i in range(300):
+            sire = "S%d" % (i % 15)
+            lift = 0.8 if i % 15 < 5 else 0.0                           # five sires whose foals truly sell for more
+            rows.append({"y": 8.0 + lift + rng.gauss(0, 0.4), "sire": sire, "auction": "A%d" % (i % 20), "cell": ("1", "other")})
+        self.assertGreater(sire_sales.score(rows, 3)["gain"], 0.25)     # a real sire effect is found
+        for r in rows:
+            r["y"] = 8.0 + rng.gauss(0, 0.4)
+        self.assertLess(sire_sales.score(rows, 3)["gain"], 0.02)        # and none is invented
+
     def test_mare_facts_are_counts_not_rates(self):
         import json
         with open(os.path.join(self.HERE, "qa", "mare_facts.json")) as fh:
@@ -383,7 +409,11 @@ class SecondRound(unittest.TestCase):
         m = arabian.match_data(os.path.join(self.HERE, "data", "arabian"))
         self.assertGreater(len([s for s in m["stallions"] if s["price"]]), 100)
         self.assertTrue(any("narrow" in n for n in m["notes"]))
-        self.assertIsNone(m["pricing"])                                # no sale estimates for Arabians
+        priced = [s for s in m["stallions"] if s["price"]]
+        self.assertEqual(len({s["sale"]["typical"] for s in priced}), 1)        # one sale price for every stallion: nothing told them apart
+        dear, cheap = max(priced, key=lambda s: s["price"]["fee"]), min(priced, key=lambda s: s["price"]["fee"])
+        self.assertGreater(cheap["sale"]["multiple"], dear["sale"]["multiple"])  # so the cheaper breeding gives the better return
+        self.assertTrue(any("history, not a forecast" in n for n in m["sell_notes"]))
         best = max((s for s in m["stallions"] if s["price"]), key=lambda s: s["score"])
         self.assertIn("were shown", best["rec"]["text"])
 
