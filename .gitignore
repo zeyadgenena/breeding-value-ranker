@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.claude/
+# results of a run on your own data: rebuild with `python bvr.py run`
+data/*_results.xlsx

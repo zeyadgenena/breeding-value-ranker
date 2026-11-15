@@ -1,0 +1,14 @@
+{
+  "note": "Share of 100 simulated datasets per cell in which the backtest returned PASS. From `python bvr.py power --reps 100`, run 2026-11-14.",
+  "foals": [38, 95, 237],
+  "planted": [
+    {"share": 4, "pass": [6, 42, 73]},
+    {"share": 8, "pass": [42, 78, 97]},
+    {"share": 15, "pass": [58, 93, 99]}
+  ],
+  "nulls": [
+    {"world": "Stallions do not differ at all", "pass": [null, 10, 5]},
+    {"world": "Same stallions, pricier ones get better mares (dam adjustment on)", "pass": [null, 10, 23]},
+    {"world": "Same, dam adjustment off", "pass": [null, 17, 36]}
+  ]
+}
