@@ -196,5 +196,70 @@ class Verdicts(unittest.TestCase):
         self.assertIn(bt["verdict"]["status"], ("PASS", "FAIL"))
 
 
+class Pricing(unittest.TestCase):
+    HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    def model(self):
+        from ranker.pricing import PriceModel
+        return PriceModel.load(os.path.join(self.HERE, "qa"))
+
+    def test_return_is_price_over_fee(self):
+        pm = self.model()
+        a, b = pm.expected(50000.0, 1000.0), pm.expected(50000.0, 2000.0)
+        self.assertAlmostEqual(a["typical"], b["typical"])              # the fee does not move the price
+        self.assertAlmostEqual(a["multiple"], a["typical"] / 1000.0)
+        self.assertAlmostEqual(a["multiple"], 2 * b["multiple"])        # so half the fee is twice the return
+        self.assertLess(a["low"], a["typical"])
+        self.assertLess(a["typical"], a["high"])
+        self.assertGreater(a["p3"], b["p3"])                            # 3x a small fee is easier to reach
+        self.assertGreaterEqual(a["p3"], a["p10"])
+
+    def test_no_estimate_outside_the_fees_seen_in_sales(self):
+        pm = self.model()
+        lo, hi = pm.m["fee_range_in_sales"]
+        self.assertTrue(pm.expected(0.0, lo)["tested"])
+        self.assertFalse(pm.expected(0.0, lo - 1)["tested"])
+        self.assertFalse(pm.expected(0.0, hi + 1)["tested"])
+
+    def test_scorecard_keeps_the_best_round(self):
+        s = self.model().summary()
+        kept = [r for r in s["scorecard"] if r["kept"]]
+        self.assertEqual(len(kept), 1)
+        self.assertEqual(kept[0]["explained"], max(r["explained"] for r in s["scorecard"]))
+        self.assertGreaterEqual(s["rounds"], 10)
+
+    def test_training_finds_a_real_effect_and_not_a_fake_one(self):
+        sys.path.insert(0, os.path.join(self.HERE, "qa"))
+        import math
+        import random
+        import price_model as pmod
+        rng = random.Random(7)
+        rows = []
+        for i in range(240):
+            age = str(rng.randrange(3))
+            noise = rng.gauss(0, 0.3)
+            rows.append({"age_at_sale": age, "sex": "colt", "sire": "S%d" % (i % 20), "auction": "A%d" % (i % 30),
+                         "fee": 1500.0, "win_prev": None, "win_bred": None, "year": 2022,
+                         "price": math.exp(8.0 + (0.8 if age == "0" else 0.0) + noise), "noise": noise})
+        real = pmod.cross_validate(rows, [pmod.f_age], False)
+        self.assertGreater(real["explained"], 0.4)                      # age was planted, and it is found
+        for r in rows:
+            r["price"] = math.exp(8.0 + r["noise"])
+        fake = pmod.cross_validate(rows, [pmod.f_age], False)
+        self.assertLess(fake["explained"], 0.05)                        # nothing planted, nothing claimed
+
+    def test_app_ranks_the_lower_fee_first_for_resale(self):
+        from ranker import web
+        ds, _, _ = workbook.load(os.path.join(self.HERE, "data", "breeding_data.xlsx"))
+        m = web.match_data(ds, Params())
+        priced = [s for s in m["stallions"] if s["sale"] and s["sale"]["tested"]]
+        self.assertGreater(len(priced), 20)
+        best = max(priced, key=lambda s: s["sale"]["multiple"])
+        self.assertEqual(best["price"]["fee"], min(s["price"]["fee"] for s in priced))
+        for s in priced:
+            self.assertAlmostEqual(s["sale"]["multiple"], s["sale"]["typical"] / s["price"]["fee"], delta=0.06)
+            self.assertGreater(s["sale"]["weanling"], s["sale"]["typical"])
+
+
 if __name__ == "__main__":
     unittest.main()

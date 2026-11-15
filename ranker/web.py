@@ -14,6 +14,7 @@ import os
 from . import synth, workbook
 from .core import Params, backtest, fee_at, rank_stallions, truth_correlation
 from .matcher import History, track_record
+from .pricing import PriceModel
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE = os.path.join(os.path.dirname(HERE), "web", "template.html")    # the simple matcher
@@ -87,7 +88,17 @@ def _median(xs):
 
 def _load(name):
     path = os.path.join(QA, name)
-    return json.load(open(path)) if os.path.exists(path) else None
+    if not os.path.exists(path):
+        return None
+    with open(path) as fh:
+        return json.load(fh)
+
+
+BANDS = ("$1,000 or less", "$1,001 to $1,500", "$1,501 to $2,000", "more than $2,000")
+
+
+def _band(fee):
+    return 0 if fee <= 1000 else 1 if fee <= 1500 else 2 if fee <= 2000 else 3
 
 
 def match_data(ds, p):
@@ -108,6 +119,21 @@ def match_data(ds, p):
     for r in ds.sire_stats:
         stats.setdefault(r["stallion_id"], {})[r["period"]] = r
     shown = (_load("active_foals_2026.json") or {}).get("stallions", {})
+    pm = PriceModel.load(QA)
+    sold = {}                                   # what each stallion's young foals actually fetched
+    ages = {}                                   # how many sales the model saw at each age
+    prices = []
+    by_band = {}                                # real sales, grouped by the sire's stud fee
+    sales_csv = os.path.join(QA, "price_training.csv")
+    if os.path.exists(sales_csv):
+        import csv
+        with open(sales_csv, newline="") as fh:
+            for r in csv.DictReader(fh):
+                sold.setdefault(r["sire"].upper(), []).append(float(r["price"]))
+                ages[r["age_at_sale"]] = ages.get(r["age_at_sale"], 0) + 1
+                prices.append(float(r["price"]))
+                if r["fee"]:
+                    by_band.setdefault(_band(float(r["fee"])), []).append((float(r["price"]), float(r["fee"])))
     out = []
     for sid, st in ds.stallions.items():
         rows = hist.snaps.get(sid, [])
@@ -130,12 +156,28 @@ def match_data(ds, p):
         best = min((r["rank"] for r in seen if r.get("rank")), default=None)
         lastrow = seen[-1] if seen else None
         foals = shown.get(sid)
+        sale = None
+        if pm and price:
+            won = hist.e(sid, latest) or 0.0
+            e = pm.expected(won, price["fee"])                 # sold as a yearling
+            w = pm.expected(won, price["fee"], age=0)          # sold as a weanling
+            sale = {"typical": round(e["typical"], -2), "low": round(e["low"], -2), "high": round(e["high"], -2),
+                    "multiple": _round(e["multiple"], 2), "p3": _round(e["p3"], 2), "p10": _round(e["p10"], 3),
+                    "weanling": round(w["typical"], -2), "weanling_multiple": _round(w["multiple"], 2),
+                    "tested": e["tested"]}
+            real = by_band.get(_band(price["fee"]), [])
+            if len(real) >= 5:                                 # what foals of stallions at this fee actually fetched
+                sale["real"] = {"n": len(real), "median": _median([x[0] for x in real]), "label": BANDS[_band(price["fee"])],
+                                "multiple": _round(_median([x[0] / x[1] for x in real]), 2)}
+        mine_sold = sold.get((st.get("name") or "").upper(), [])
         out.append({
             "id": sid, "name": st.get("name"), "foaled": st.get("foaling_year"), "sire": st.get("sire"),
             "dam": st.get("dam"), "dam_sire": st.get("dam_sire"), "price": price,
             "pt": bool(newest is not None and newest.get("fee") is None),
             "share": _round(_median(ratios), 2), "bids": len(ratios),
             "score": _round(hist.score(sid, latest), 0) if latest else 0,
+            "sale": sale,
+            "sold": {"n": len(mine_sold), "median": _median(mine_sold)} if len(mine_sold) >= 3 else None,
             "rec": {"tier": "strong" if best is not None and best <= 10 else "some" if seen else "none",
                     "y": int(lastrow["period"]) if lastrow else None, "e": lastrow["earnings"] if lastrow else 0,
                     "n": lastrow["earners"] if lastrow else 0,
@@ -150,7 +192,10 @@ def match_data(ds, p):
             for row in record["by_budget"]:
                 row.pop("seasons", None)
     return {"years": recent, "latest": latest, "read_on": dates[-1] if dates else "", "stallions": out,
-            "record": record, "sales": _load("sales_summary.json")}
+            "record": record, "sales": _load("sales_summary.json"), "pricing": dict(pm.summary(), weanlings=ages.get("0", 0), yearlings=ages.get("1", 0),
+                            two_year_olds=ages.get("2", 0), top=max(prices, default=0),
+                            at_least_10000=sum(1 for x in prices if x >= 10000),
+                            at_least_20000=sum(1 for x in prices if x >= 20000)) if pm else None}
 
 
 def build_data(workbook_path, params=None, dates=None):

@@ -6,11 +6,14 @@ worked using only what was known at each past date.
 
 **The app:** open `docs/index.html`, or the hosted copy if this repository has
 GitHub Pages turned on. Say what you have (a mare, a stallion, or no horse yet)
-and what you can spend, and it gives one best match. `docs/explore.html` holds
-the detail: every stallion's fee history, the market as a whole and the backtest.
+and what you can spend. It ranks every stallion in your budget, either by the
+return if you sell the foal or by the chance of a prize winner, and says why the
+first one is first. `docs/explore.html` holds the detail: every stallion's fee
+history, the market as a whole and the backtest.
 
 **Does it work?** [qa/RESULTS.md](qa/RESULTS.md) tests the matcher against the
-2019 to 2025 seasons.
+2019 to 2025 seasons, and shows the ten versions of the sale-price model that
+were trained on 240 public sales.
 
 Read [FINDINGS.md](FINDINGS.md) first. The short version: the tooling is built
 and tested, but the backtest has not been run on real horses yet, because the
@@ -26,10 +29,11 @@ foal-level data has to come through your own AQHA member login.
 | `web/` | The two page templates and the stored simulation results. Edit these, not the files in `docs/`. |
 | `qa/` | The test of the matcher against past seasons: scripts, the data they use, and [RESULTS.md](qa/RESULTS.md). |
 | `ranker/matcher.py` | The matcher's ranking rule: last year's foal winnings times their trend. |
+| `ranker/pricing.py` | The expected sale price of a foal and the return on the stud fee. Reads the model that `qa/price_model.py` trains. |
 | `bvr.py` | The command-line script. |
 | `ranker/` | The calculations (`core.py`), Excel reading and writing (`workbook.py`), synthetic test data (`synth.py`). |
 | `synthetic/` | Three made-up datasets and their results, so you can see what the output looks like. These horses do not exist. |
-| `tests/` | 21 checks, including one that proves the backtest cannot see the future. |
+| `tests/` | 26 checks, including one that proves the backtest cannot see the future and one that proves the price model does not find effects that are not there. |
 | `FINDINGS.md` | Findings, limitations and the decision note. |
 
 ## Setup (once)
@@ -72,6 +76,10 @@ After changing the workbook, re-run the matcher's test and rebuild the pages:
 
 ```bash
 .venv/bin/python qa/backtest.py --write
+```
+
+```bash
+.venv/bin/python qa/price_model.py --write
 ```
 
 ```bash

@@ -51,7 +51,9 @@ class History:
         self.top = {}          # (stallion, crop, year) -> (top-50 foals, their winnings)
         if top_earners_path and os.path.exists(top_earners_path):
             by_name = {s["name"].upper(): sid for sid, s in ds.stallions.items()}
-            for year, v in json.load(open(top_earners_path))["years"].items():
+            with open(top_earners_path) as fh:
+                years = json.load(fh)["years"]
+            for year, v in years.items():
                 for item in v["rows"].split(";"):
                     name, crop, n, e = item.split("|")
                     if name in by_name:
