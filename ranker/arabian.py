@@ -206,6 +206,10 @@ def match_data(folder):
                          100 * check["top_placed_again"], 100 * check["rest_placed_again"]))
     else:
         notes.append("It has not been tested against past seasons: two seasons is not enough history.")
+    fam = (model or {}).get("family")
+    if fam and fam.get("dam_link") is not None:
+        notes.append("The mare shows up more than the stallion here too. Two different foals out of the same mare finished alike (a link of %.2f on %d pairs, where 0 is no relation and 1 is identical). "
+                     "Two foals by the same sire did so less (%.2f). A horse's own finish one year tracked the next (%.2f)." % (fam["dam_link"], fam["dam_pairs"], fam["sire_link"], fam["same_horse_link"]))
     notes.append("Many prices are what a breeding sold for at a futurity auction. Those usually sell below the advertised stud fee. Opening bids are left out.")
     paid = [(r["placing"].strip().lower(), float(r["prize_usd"]), r["year"]) for r in barn if r.get("prize_usd")]
     champ = [p[1] for p in paid if p[0] in ("champion", "1")]

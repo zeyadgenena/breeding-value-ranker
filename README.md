@@ -35,11 +35,12 @@ foal-level data has to come through your own AQHA member login.
 | `qa/leaders/` | Every public QData halter leaderboard, 2017 to 2026: sires, top-50 earners with dam and dam's sire, dams, broodmare sires. |
 | `qa/futurity_results.csv` | Every horse shown in 277 futurity classes, 2024 to 2026, with sire, dam and finishing place. |
 | `qa/backtest2.py`, `qa/foal_model.py`, `qa/futurity.py`, `qa/price_model2.py` | The second round of tests: a wider backtest, the foal-by-foal model, the futurity checks, and the price model retried. |
+| `qa/arabian_model.py`, `qa/mares.py` | The Arabian checks (sale prices, whole-class results), and what producing mares have cost. |
 | `ranker/pricing.py` | The expected sale price of a foal and the return on the stud fee. Reads the model that `qa/price_model.py` trains. |
 | `bvr.py` | The command-line script. |
 | `ranker/` | The calculations (`core.py`), Excel reading and writing (`workbook.py`), synthetic test data (`synth.py`). |
 | `synthetic/` | Three made-up datasets and their results, so you can see what the output looks like. These horses do not exist. |
-| `tests/` | 34 checks, including one that proves the backtest cannot see the future and one that proves the price model does not find effects that are not there. |
+| `tests/` | 37 checks, including one that proves the backtest cannot see the future and one that proves the price model does not find effects that are not there. |
 | `FINDINGS.md` | Findings, limitations and the decision note. |
 
 ## Setup (once)

@@ -357,6 +357,27 @@ class SecondRound(unittest.TestCase):
         self.assertEqual((table["OTHER SIRE"]["shown"], table["OTHER SIRE"]["top3"]), (7, 0))
         self.assertGreater(table["GOOD SIRE"]["avg"], table["OTHER SIRE"]["avg"])
 
+    def test_arabian_season_check_only_counts_new_foals(self):
+        from ranker import arabian
+        foals = []
+        for y in (2024, 2025):
+            for i in range(40):
+                sire = "S%d" % (i % 14)
+                foals.append({"horse": "H%d_%d" % (y, i), "year": y, "sire": sire, "dam": "", "pct": 90.0 if i % 14 < 4 else 30.0,
+                              "top3": 1 if i % 14 < 4 else 0, "medal": 0, "starts": 1})
+        foals.append(dict(foals[0], year=2025))                        # a 2024 horse shown again: not a new foal
+        check = arabian.carry_over(foals)
+        self.assertEqual(check["pairs"][0]["new_foals"], 40)
+        self.assertGreater(check["top_placed_again"], check["rest_placed_again"])
+        self.assertEqual(check["top_share_of_top3"], 1.0)              # the four planted sires took every top three again
+
+    def test_mare_facts_are_counts_not_rates(self):
+        import json
+        with open(os.path.join(self.HERE, "qa", "mare_facts.json")) as fh:
+            f = json.load(fh)
+        self.assertLessEqual(f["already_producers"]["n"] + f["became_producers"]["n"], f["mares_sold"])
+        self.assertLessEqual(f["already_producers"]["low"], f["already_producers"]["high"])
+
     def test_arabian_page_says_how_narrow_it_is(self):
         from ranker import arabian
         m = arabian.match_data(os.path.join(self.HERE, "data", "arabian"))

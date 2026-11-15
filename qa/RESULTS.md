@@ -251,7 +251,7 @@ Added because the horses this tool is now for are Arabian in type. Data is in
 | Prices | An advertised fee, or what a breeding sold for at a futurity auction. Opening bids are left out. |
 | Whole-class results | 379 horses by 145 sires, shown at 8 shows, 2024 to 2026. Every horse in the class with its place. |
 | A barn's list of wins | 403 placings, 2016 to 2025. One-sided, so a footnote only. |
-| Sale prices | 62 sold horses, typical price $5,400 |
+| Sale prices | 153 sold horses, 2010 to 2022 |
 
 How it ranks: by how many of a stallion's foals finished in the top three of a
 class, then by their average finish. Re-run the checks with
@@ -259,12 +259,18 @@ class, then by their average finish. Re-run the checks with
 
 - **One check so far.** The top third of sires by top-three foals in 2025 (34
   sires) went on to sire 56% of the top-three finishers among new foals in 2026.
-  35% of them had one, against 4% of the other sires.
+  35% of them had one, against 4% of the other sires. With the thin 2024 season
+  added (one show) the pooled figures are 34%, and 42% against 16%. A third
+  search for earlier seasons on the allowed sources found none.
+- **The mare shows up more than the stallion here too.** Two different foals
+  out of the same mare finished alike (link 0.33 on 74 pairs). Two foals by the
+  same sire did so less (0.14). The same horse a year later: 0.57.
+- **Sale prices.** 113 Arabians sold at public online auction in 2015 to 2022
+  for a typical $4,700 (middle half $2,400 to $10,100). 16 reached $20,000.
+  Thirty-two versions of a price model were tried. The best explains 11%.
 - **It is narrow.** Two seasons of the international-style circuit in North
   America (GCAT Americas and the Emirates Global Cup). The U.S. Nationals,
   Canadian Nationals and regional shows are not in it.
-- **No price model.** 62 sales is too few. Thirty-two versions were tried and
-  none beat a single typical price.
 - **Prize money is small.** The U.S. Nationals futurity paid its champion $8,700
   to $11,500 in 2022 to 2025. For Arabians the money is in the sale.
 - **Sources set aside because their rules forbid automated collection:** the
