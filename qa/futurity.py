@@ -195,7 +195,20 @@ def main():
     print("\nSires by futurity score (all years, k=%.1f). starts = foal-years shown." % k)
     for s, x in top[:14]:
         print("  %-26s score %4.1f   starts %3d   top three %3d (%2.0f%%)   wins %2d   fee %s" % (s, x["score"], x["starts"], x["top3"], 100.0 * x["top3"] / x["starts"], x["wins"], v.fee(s, v.years[-1], stale=4)))
+    # ---- what a futurity finish is worth: matched to the year's top-50 money earners ----
+    from v2data import norm
+    earn = {(norm(r["horse"]), int(r["period"])): float(r["earnings"]) for r in v.top50}      # one spelling per horse, as everywhere else
+    worth = {}
+    young = [f for f in F if f["age_class"] in ("weanling", "yearling")]
+    for label, test in (("won an open class", lambda f: int(f["wins"] or 0) > 0), ("top three, no win", lambda f: int(f["top3"] or 0) > 0 and int(f["wins"] or 0) == 0),
+                        ("shown, outside the top three", lambda f: int(f["top3"] or 0) == 0)):
+        g = [f for f in young if test(f)]
+        hit = [earn[(f["horse"], f["year"])] for f in g if (f["horse"], f["year"]) in earn]
+        worth[label] = {"foals": len(g), "top50_share": len(hit) / len(g) if g else None, "typical": st.median(hit) if hit else None}
+    print("\nWhat a finish is worth: " + "; ".join("%s %.0f%% were top-50 earners" % (k, 100 * w["top50_share"]) for k, w in worth.items() if w["top50_share"] is not None))
     if a.write:
+        with open(os.path.join(HERE, "futurity_worth.json"), "w") as fh:
+            json.dump(worth, fh, indent=1)
         with open(os.path.join(HERE, "sire_model.json"), "w") as fh:
             json.dump(report, fh, indent=1)
         print("Wrote qa/sire_model.json")

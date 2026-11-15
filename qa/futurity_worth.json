@@ -13,13 +13,5 @@
   "foals": 474,
   "top50_share": 0.0970464135021097,
   "typical": 24100.5
- },
- "weanling_to_yearling": {
-  "weanlings": 244,
-  "came_back": 75,
-  "top3_came_back": 16,
-  "top3_weanlings": 44,
-  "top3_again": 0.3125,
-  "others_top3": 0.2033898305084746
  }
 }

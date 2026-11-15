@@ -283,7 +283,28 @@ def main():
              "top_third_said": st.mean(t[0] for t in hi), "bottom_third_said": st.mean(t[0] for t in lo)}
     print("\nForward check on %d: of the %d foals the model liked most, %.0f%% made a top three (it said %.0f%%); of the %d it liked least, %.0f%% (it said %.0f%%)." % (
         years[-1], third, 100 * split["top_third_rate"], 100 * split["top_third_said"], third, 100 * split["bottom_third_rate"], 100 * split["bottom_third_said"]))
+    # ---- how sure are the two effects? resample whole mares, so a mare's foals stay together ----
+    import random
+    rng = random.Random(5)
+    by_dam = {}
+    for r in rows:
+        by_dam.setdefault(r["dam"], []).append(r)
+    dams = sorted(by_dam)
+    def gaps(sample):
+        rate = lambda test: [r["top3"] for r in sample if test(r)]
+        p_, o_ = rate(lambda r: r["dam_proven"]), rate(lambda r: not r["dam_proven"])
+        t_, u_ = rate(lambda r: r["sire_rank"] <= 20), rate(lambda r: r["sire_rank"] > 20)
+        return (st.mean(p_) - st.mean(o_)) if p_ and o_ else None, (st.mean(t_) - st.mean(u_)) if t_ and u_ else None
+    boot = [gaps([r for d_ in (rng.choice(dams) for _ in dams) for r in by_dam[d_]]) for _ in range(1000)]
+    def span(i):
+        vals = sorted(b[i] for b in boot if b[i] is not None)
+        return [vals[int(0.05 * len(vals))], vals[int(0.95 * len(vals))]]
+    ranges = {"dam_gap": gaps(rows)[0], "dam_range": span(0), "sire_gap": gaps(rows)[1], "sire_range": span(1), "resamples": len(boot)}
+    print("\nHow sure: a proven dam adds %+.0f points to the top-three rate (90%% range %+.0f to %+.0f); a top-20 sire %+.0f (%+.0f to %+.0f)." % (
+        100 * ranges["dam_gap"], 100 * ranges["dam_range"][0], 100 * ranges["dam_range"][1], 100 * ranges["sire_gap"], 100 * ranges["sire_range"][0], 100 * ranges["sire_range"][1]))
     if a.write:
+        with open(os.path.join(HERE, "foal_model_ranges.json"), "w") as fh:
+            json.dump(ranges, fh, indent=1)
         out = {"kept": name, "target": "top-three finish in an open futurity class, weanlings and yearlings that were shown",
                "weights_top3": w, "weights_win": ww, "weights_money": wm, "money_score": money_score, "money_cutoff": cut, "money_rate": st.mean(r["money"] for r in rows), "features": ["intercept", "sire_in_top_20", "dam_proven"], "search": searched,
                "base_rate": base, "foals": len(rows), "sires": len({r["sire"] for r in rows}), "dams": len({r["dam"] for r in rows}), "years": years,

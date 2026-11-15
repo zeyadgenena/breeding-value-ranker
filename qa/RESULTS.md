@@ -243,6 +243,12 @@ $3,100. The five that were already listed producers sold for $1,150 to $9,600.
 The four that later produced an earner had sold for $7,100 to $10,100. Small
 numbers, from `python qa/mares.py`.
 
+**A replication that could not decide.** The same show runs Paint Horse classes
+the model never saw. Run on them unchanged (`python qa/replicate.py`), it
+sorted no better than chance (0.50). But only 44 of those weanlings and
+yearlings were new to it, and four made a top three: 199 others had also shown
+in the training classes. That is too few to confirm the model or to fault it.
+
 Three cautions. The model only knows foals that were shown: the ones that never
 reached the ring are missing. A proven dam often comes with an owner who can
 afford the best trainer, and the data cannot separate the two. Three years is a

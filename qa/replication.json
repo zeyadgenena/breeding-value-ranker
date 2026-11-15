@@ -1,0 +1,25 @@
+{
+ "foals": 44,
+ "left_out_as_already_seen": 199,
+ "sires": 25,
+ "base": 0.09090909090909091,
+ "sorting": 0.5,
+ "cells": {
+  "top-20 sire": {
+   "foals": 19,
+   "top3": 0.10526315789473684
+  },
+  "other sire": {
+   "foals": 25,
+   "top3": 0.08
+  },
+  "proven dam": {
+   "foals": 6,
+   "top3": 0
+  },
+  "other dam": {
+   "foals": 38,
+   "top3": 0.10526315789473684
+  }
+ }
+}

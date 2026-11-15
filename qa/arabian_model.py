@@ -150,6 +150,47 @@ def main():
                 split, 100 * kept(top), out["carry_over"]["top_third_later"], 100 * kept(rest), out["carry_over"]["rest_later"]))
     else:
         print("\nNo whole-class results yet: the placings on file are one barn's list of its own wins.")
+    # ---- plain groups of sale prices, 2015 on ----
+    recent = [r for r in S if (r["year"] or 0) >= 2015]
+    def box(part):
+        v = sorted(r["price"] for r in part)
+        return {"n": len(v), "median": st.median(v) if v else None, "q1": v[len(v) // 4] if v else None, "q3": v[(3 * len(v)) // 4] if v else None}
+    out["groups"] = {"all_recent": box(recent), "young": box([r for r in recent if r["age"] is not None and r["age"] <= 3]),
+                     "over_20000": sum(1 for r in recent if r["price"] >= 20000), "over_50000": sum(1 for r in recent if r["price"] >= 50000)}
+
+    # ---- family: do foals of the same mare, or the same sire, finish alike? ----
+    import random
+    import sys
+    sys.path.insert(0, os.path.dirname(HERE))
+    from ranker import arabian
+    import futurity as fu
+    F = arabian.foal_years(rows_of("results_classes.csv"))
+    by_horse = {}
+    for f in F:
+        by_horse.setdefault(f["horse"], []).append(f)
+    H = [{"horse": h, "sire": v[0]["sire"], "dam": v[0]["dam"], "pct": st.mean(x["pct"] for x in v)} for h, v in by_horse.items()]
+    by_dam, by_sire = {}, {}
+    for h in H:
+        if h["dam"]:
+            by_dam.setdefault(h["dam"], []).append(h)
+        by_sire.setdefault(h["sire"], []).append(h)
+    dam_pairs = [(x["pct"], y["pct"]) for v in by_dam.values() for i, x in enumerate(v) for y in v[i + 1:]]
+    rng = random.Random(2)
+    sire_pairs = []
+    for v in by_sire.values():
+        if len(v) >= 2:
+            for _ in range(min(40, len(v) * 2)):
+                x, y = rng.sample(v, 2)
+                sire_pairs.append((x["pct"], y["pct"]))
+    again = [(x["pct"], y["pct"]) for v in by_horse.values() for x in v for y in v if y["year"] == x["year"] + 1]
+    link = lambda pairs: fu.pearson([p[0] for p in pairs], [p[1] for p in pairs]) if len(pairs) >= 10 else None
+    out["family"] = {"horses": len(H), "dam_pairs": len(dam_pairs), "dam_link": link(dam_pairs), "sire_link": link(sire_pairs),
+                     "same_horse_pairs": len(again), "same_horse_link": link(again)}
+    if H:
+        print("\nFamily, %d horses: two foals of the same mare, link %s (%d pairs); two by the same sire, %s; the same horse a year later, %s." % (
+            len(H), *("%.2f" % x if x is not None else "n/a" for x in (out["family"]["dam_link"],)), len(dam_pairs),
+            "%.2f" % out["family"]["sire_link"] if out["family"]["sire_link"] is not None else "n/a",
+            "%.2f" % out["family"]["same_horse_link"] if out["family"]["same_horse_link"] is not None else "n/a"))
     if a.write:
         with open(os.path.join(HERE, "arabian_model.json"), "w") as fh:
             json.dump(out, fh, indent=1)
