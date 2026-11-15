@@ -49,7 +49,7 @@ def sales():
         if r.get("lot_kind", "horse") not in ("horse", "") or r.get("sold", "Y") == "N" or not r.get("price_usd"):
             continue
         price = float(r["price_usd"])
-        if price <= 0:
+        if price <= 0 or price > 500000:          # one $1.55 million filly is set aside: no model should be bent around her
             continue
         year = int(r["sale_date"][:4]) if r["sale_date"][:4].isdigit() else None
         foaled = int(r["foaled"][:4]) if r.get("foaled", "")[:4].isdigit() else None
@@ -78,10 +78,10 @@ def f_sire(r, ctx):
 
 
 def f_year(r, ctx):
-    return [((r["year"] or 2021) - 2021) / 3.0]
+    return [1.0 if (r["year"] or 2021) <= 2012 else 0.0]          # the 2010 sales are a different market
 
 
-NAMED = {"age": f_age, "sex": f_sex, "purebred or half-Arabian": f_division, "sire's halter placings before the sale": f_sire, "year of sale": f_year}
+NAMED = {"age": f_age, "sex": f_sex, "purebred or half-Arabian": f_division, "sire's halter placings before the sale": f_sire, "sold in 2010 or later years": f_year}
 
 
 def main():

@@ -397,3 +397,112 @@ to re-order it, so it was cut off before it was logged. The same page was reques
 ECAHO requests ran one at a time throughout.
 
 First request 2026-11-15T12:06:29, last request 2026-11-15T12:27:59 (local time). Limit was 200 downloads or about 40 minutes.
+
+## Sale prices (second pass)
+
+# SOURCES (second pass: auction sale prices)
+
+Collected 2026-11-15 for a personal, non-commercial breeding-decision tool. Every request was made one at a time with
+`curl -A "Mozilla/5.0 (compatible; research-client)"`, at least 4 s apart per host, and cached under `raw/`.
+The full request log is `raw/_fetchlog.tsv` (time, host, URL, saved file, HTTP status). 250 requests in total, all HTTP 200.
+No logins, forms, accounts or CAPTCHAs. No names of sellers, consignors, owners, buyers or bidders are stored in `sales.csv`
+(the cached pages under `raw/` contain them, as published). No page contained text addressed to automated agents.
+
+Result: `sales.csv` has 283 rows = the first pass's 91 rows + 192 new rows.
+
+## Hosts fetched
+
+### web.archive.org (Internet Archive Wayback Machine): 246 requests
+- robots.txt: not re-downloaded. The first pass's cached copies (`../results/raw/robots/`) show web.archive.org returns
+  404 for `/robots.txt` and archive.org disallows only `/control/` and `/report/`.
+- Terms of Use: read this time from an archived static copy of `archive.org/about/terms.php`
+  (`raw/wayback/archive_org_terms_archived.html`, terms dated 31 Dec 2014). Relevant lines: access "is granted for
+  scholarship and research purposes only"; users agree "not to collect or store personal data about anyone". Nothing
+  about automated access, scraping or AI. The personal-data line is why no people's names are in the CSV.
+- What was taken (all are archived copies of `auction.ahtimes.com`, the Arabian Horse Times auction site):
+
+| what | requests | outcome |
+|---|---|---|
+| archived Terms page | 1 | read |
+| CDX index queries | 3 | all archived URLs of auction.ahtimes.com (4,813); every capture of lot pages (1,293); ahtauctions.com (none archived) |
+| archived robots.txt of auction.ahtimes.com (2010) | 1 | read |
+| 2019-2023 platform, lot pages (`/Event/LotDetails/ID`) | 82 | 53 horse rows; 14 ended lots with no price shown; 15 "Lot Ended" pages with no data |
+| 2019-2023 platform, event listing pages (`/Event/Details/ID`) | 19 | 6 had lot tiles (5 new rows, 56 tiles matched rows already held); 13 said "Event not found" |
+| 2010 platform, closed catalog pages (`catalog.asp?catid=..&show=closed`) | 11 | used to pick lots that had bids; no rows taken from them |
+| 2010 platform, lot pages (`detail.asp?id=`) | 129 | 128 horse rows; 1 lot with no bids |
+
+### auction.ahtimes.com / ahtauctions.com (origin of the archived pages; NOT contacted in this pass)
+- robots.txt, 2010 archived copy (`raw/robots/auction.ahtimes.com_2010_archived.txt`): disallows `/images/`, `/jscripts/`,
+  `/bin/`, `/uploaded/`, `/aspnet_client/`. Catalog and detail pages are allowed.
+- robots.txt, 2026 live copy cached by the first pass: disallows `/Account/`, `/RealTime/`, `/signalr/`,
+  `/Listing/History`, `/Listing/Action`, `/Listing/AddWatch`, `/Listing/CreateListingPage1` and system folders.
+  Event and lot pages are allowed.
+- Terms & Conditions (first pass's cached copy, re-read): auction rules only, no clause on automated access, scraping
+  or AI. Page footer: "No part of this web page may be reproduced in any way without the prior written permission of
+  Arabian Horse Times." Only facts were extracted (price, sold or not, date, pedigree); no page text is reproduced.
+
+### www.arabhorse.com (Arabian Horse Network): 4 requests
+- robots.txt (`raw/robots/www.arabhorse.com.txt`): disallows `/users/sign_in`, `/admin/`, `/users/password/` only.
+- Terms of Use: the site has no terms page. The About page links only to a Privacy Policy; both were read
+  (`raw/arabhorse/`) and neither says anything about automated access.
+- Took: one news report on the 2015 IntArah Dream Embryo Auction (Las Vegas, 18 April 2015). It names one lot price:
+  an embryo right to RH Triana, $200,000 (1 row, `lot_kind = embryo`). It also gives a total of $1,450,000 for 24 lots
+  (18 unborn foals and 6 embryo rights, average $60,400), which is not lot-level and is not in the CSV.
+
+## Hosts not fetched
+
+- **scottsdaleshow.com, arabianhorseworld.com**: off limits by instruction. Not requested, directly or via the archive.
+- **Live AHT auction site**: not requested. The first pass found it removes prices once a lot ends.
+- **cpp.edu** 2015 and 2016 Kellogg sale articles: the first pass got 404 on the live URLs and its archive index has
+  no copy, so no request was spent.
+- Search results for Qatar, UAE, Poland and France Arabian auctions (thepeninsulaqatar.com, gulf-times.com, wam.ae,
+  mdmar.net, polskieradio.pl, racingpost.com): outside North America and not in USD. Not fetched.
+- No host was declined for a robots.txt or Terms of Use prohibition in this pass, because no other candidate host with
+  lot-level North American Arabian prices was found by web search.
+
+## What the archive holds, and what is left
+
+- 2019-2023 platform: 703 lot IDs are archived. All lots that belong to horse-sale events have now been requested.
+  The rest are stallion-service auctions (2020 and 2021 Medallion Stallion, 2021 and 2022 AEPA, 2021 and 2022 Spotlight,
+  2021 Scottsdale Signature Stallion, 2021 AWPA: about 270 lots that probably still show closing prices) and tack or
+  benefit items. Those were not fetched; they would all be `lot_kind = breeding` or `other`.
+- From October 2023 on, the site replaced ended lots with a page that says only "Lot Ended", so the archive has no
+  prices for the December 2023 sale (15 horses) or the 2024 Spotlight auction (about 165 breedings).
+- These horse-sale events exist in the archive only as "Event not found" pages with no lots archived: CalPoly Pomona
+  Select Sale 2022, AHT Advantage Auction April 2022 and January 2023, Vicki Humphrey Training Center Dispersal 2023,
+  Cedar Ridge Spring Online Auction 2019. The Cedar Ridge 50th Anniversary Auction (2019) was archived only while
+  bidding was open, so it has no closing prices.
+- 2010 platform: 10 auctions, 298 horse lots listed as closed. 196 had at least one bid, 194 of those have an
+  archived lot page, and 128 were fetched (those with 3 or more bids, most bids first) before the 250-download limit.
+  Not fetched: 66 lots with 1 to 3 bids (51 of them had a single bid). 102 lots had no bids and are not sales.
+
+## How the rows were built (`scripts/build.py`, standard library only)
+
+- First-pass rows are kept. Each AHT row was re-read from the first pass's cached page: `foaled` was widened from a
+  year to the full date on 35 rows, blanks were filled on 2 rows (sire and dam of AQUITAIN and BALLERINA ASI), and
+  8 values were corrected where the lot's own pedigree line or breed line disagreed with the first pass
+  (list in `scripts/first_pass_corrections.txt`: 4 spelling fixes, and the division of HRA TSIRIUS and
+  TOTALLY TOSKCAN PF changed from half-arabian to purebred because their sire's name starts with "HA").
+- The 5 lots the first pass dropped as "not a horse" are now included and labelled (3 embryos, 1 breeding right,
+  1 summer-camp week).
+- 2019-2023 lot pages: price is "Winning Bid" (`sold = Y`) or "Final Bid Price" with "Reserve Price Not Met"
+  (`sold = N`, high bid). Lots with no bids are left out. Sire, dam and dam's sire come from the lot's subtitle line
+  "(Sire x Dam, by Dam Sire)"; only when that is missing, from the description.
+- Event listing pages: only tiles marked "Sold" are used, and only when the lot has no row from its own lot page.
+  `sale_date` on those 5 rows is the event's "First Lot Closes" date.
+- 2010 lot pages: structured fields (Sire, Dam, DOB, Sex, breed line). `sold = Y` for "Reserve met" (19 rows) and for
+  lots with bids and no reserve shown (21 rows); `sold = N` for "Reserve not met" (88 rows).
+- `foaled` is YYYY-MM-DD when the page gives a date, YYYY when it gives a year. On 10 rows from 2010 the page gives
+  only an age ("Age: 6"), and `foaled` is sale year minus that age.
+- `division` is blank when the page does not state the breed (63 horse rows).
+- `lot_kind = breeding`: `sire` holds the stallion whose service was sold. `lot_kind = embryo`: `sire` and `dam` are
+  the embryo's parents, `foaled` and `sex` are blank, and the due date is appended to the name to keep lots apart.
+- De-duplicated on auction + horse.
+
+## Known weak points
+
+- One first-pass row (Cal Poly 2015 sale, CP CHARMMING NOTIONS) has `sale_date = 2015`: the month is not in the
+  cached article.
+- `auction` holds the published event title. Some titles include the name of the farm or training business that held
+  the sale.
+- Sire names are as published, so spelling variants exist (for example KHADRAJ NA and KHADRJA NA).

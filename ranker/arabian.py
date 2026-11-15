@@ -93,29 +93,37 @@ def sire_table(foals, k=6.0):
 
 
 def carry_over(foals):
-    """Sires by top-three foals in one year against their NEW foals the next year."""
+    """Season by season: rank sires on their foals up to one year, then see who sires the NEW top-three foals the next year.
+
+    Returns the pooled result over every pair of years with enough horses, and each pair."""
     years = sorted({f["year"] for f in foals})
-    best = None
+    pairs = []
     for y in years[:-1]:
-        prev = sire_table([f for f in foals if f["year"] == y])
+        past = sire_table([f for f in foals if f["year"] <= y and f["year"] >= y - 2])       # the three seasons up to y
         seen = {f["horse"] for f in foals if f["year"] <= y}
         nxt = [f for f in foals if f["year"] == y + 1 and f["horse"] not in seen]
-        if len(prev) < 12 or len(nxt) < 30:
+        if len(past) < 12 or len(nxt) < 30:
             continue
         later = {}
         for f in nxt:
             d = later.setdefault(f["sire"], [0, 0])
             d[0] += 1
             d[1] += f["top3"]
-        order = sorted(prev, key=lambda s: (-prev[s]["top3"], -prev[s]["shown"]))
+        order = sorted(past, key=lambda s: (-past[s]["top3"], -past[s]["shown"]))
         third = max(1, len(order) // 3)
         top, rest = order[:third], order[third:]
         total = sum(v[1] for v in later.values())
-        best = {"from": y, "to": y + 1, "sires": len(prev), "new_foals": len(nxt), "top_third": third,
-                "top_share_of_top3": (sum(later.get(s, [0, 0])[1] for s in top) / total) if total else None,
-                "top_placed_again": sum(1 for s in top if later.get(s, [0, 0])[1] > 0) / len(top),
-                "rest_placed_again": sum(1 for s in rest if later.get(s, [0, 0])[1] > 0) / len(rest) if rest else 0.0}
-    return best
+        pairs.append({"from": y, "to": y + 1, "sires": len(past), "new_foals": len(nxt), "top_third": third, "top3_total": total,
+                      "top3_by_top": sum(later.get(s, [0, 0])[1] for s in top),
+                      "top_again": sum(1 for s in top if later.get(s, [0, 0])[1] > 0), "rest": len(rest),
+                      "rest_again": sum(1 for s in rest if later.get(s, [0, 0])[1] > 0)})
+    if not pairs:
+        return None
+    tot = sum(p["top3_total"] for p in pairs)
+    return {"from": pairs[0]["from"], "to": pairs[-1]["to"], "seasons": len(pairs), "top_third": sum(p["top_third"] for p in pairs),
+            "top_share_of_top3": (sum(p["top3_by_top"] for p in pairs) / tot) if tot else None,
+            "top_placed_again": sum(p["top_again"] for p in pairs) / sum(p["top_third"] for p in pairs),
+            "rest_placed_again": (sum(p["rest_again"] for p in pairs) / sum(p["rest"] for p in pairs)) if sum(p["rest"] for p in pairs) else 0.0, "pairs": pairs}
 
 
 def match_data(folder):
@@ -192,9 +200,10 @@ def match_data(folder):
              "U.S. Nationals, Canadian Nationals, Scottsdale's own classes and the regional shows are not in it, because their results could not be collected within their sites' rules.",
              "%d of the %d stallions with a price have a foal in those classes. The rest are listed by price only." % (len(with_rec), len(priced))]
     if check and check["top_share_of_top3"] is not None:
-        notes.append("One check so far, on %d to %d: the top third of sires by top-three foals (%d sires) went on to sire %.0f%% of the next year's top-three finishers among new foals. "
-                     "%.0f%% of them had one, against %.0f%% of the other sires." % (check["from"], check["to"], check["top_third"], 100 * check["top_share_of_top3"],
-                                                                                      100 * check["top_placed_again"], 100 * check["rest_placed_again"]))
+        notes.append("Tested on %s: each year the top third of sires by top-three foals so far went on to sire %.0f%% of the next year's top-three finishers among new foals. "
+                     "%.0f%% of those sires had one, against %.0f%% of the other sires." % (
+                         ("%d season%s, %d to %d" % (check["seasons"], "" if check["seasons"] == 1 else "s", check["from"], check["to"])), 100 * check["top_share_of_top3"],
+                         100 * check["top_placed_again"], 100 * check["rest_placed_again"]))
     else:
         notes.append("It has not been tested against past seasons: two seasons is not enough history.")
     notes.append("Many prices are what a breeding sold for at a futurity auction. Those usually sell below the advertised stud fee. Opening bids are left out.")
@@ -205,12 +214,18 @@ def match_data(folder):
         d = lambda v: "${:,.0f}".format(round(v, -2))
         notes.append("Prize money is small next to Quarter Horse halter. The U.S. Nationals futurity paid its champion %s to %s and a top ten %s to %s (%s to %s). "
                      "For Arabians the money is in the sale, and the best sales are private." % (d(min(champ)), d(max(champ)), d(min(ten)), d(max(ten)), min(p[2] for p in paid), max(p[2] for p in paid)))
-    if prices:
-        best = (model or {}).get("price_best")
-        notes.append("We found %d public sale prices for Arabian horses. Their typical price was %s (middle half %s to %s). %s" % (
-            len(prices), "${:,.0f}".format(st.median(prices)), "${:,.0f}".format(prices[len(prices) // 4]), "${:,.0f}".format(prices[(3 * len(prices)) // 4]),
-            ("We tried %d versions of a price model. The best explains %.0f%% of the difference between sales, so the page gives no sale estimate per stallion."
-             % (model["price_versions"], max(0.0, 100 * best["explained"]))) if best else "That is too few to estimate what a foal sells for."))
+    g = (model or {}).get("groups")
+    if g and g.get("all_recent", {}).get("n"):
+        a, y = g["all_recent"], g["young"]
+        d = lambda v: "${:,.0f}".format(round(v, -2))
+        best = model.get("price_best")
+        notes.append("Sale prices: %d Arabians sold at public online auction, 2015 to 2022, for a typical %s (middle half %s to %s). The %d aged three or under made a typical %s. "
+                     "%d of the %d reached $20,000." % (a["n"], d(a["median"]), d(a["q1"]), d(a["q3"]), y["n"], d(y["median"]), g["over_20000"], a["n"]))
+        if best:
+            notes.append("Nothing we tried says which horse will be one of those. The best of %d versions of a price model explains %.0f%% of the difference between sales, "
+                         "so the page gives no sale estimate per stallion." % (model["price_versions"], max(0.0, 100 * best["explained"])))
+    elif prices:
+        notes.append("We found %d public sale prices for Arabian horses, too few to estimate what a foal sells for. Their typical price was %s." % (len(prices), "${:,.0f}".format(st.median(prices))))
     notes.append("A foal's market depends on its papers. If the mare is not a registered purebred, a foal by a registered purebred stallion can usually be registered as a Half-Arabian. "
                  "Check with the Arabian Horse Association before you breed.")
     how = ["We list %d Arabian stallions. %d have a price." % (len(out), len(priced)),
