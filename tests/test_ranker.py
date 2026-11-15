@@ -344,16 +344,27 @@ class SecondRound(unittest.TestCase):
         self.assertEqual((price["fee"], price["basis"]), (7500.0, "listed"))
         self.assertEqual(extra["fee"], 4600.0)
 
-    def test_arabian_page_says_when_its_results_are_one_sided(self):
+    def test_arabian_ranking_counts_whole_classes_only(self):
+        from ranker import arabian
+        classes = [{"source_kind": "full_class", "year": "2025", "class_name": "Yearling Fillies 1A", "placing": str(i + 1), "entries_in_class": "10",
+                    "horse": "H%d" % i, "sire": "GOOD SIRE" if i < 3 else "OTHER SIRE", "dam": "D%d" % i, "age_class": "yearling"} for i in range(10)]
+        classes.append(dict(classes[0], class_name="Yearling Fillies Championship", placing="1"))      # the same filly again, in the final
+        classes.append({"source_kind": "winners_only", "year": "2025", "class_name": "Brag list", "placing": "1", "entries_in_class": "", "horse": "X", "sire": "OTHER SIRE", "dam": "Y"})
+        foals = arabian.foal_years(classes)
+        self.assertEqual(len(foals), 10)                               # ten horses: the final and the brag list add none
+        table = arabian.sire_table(foals)
+        self.assertEqual((table["GOOD SIRE"]["shown"], table["GOOD SIRE"]["top3"]), (3, 3))
+        self.assertEqual((table["OTHER SIRE"]["shown"], table["OTHER SIRE"]["top3"]), (7, 0))
+        self.assertGreater(table["GOOD SIRE"]["avg"], table["OTHER SIRE"]["avg"])
+
+    def test_arabian_page_says_how_narrow_it_is(self):
         from ranker import arabian
         m = arabian.match_data(os.path.join(self.HERE, "data", "arabian"))
         self.assertGreater(len([s for s in m["stallions"] if s["price"]]), 100)
-        kinds = set()
-        import csv
-        with open(os.path.join(self.HERE, "data", "arabian", "results.csv"), newline="", encoding="utf-8") as fh:
-            kinds = {r.get("source_kind", "") for r in csv.DictReader(fh)}
-        if "full_class" not in kinds:
-            self.assertTrue(any("one-sided" in n for n in m["notes"]))
+        self.assertTrue(any("narrow" in n for n in m["notes"]))
+        self.assertIsNone(m["pricing"])                                # no sale estimates for Arabians
+        best = max((s for s in m["stallions"] if s["price"]), key=lambda s: s["score"])
+        self.assertIn("were shown", best["rec"]["text"])
 
 
 if __name__ == "__main__":

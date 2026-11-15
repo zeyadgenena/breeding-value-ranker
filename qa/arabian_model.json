@@ -1,0 +1,79 @@
+{
+ "sales": 62,
+ "median": 5400.0,
+ "q1": 2600.0,
+ "q3": 14600.0,
+ "top": 1550000.0,
+ "young": 31,
+ "young_median": 5100.0,
+ "with_sire": 47,
+ "sires": 29,
+ "auctions": 10,
+ "at_opening_bid": 12,
+ "price_versions": 32,
+ "price_best": {
+  "what": "sex",
+  "typical_miss": 1.635802834303517,
+  "explained": 0.003439702857624627,
+  "within_double_or_half": 0.43548387096774194
+ },
+ "price_scorecard": [
+  {
+   "what": "sex",
+   "typical_miss": 1.635802834303517,
+   "explained": 0.003439702857624627,
+   "within_double_or_half": 0.43548387096774194
+  },
+  {
+   "what": "one typical price for every horse",
+   "typical_miss": 1.5230144301301718,
+   "explained": 0.000115710843377137,
+   "within_double_or_half": 0.3870967741935484
+  },
+  {
+   "what": "sex + year of sale",
+   "typical_miss": 1.3978060568918855,
+   "explained": -0.01919727855798614,
+   "within_double_or_half": 0.3709677419354839
+  },
+  {
+   "what": "age + sire's halter placings before the sale + year of sale",
+   "typical_miss": 1.45631730168147,
+   "explained": -0.021201420745726063,
+   "within_double_or_half": 0.3709677419354839
+  },
+  {
+   "what": "age + sex + sire's halter placings before the sale + year of sale",
+   "typical_miss": 1.44510294970816,
+   "explained": -0.02303617894234966,
+   "within_double_or_half": 0.3709677419354839
+  },
+  {
+   "what": "sire's halter placings before the sale",
+   "typical_miss": 1.3795479767087606,
+   "explained": -0.024606457133557802,
+   "within_double_or_half": 0.3709677419354839
+  },
+  {
+   "what": "sex + sire's halter placings before the sale",
+   "typical_miss": 1.5267511658605164,
+   "explained": -0.05419362782776038,
+   "within_double_or_half": 0.3548387096774194
+  },
+  {
+   "what": "purebred or half-Arabian",
+   "typical_miss": 1.7999968595066025,
+   "explained": -0.057271250723802014,
+   "within_double_or_half": 0.3870967741935484
+  }
+ ],
+ "full_class_rows": 1060,
+ "carry_over": {
+  "split": 2024,
+  "sires": 28,
+  "top_third_kept": 0.8888888888888888,
+  "rest_kept": 0.7368421052631579,
+  "top_third_later": 31.666666666666668,
+  "rest_later": 10.789473684210526
+ }
+}

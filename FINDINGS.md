@@ -54,10 +54,12 @@ page. Findings:
 - Everything per foal is for foals that were shown. Crop sizes are still missing.
 
 **Arabians (added 2026-11-15).** A first version exists because the horses this
-tool is for are Arabian in type. It has prices for 218 stallions and 403 halter
-placings, but the placings come from one barn's list of its own wins, so the
-ranking is a list to check by hand. The best source, the Scottsdale show's full
-class results, forbids automated collection in its terms and was not used.
+tool is for are Arabian in type. It has prices for 218 stallions and whole-class
+results for 379 horses by 145 sires, from two seasons of one show circuit. One
+check held: the sires with the most top-three foals in 2025 sired most of the
+new top-three foals in 2026. It is still a list to check by hand. The fuller
+sources (Scottsdale's own results, PaddockReport's U.S. Nationals results)
+forbid automated collection in their terms and were not used.
 
 This matcher is separate from the backtest described in the rest of this note,
 which waits on foal-by-foal records.

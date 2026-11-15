@@ -205,3 +205,195 @@ arabhorse.com report. 25 candidate lots were never requested.
 | dev.arabianessence.tv | 1 | 200 x1 |
 | www.arabianhorseworld.com | 1 | 200 x1 |
 | **total** | **239** | |
+
+## Whole-class results (second pass)
+
+# SOURCES (second pass)
+
+Collected 2026-11-15 for a personal, non-commercial breeding-decision tool. Goal of this pass: full halter class sheets
+(every placed horse, with sire and dam) from sources that are not one barn's own list of wins.
+
+How requests were made: one at a time per host with `curl -A "Mozilla/5.0 (compatible; research-client)"`, at least 3.5 s
+apart per host (30 s for arabianessence), cached under `raw/<host>/`, never re-downloaded. Full log: `raw/_fetchlog.tsv`
+(time, host, URL, saved file, HTTP status). No logins, no forms, no CAPTCHAs, no site search queries. For every host the
+robots.txt and the Terms of Use (or, where no terms page exists, the footer and the only legal page linked) were read
+before any results file was downloaded. Finding a terms link requires loading the home page, so the home page was the
+one page fetched before the terms on each host.
+
+No names of owners, breeders, handlers, judges or farms were stored in any output file. The raw downloads contain them
+because the published sheets do.
+
+No page contained text addressed to automated agents. One tool (Firecrawl) returned a quota error when asked to render the
+Internet Archive terms page; it was not used further.
+
+## Hosts that supplied rows
+
+### gcarabianstour.com (Global Champions Arabians Tour, the organiser's own site): 916 rows, `full_class`
+- robots.txt: `User-agent: *` / `Disallow:` (empty, everything allowed) plus a sitemap line.
+- Terms of Use: none. Neither the home page nor the results page links a terms, privacy or legal page; the footer is
+  "© Global Champions Arabians Tour 2023-2025".
+- Took: robots.txt, home page, `/results/` (the index of official result PDFs), and 12 PDFs: qualifying-class results and
+  championship results for the six North American stops listed there. 15 requests in total (2 on the `www.` name).
+  - GCAT Americas Scottsdale 2025 (18 & 20 Feb 2025), Miami 2025 (17-19 Apr 2025), Denver 2025 (8-9 Aug 2025),
+    Las Vegas 2025 (26-28 Sep 2025), Scottsdale 2026 (13-15 Feb 2026), Miami 2026 (9-11 Apr 2026).
+- Each sheet lists every horse in the class: rank, catalogue number, horse, colour, sire x dam, score. Qualifying classes
+  are ranked 1..n; championships are Gold, Silver, Bronze, then 4..n.
+- Skipped on this host: the two "performance classes" PDFs (not halter); all Europe and Middle East stops and São Paulo
+  (not North America); GCAT Americas Las Vegas 2026 (2-4 Oct 2026) because the results page does not link its PDFs yet and
+  no URL was guessed.
+- Left out on purpose: page 5 of `GCAT-Denver-2025-qualifications-results.pdf` (Yearling Colts Section A, class 4A,
+  6 horses). That one sheet carries the footer "© 2005–2025 arabianessence.com – All right reserved", and that site's
+  terms forbid automated copying (see below). The same colts still appear in the Denver Yearling Colts Championship rows.
+
+### www.ecaho.org (European Conference of Arab Horse Organizations, the show commission's own results pages): 144 rows, `full_class`
+- robots.txt: `User-agent: *` / `Disallow:` (everything allowed).
+- Terms of Use: none linked. The only legal page in the footer is the privacy policy (`/about-ecaho/gdpr`), which was read;
+  it covers personal data and cookies and says nothing about automated access or reuse of results.
+- Took: robots.txt, home page, privacy page, the shows list (2 pages), monthly archive pages used only to find which shows
+  were held in the United States, Canada or Mexico, and three show pages.
+  - Emirates Arabian Horse Global Cup, Scottsdale, 28 Mar 2024: 63 rows.
+  - Emirates Arabian Horse Global Cup - North American Championship, Scottsdale, 11-14 Sep 2025: 81 rows.
+  - Arabian National Breeder Final (EAHGC), Scottsdale, 16 Sep 2026: the page exists but has no classes or results yet
+    (0 rows).
+- Each show page lists every horse in each class: place, catalogue number, horse, birth date, colour, sire, dam, score.
+- The first pass rejected this host because the per-class PDF has no sire or dam. The HTML show page does have them.
+- Not done: the site search form (a form submission) and the per-class PDFs (nothing extra in them).
+- Coverage note: only shows under the Emirates Arabian Horse Global Cup banner appear here for North America. In the
+  months checked there were no other United States, Canadian or Mexican shows. Not every month of 2016-2026 was checked
+  (each archive page takes 30-40 s); see the list of fetched files in the log.
+- Search snippets suggest the March 2024 classes ran alongside the Arabian Breeders World Cup in Scottsdale. That is not
+  stated in the downloaded page, so the show is named as ECAHO names it.
+
+### www.arabhorse.com (Arabian Horse Network, a news site): 18 rows, `winners_only`
+- robots.txt: disallows `/users/sign_in`, `/admin/`, `/users/password/` only.
+- Terms of Use: none linked; footer is "© Designed by Arabhorse.com | All Rights Reserved".
+- Took: home page, news index, and four news articles (7 requests with robots.txt). One article gave rows:
+  "Emirates Arabian Horse Global Cup USA 2026" (Scottsdale, held with the Arabian National Breeder Finals, final on
+  19 Sep 2026): Gold, Silver and Bronze in six championships, each with sire × dam.
+- Not used: the GCAT Las Vegas 2026 article (winners named without sires), a photo-gallery article, and
+  "From Las Vegas - Results" (it is the 2010 show, outside 2016-2026).
+
+## Hosts declined because of their terms (nothing taken beyond robots.txt, home page and the terms page)
+
+### paddockreport.com (PaddockReport: Arabian and Half-Arabian show results, sires, class history, "since 2016")
+- robots.txt: allows `/` for all agents (it names assistant bots as allowed), disallows account pages and `/*?*q=`,
+  blocks CCBot and Bytespider.
+- Terms of Service, section 4 "Prohibited Uses": "You may not use our Service: ... To scrape or harvest data without
+  written permission".
+- 3 requests (robots.txt, home page, `/tos`). Nothing else fetched. The home page shows it holds U.S. Nationals results
+  (the 2026 show was the latest added), a top-sires list and class history. This is the source that would answer the
+  question properly; it needs the site's written permission, or reading by hand in a browser.
+
+### www.arabianessence.tv / www.arabianessence.com (Arabian Essence TV; the .com name redirects to .tv)
+- robots.txt: disallows system folders; `Crawl-delay: 30` for several named bots.
+- Terms of Use, "Prohibited activities": you agree not to "(ii) access, monitor, reproduce, distribute, transmit,
+  broadcast, display, sell, license, copy or otherwise exploit any Content of the Services, including but not limited to,
+  user profiles and photos, using any robot, spider, scraper or other automated means or any manual process for any
+  purpose not in accordance with this Agreement or without our express written permission". The same page also says
+  copying or reproduction of content is "strictly prohibited without the prior written permission of Arabian Essence".
+- 3 requests, 30 s apart (robots.txt, the .com URL that returned the home page, `/termsofuse`). No results page fetched.
+  Search snippets show it holds scored class pages (with sire and dam) for the Las Vegas Arabian Breeders World Cup back
+  to at least 2019.
+
+### web.archive.org / archive.org (Internet Archive)
+- robots.txt: web.archive.org returns 404; archive.org disallows `/control/` and `/report/` only.
+- Terms of Use: could not be read. `archive.org/about/terms.php` returns a JavaScript shell with no text.
+- Because the terms could not be read, nothing was fetched from the Wayback Machine in this pass (3 requests: two
+  robots.txt and the terms URL). This is why archived copies of arabianhorseresults.com were not tried.
+
+## Hosts checked that had nothing usable
+
+- **www.arabianhorseresults.com / arabianhorseresults.com**: robots.txt is only a content-signals preamble with no
+  directives. Both the `www.` and bare home pages return HTTP 404 from the web server. The site appears to be gone.
+  3 requests.
+- **www.arabianhorses.org** (Arabian Horse Association): robots.txt returns 404 (none). No terms page is linked; the
+  footer has "Service Marks" (a PDF about trademark use, read: nothing on automated access) and "All Rights Reserved". One public results PDF found by search
+  (`nat-show/archive/23USN_Results_699_SF.pdf`, a "Complete Placing Report") lists back numbers and judges' scores only:
+  no horse names, no sires. Official national results stay behind the sign-in page and were not touched. 4 requests.
+  Order note: that one PDF was downloaded after robots.txt and the home page footer were checked but before the
+  "Service Marks" link was opened; that link turned out to be a trademark PDF, not terms.
+- **ahtimes.com** (Arabian Horse Times): robots.txt allows everything; no terms page linked on the home page. The site is
+  a marketing front; show coverage lives in Issuu flip-books (JavaScript readers, not fetched). A search hit showed it
+  points readers to PaddockReport for results. 2 requests.
+- **www.globalchampionsarabianstour.com**: a "Launching Soon" placeholder, not the tour's site. 2 requests.
+- **www.arabianbreedersworldcup.com**: `/robots.txt` returned an HTML page that looks like a static snapshot, not a
+  robots file. Not pursued. 1 request.
+- **www.arabianhorseglobal.com**: robots.txt 404. Not pursued. 1 request.
+
+## Looked for by web search and not found
+
+- Regional championship results (AHA regions) that list sires: searches returned only the first pass's barn pages,
+  magazine flip-books and ECAHO sheets.
+- Breeder futurity results with sires or payouts (Minnesota Medallion Stallion, Region 12 Spotlight, Iowa Gold Star):
+  searches returned unrelated racing futurities.
+- Canadian Nationals class results with sires: only schedules, payout sheets (no horses) and flip-book coverage.
+- U.S. Nationals class results with sires outside the AHA sign-in and PaddockReport: none.
+
+## How results.csv was built
+
+- Script: `scripts/build.py` (with `scripts/parse_ecaho.py`), run as `python3 -I`. PDF text was read with the PyMuPDF
+  module that was already installed on this machine (`pdftotext` is not installed); nothing was installed. Everything
+  else is the Python standard library.
+- Every row comes from a downloaded file; `source_url` is the file's URL.
+- `division`: all rows are `purebred`. None of these shows has Half-Arabian classes.
+- `age_class`: `yearling`; `2yo` / `3yo` where the class is a single age; `junior` for GCAT junior classes and mixed
+  2-3 year old classes; `senior` for mares and stallions 4 and over. There are no weanling classes in these shows.
+- `placing`: the rank as a number for qualifying classes; `gold`, `silver`, `bronze`, then numbers, for GCAT
+  championships. ECAHO championship pages list the qualified horses but rank only the three medals; the others are
+  written as `qualified, no medal` (my label for "listed, no rank given").
+- `entries_in_class`: the number of horses with a rank on the sheet (for ECAHO championships, the number listed). It is
+  counted from the sheet. Neither source prints an entry count.
+- Horses listed but not shown are not in `results.csv`. They are in `not_shown.csv` (177 lines): 152 marked `WD`
+  (withdrawn) and 6 marked `E` in the GCAT sheets, 19 on ECAHO pages with no rank and no score.
+- `foaled`: the birth year from the ECAHO page where given (144 rows). For yearling classes in the GCAT sheets and the
+  arabhorse.com article it is the show year minus one (296 rows), which follows from the class definition.
+  `results_extra.csv` says which is which. Blank otherwise.
+- `dam_sire` and `prize_usd` are blank throughout: none of these sheets gives them.
+- `results_extra.csv` (same row order as `results.csv`): the score, which scale it is on, the full birth date where
+  given, the basis for `foaled`, and a note where a dam name was completed.
+
+## Known data problems
+
+- Dam names are sometimes clipped in the GCAT PDFs (the printed line is cut at the right edge, for example "MC" for
+  "MC TEYNA"). Where the same horse appears on another downloaded sheet with a longer dam name that starts with the
+  clipped one, the longer name was used (25 rows, flagged in `results_extra.csv`). A horse that appears only once can
+  still carry a clipped dam name. Sire names come first on the line and were not seen clipped.
+- Names are as published, upper-cased. The same sire is spelled more than one way across sheets, for example
+  "IBN FARID" and "IBN FARID UAE", "TS KHIDAM EL SHAWAN" and "TS KHIDAM AL SHAWAN", "RFI FIORANO" and "RFI FIOANO".
+  They were not merged. One filly (ELEGANZIA A) is printed with two different dams on two sheets.
+- The same horse appears many times: once in its qualifying class and again in the championship at each show, and at
+  several shows. 1,078 rows cover 389 distinct horses.
+
+## ECAHO archive months checked for North American shows
+
+2019/04, 2023/04, 2024/03, 2024/04, 2024/09, 2025/02, 2025/03, 2025/04, 2025/09, 2025/10, 2026/02, 2026/03, 2026/04, 2026/09, 2026/10.
+
+United States shows found: March 2024, September 2025, September 2026. No Canadian or Mexican show in any month checked.
+
+## Requests per host (from raw/_fetchlog.tsv; robots.txt, home and terms pages included)
+
+| host | requests | HTTP status counts |
+|---|---|---|
+| www.ecaho.org | 23 | 200 x23 |
+| gcarabianstour.com | 13 | 200 x13 |
+| www.arabhorse.com | 7 | 200 x7 |
+| www.arabianhorses.org | 4 | 200 x3, 404 x1 |
+| paddockreport.com | 3 | 200 x3 |
+| www.arabianhorseresults.com | 2 | 200 x1, 404 x1 |
+| www.arabianessence.tv | 2 | 200 x2 |
+| ahtimes.com | 2 | 200 x2 |
+| archive.org | 2 | 200 x2 |
+| www.globalchampionsarabianstour.com | 2 | 200 x2 |
+| www.gcarabianstour.com | 2 | 200 x2 |
+| www.arabianessence.com | 1 | 200 x1 |
+| arabianhorseresults.com | 1 | 404 x1 |
+| www.arabianhorseglobal.com | 1 | 404 x1 |
+| web.archive.org | 1 | 404 x1 |
+| www.arabianbreedersworldcup.com | 1 | 200 x1 |
+| **total** | **67** | |
+
+One request is missing from the log: an ECAHO archive request (2025/03) was in flight when the download queue was stopped
+to re-order it, so it was cut off before it was logged. The same page was requested again later and that request is logged.
+ECAHO requests ran one at a time throughout.
+
+First request 2026-11-15T12:06:29, last request 2026-11-15T12:27:59 (local time). Limit was 200 downloads or about 40 minutes.
