@@ -36,6 +36,8 @@ class Dataset:
     outcomes: List[dict]         # foal_id, year (None = lifetime total), shows, points,
                                  # placing, class_size, grands, reserves, earnings, sale_price
     truth: Optional[Dict[str, float]] = None   # synthetic data only: the planted effects
+    sire_stats: List[dict] = field(default_factory=list)   # stallion_id, period, rank, earners,
+                                                           # earnings, cutoff, date, source
 
 
 @dataclass

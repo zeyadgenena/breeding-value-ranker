@@ -1,0 +1,65 @@
+{
+ "note": "From each stallion's QStallions current-year activity report (qstallions.com/Report?which=3&id=...), read 2026-11-15: his foals that earned points or money in 2026, and what each has won in its life so far. Only foals that were shown appear, so this is not every foal.",
+ "stallions": {
+  "ST006": {
+   "name": "RUMERZ",
+   "year": 2026,
+   "report_date": "11/12/2026",
+   "shown": 10,
+   "median": 4470.0,
+   "top": 53590.0,
+   "at_least_10000": 3,
+   "at_least_20000": 2
+  },
+  "ST001": {
+   "name": "BEST KEPT SECRETE",
+   "year": 2026,
+   "report_date": "11/12/2026",
+   "shown": 9,
+   "median": 5667.0,
+   "top": 49810.0,
+   "at_least_10000": 2,
+   "at_least_20000": 1
+  },
+  "ST003": {
+   "name": "HEARTZ ON FIRE",
+   "year": 2026,
+   "report_date": "11/12/2026",
+   "shown": 8,
+   "median": 17842.0,
+   "top": 85516.0,
+   "at_least_10000": 7,
+   "at_least_20000": 3
+  },
+  "ST002": {
+   "name": "EVINCEBLE",
+   "year": 2026,
+   "report_date": "11/12/2026",
+   "shown": 47,
+   "median": 7170.0,
+   "top": 87229.0,
+   "at_least_10000": 22,
+   "at_least_20000": 13
+  },
+  "ST004": {
+   "name": "QUINLAN",
+   "year": 2026,
+   "report_date": "11/13/2026",
+   "shown": 4,
+   "median": 10559.5,
+   "top": 25419.0,
+   "at_least_10000": 2,
+   "at_least_20000": 1
+  },
+  "ST005": {
+   "name": "RAYLAN GIVENS",
+   "year": 2026,
+   "report_date": "11/13/2026",
+   "shown": 31,
+   "median": 20542.0,
+   "top": 61688.0,
+   "at_least_10000": 21,
+   "at_least_20000": 17
+  }
+ }
+}

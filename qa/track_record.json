@@ -1,0 +1,51 @@
+{
+ "first_season": 2019,
+ "last_season": 2025,
+ "k": 3,
+ "method": "leave one season out: rule chosen on the other seasons",
+ "rules_chosen": [
+  "final",
+  "momentum",
+  "final",
+  "final",
+  "final",
+  "total3",
+  "final"
+ ],
+ "final_rule_in_sample_hits": {
+  "1000": 6,
+  "1500": 7,
+  "2000": 17,
+  "None": 18
+ },
+ "by_budget": [
+  {
+   "budget": 1000,
+   "picks": 21,
+   "hit": 5,
+   "base": 0.06136054421768707,
+   "share": 0.23809523809523808
+  },
+  {
+   "budget": 1500,
+   "picks": 21,
+   "hit": 4,
+   "base": 0.08499622071050641,
+   "share": 0.19047619047619047
+  },
+  {
+   "budget": 2000,
+   "picks": 21,
+   "hit": 14,
+   "base": 0.177070588087483,
+   "share": 0.6666666666666666
+  },
+  {
+   "budget": null,
+   "picks": 21,
+   "hit": 16,
+   "base": 0.21052867121843916,
+   "share": 0.7619047619047619
+  }
+ ]
+}

@@ -19,6 +19,21 @@ What is done:
 What is not done: collecting foal-level records. That has to go through your own
 AQHA member login (see below), so it is the next step and it is yours to start.
 
+## The matcher and its test (added 2026-11-15)
+
+The app's front page is now a simple matcher: what you have, your budget, one
+best match. It ranks on stallion-level foal results from the public QData
+leaderboards, which the original plan did not use, because foal-by-foal records
+are still missing. It was tested against the 2019 to 2025 seasons over six
+rounds. The full write-up is [qa/RESULTS.md](qa/RESULTS.md). In brief:
+
+- At a $2,000 budget, 14 of 21 past picks went on to sire a top-50 earning foal from that crop, against 18% for the average stallion at that price. Under $1,500 it was about 1 pick in 4 or 5.
+- In 122 public online sales, young horses by these stallions sold for 1.7 times the stud fee at the median, and none reached $20,000. The large outcomes are prize money, not resale.
+- The test cannot say what one foal's chance is, because crop sizes are unknown. That still needs the AQHA all-foals record.
+
+This matcher is separate from the backtest described in the rest of this note,
+which waits on foal-by-foal records.
+
 ## What the data sources can deliver
 
 | Source | Finding |

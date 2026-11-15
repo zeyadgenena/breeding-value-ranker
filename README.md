@@ -4,9 +4,13 @@ Personal tool. It ranks American Quarter Horse halter stallions by expected foal
 quality per dollar of stud fee, and backtests whether that ranking would have
 worked using only what was known at each past date.
 
-**Interactive page:** open `docs/index.html`, or the hosted copy if this
-repository has GitHub Pages turned on. It shows every stallion's fee history,
-a shortlist comparison, the market as a whole, and the backtest.
+**The app:** open `docs/index.html`, or the hosted copy if this repository has
+GitHub Pages turned on. Say what you have (a mare, a stallion, or no horse yet)
+and what you can spend, and it gives one best match. `docs/explore.html` holds
+the detail: every stallion's fee history, the market as a whole and the backtest.
+
+**Does it work?** [qa/RESULTS.md](qa/RESULTS.md) tests the matcher against the
+2019 to 2025 seasons.
 
 Read [FINDINGS.md](FINDINGS.md) first. The short version: the tooling is built
 and tested, but the backtest has not been run on real horses yet, because the
@@ -17,12 +21,15 @@ foal-level data has to come through your own AQHA member login.
 | Path | What it is |
 |---|---|
 | `data/breeding_data.xlsx` | The workbook you fill in. Tabs: Stallions, Snapshots, Mares, Foals, Outcomes, plus Sources and a column Dictionary. 52 real stallions are already entered, with 474 dated fee rows covering 2018 to 2027. |
-| `docs/index.html` | The interactive page. One self-contained file, built by `bvr.py export-web`. GitHub Pages serves it from `/docs`. |
-| `web/` | The page template and the stored simulation results it shows. Edit the template, not `docs/index.html`. |
+| `docs/index.html` | The matcher. One self-contained file, built by `bvr.py export-web`. GitHub Pages serves it from `/docs`. |
+| `docs/explore.html` | Every chart and table behind it, built by the same command. |
+| `web/` | The two page templates and the stored simulation results. Edit these, not the files in `docs/`. |
+| `qa/` | The test of the matcher against past seasons: scripts, the data they use, and [RESULTS.md](qa/RESULTS.md). |
+| `ranker/matcher.py` | The matcher's ranking rule: last year's foal winnings times their trend. |
 | `bvr.py` | The command-line script. |
 | `ranker/` | The calculations (`core.py`), Excel reading and writing (`workbook.py`), synthetic test data (`synth.py`). |
 | `synthetic/` | Three made-up datasets and their results, so you can see what the output looks like. These horses do not exist. |
-| `tests/` | 17 checks, including one that proves the backtest cannot see the future. |
+| `tests/` | 21 checks, including one that proves the backtest cannot see the future. |
 | `FINDINGS.md` | Findings, limitations and the decision note. |
 
 ## Setup (once)
@@ -61,7 +68,11 @@ Useful options:
 - `--no-dam-adjust` turns off the adjustment for mare quality.
 - `--top-k 5` fixes the number of top picks per window.
 
-After changing the workbook, rebuild the interactive page:
+After changing the workbook, re-run the matcher's test and rebuild the pages:
+
+```bash
+.venv/bin/python qa/backtest.py --write
+```
 
 ```bash
 .venv/bin/python bvr.py export-web
