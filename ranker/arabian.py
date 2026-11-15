@@ -198,7 +198,8 @@ def match_data(folder):
              % (len({f["horse"] for f in foals}), len(shows), span),
              "It is narrow. The shows are the international-style circuit in North America (GCAT Americas and the Emirates Global Cup). "
              "U.S. Nationals, Canadian Nationals, Scottsdale's own classes and the regional shows are not in it, because their results could not be collected within their sites' rules.",
-             "%d of the %d stallions with a price have a foal in those classes. The rest are listed by price only." % (len(with_rec), len(priced))]
+             "%d of the %d stallions with a price have a foal in those classes. The rest are listed by price only. Many prices are what a breeding sold for at a futurity auction, "
+             "which is usually below the advertised stud fee. Opening bids are left out." % (len(with_rec), len(priced))]
     if check and check["top_share_of_top3"] is not None:
         notes.append("Tested on %s: each year the top third of sires by top-three foals so far went on to sire %.0f%% of the next year's top-three finishers among new foals. "
                      "%.0f%% of those sires had one, against %.0f%% of the other sires." % (
@@ -210,7 +211,6 @@ def match_data(folder):
     if fam and fam.get("dam_link") is not None:
         notes.append("The mare shows up more than the stallion here too. Two different foals out of the same mare finished alike (a link of %.2f on %d pairs, where 0 is no relation and 1 is identical). "
                      "Two foals by the same sire did so less (%.2f). A horse's own finish one year tracked the next (%.2f)." % (fam["dam_link"], fam["dam_pairs"], fam["sire_link"], fam["same_horse_link"]))
-    notes.append("Many prices are what a breeding sold for at a futurity auction. Those usually sell below the advertised stud fee. Opening bids are left out.")
     paid = [(r["placing"].strip().lower(), float(r["prize_usd"]), r["year"]) for r in barn if r.get("prize_usd")]
     champ = [p[1] for p in paid if p[0] in ("champion", "1")]
     ten = [p[1] for p in paid if p[0] not in ("champion", "1", "reserve", "2")]
@@ -224,10 +224,9 @@ def match_data(folder):
         d = lambda v: "${:,.0f}".format(round(v, -2))
         best = model.get("price_best")
         notes.append("Sale prices: %d Arabians sold at public online auction, 2015 to 2022, for a typical %s (middle half %s to %s). The %d aged three or under made a typical %s. "
-                     "%d of the %d reached $20,000." % (a["n"], d(a["median"]), d(a["q1"]), d(a["q3"]), y["n"], d(y["median"]), g["over_20000"], a["n"]))
-        if best:
-            notes.append("Nothing we tried says which horse will be one of those. The best of %d versions of a price model explains %.0f%% of the difference between sales, "
-                         "so the page gives no sale estimate per stallion." % (model["price_versions"], max(0.0, 100 * best["explained"])))
+                     "%d of the %d reached $20,000.%s" % (a["n"], d(a["median"]), d(a["q1"]), d(a["q3"]), y["n"], d(y["median"]), g["over_20000"], a["n"],
+                                                      (" Nothing we tried says which horse will be one of those: the best of %d versions of a price model explains %.0f%% of the difference "
+                                                       "between sales, so the page gives no sale estimate per stallion." % (model["price_versions"], max(0.0, 100 * best["explained"]))) if best else ""))
     elif prices:
         notes.append("We found %d public sale prices for Arabian horses, too few to estimate what a foal sells for. Their typical price was %s." % (len(prices), "${:,.0f}".format(st.median(prices))))
     notes.append("A foal's market depends on its papers. If the mare is not a registered purebred, a foal by a registered purebred stallion can usually be registered as a Half-Arabian. "

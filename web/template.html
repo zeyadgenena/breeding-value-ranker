@@ -380,6 +380,17 @@ function mareFacts(){
   return ' What such mares cost: in ' + f.mares_sold + ' public mare sales the typical price was ' + money(f.typical) + '. The ' + a.n + ' that were already listed producers sold for ' +
     money(a.low) + ' to ' + money(a.high) + (l && l.n ? ', and the ' + l.n + ' that later produced an earner had sold for ' + money(l.low) + ' to ' + money(l.high) : '') + '. Small numbers, so take them as a rough guide.';
 }
+function sameForLess(top, pool){
+  if (!top.odds || !M.foal) return null;
+  var same = pool.filter(function(s){ return s.odds && Math.abs(chance(s) - chance(top)) < 0.005 && s.price.fee <= top.price.fee - 250; })
+    .sort(function(a, b){ return a.price.fee - b.price.fee || b.score - a.score; })[0];
+  if (!same) return null;
+  var r = M.foal.rank_split;
+  return h('div', {class: 'note'}, h('b', {text: 'The same chance per foal for less. '}),
+    same.name + ' at ' + money(same.price.fee) + ' is also one of the top 20 sires, so his foal gets the same ' + pct(chance(same)) + ' and you keep ' + money(top.price.fee - same.price.fee) + '. ' +
+    (r ? 'Among foals that were shown, those by sires ranked 11 to 20 made a top three as often as those by the top 10 (' + pct(r.next10) + ' and ' + pct(r.top10) + '). ' : '') +
+    'What the dearer stallion has is more foals winning in total, partly because more and better mares go to him.');
+}
 function useButton(v){ return h('button', {class: 'linkbtn', type: 'button', text: 'Use ' + money(v), onclick: function(){ state[state.have === 'mare' ? 'budget' : 'total'] = v; render(); }}); }
 
 /* ---------- a mare ---------- */
@@ -429,6 +440,7 @@ function mareResults(){
     out.push(provenToggle());
     out.push(h('h2', {text: M.win_heading || 'Your best chance of a prize winner'}));
     out.push(winnerCard(w[0], null, null, w));
+    out.push(sameForLess(w[0], w));
     out.push(h('h2', {text: w.length === 1 ? 'The one option in your budget' : 'All ' + w.length + ' options, ranked by foal record'}));
     out.push(rankTable(w, [[M.fee_label || 'Stud fee', COL.fee[1]], statCol(), PM ? COL.ret : null]));
     if (!PM) out.push(noPrice());
@@ -461,6 +473,7 @@ function noneResults(){
   var top = ranked[0], star = byWinner(fit)[0], out = [goalToggle()];
   out.push(h('h2', {text: sell ? 'Your best return' : (M.win_heading || 'Your best chance of a prize winner')}));
   out.push(sell ? returnCard(top, ranked, fit, split(top, t)) : winnerCard(top, null, split(top, t), ranked));
+  if (!sell) out.push(sameForLess(top, ranked));
   out.push(h('h2', {text: 'All ' + ranked.length + ' ways to split ' + money(t) + ', ranked'}));
   out.push(rankTable(ranked, [['Breeding', COL.fee[1]], ['Left for the mare', function(s){ return money(t - s.price.fee); }, 'wide'],
     sell ? ['Yearling sells for', COL.sale[1]] : statCol(), PM ? ['Return', COL.ret[1]] : null], sell ? star.id : null));

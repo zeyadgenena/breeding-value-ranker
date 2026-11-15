@@ -232,6 +232,12 @@
   "bottom_third_said": 0.14598110970005695
  },
  "typical_class_size": 21,
+ "rank_split": {
+  "top10": 0.26141078838174275,
+  "top10_foals": 241,
+  "next10": 0.26373626373626374,
+  "next10_foals": 91
+ },
  "dam_rates": {
   "proven": 0.3258426966292135,
   "other": 0.19140625,

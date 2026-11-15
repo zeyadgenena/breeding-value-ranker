@@ -209,6 +209,14 @@ in the model, a top-5 line sorts no better than chance (22% of their foals made
 a top three, against 21% for everyone else). A top-20 line is the best of the
 six tried (26% against 15%), and top 30 and top 50 are close behind.
 
+**Is the cheapest leading sire as good a bet?** Per foal shown, yes as far as
+the data can tell: foals of sires ranked 11 to 20 made a top three as often as
+foals of the top 10 (26% each). At the stallion level, no: picking the cheapest
+of the top 20 each season found a sire of a top-50 foal 8 times in 24, against
+18 in 24 for the top-ranked picks. The dearer sires have more foals out there
+and better mares. The app shows both: the ranking by record, and a note when a
+cheaper stallion carries the same chance per foal.
+
 What the kept model says, and what happened:
 
 | Sire | Dam | Chance of a top three | Chance of a top-50 money year | Foals | Top three, actual |

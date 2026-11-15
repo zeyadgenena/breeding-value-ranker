@@ -268,7 +268,7 @@ def match_data(ds, p):
             "record": record, "sales": _load("sales_summary.json"), "mare_facts": _load("mare_facts.json"),
             "foal": {"class_size": foal.get("typical_class_size", 21), "proven_at": 10000, "money_at": int(round(foal["money_cutoff"], -3)),
                      "money_rate": foal["money_rate"], "money_forward": foal["money_score"]["forward"],
-                     "worth": _load("futurity_worth.json"), "proven_rate": foal["dam_rates"]["proven"], "other_rate": foal["dam_rates"]["other"],
+                     "worth": _load("futurity_worth.json"), "rank_split": foal.get("rank_split"), "proven_rate": foal["dam_rates"]["proven"], "other_rate": foal["dam_rates"]["other"],
                      "foals": foal["foals"], "sires": foal["sires"], "years": foal["years"], "base": foal["base_rate"], "forward": foal["kept_round"]["forward"],
                      "split": foal["forward_split"], "rounds": len(foal["scorecard"]), "combinations": (foal.get("search") or {}).get("combinations"),
                      "scorecard": [{"name": r["round"].split(" ", 1)[1].replace(" (the one kept)", ""), "forward": round(r["forward"], 2), "each_year": round(r["each_year"], 2),

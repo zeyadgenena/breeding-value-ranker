@@ -288,6 +288,8 @@ def main():
                "weights_top3": w, "weights_win": ww, "weights_money": wm, "money_score": money_score, "money_cutoff": cut, "money_rate": st.mean(r["money"] for r in rows), "features": ["intercept", "sire_in_top_20", "dam_proven"], "search": searched,
                "base_rate": base, "foals": len(rows), "sires": len({r["sire"] for r in rows}), "dams": len({r["dam"] for r in rows}), "years": years,
                "scorecard": card, "kept_round": card[KEPT], "grid": grid, "forward_split": split, "typical_class_size": 21,
+               "rank_split": {"top10": st.mean(r["top3"] for r in rows if r["sire_rank"] <= 10), "top10_foals": sum(1 for r in rows if r["sire_rank"] <= 10),
+                              "next10": st.mean(r["top3"] for r in rows if 10 < r["sire_rank"] <= 20), "next10_foals": sum(1 for r in rows if 10 < r["sire_rank"] <= 20)},
                "dam_rates": {"proven": st.mean(r["top3"] for r in rows if r["dam_proven"]), "other": st.mean(r["top3"] for r in rows if not r["dam_proven"]),
                              "proven_foals": sum(1 for r in rows if r["dam_proven"]), "other_foals": sum(1 for r in rows if not r["dam_proven"]),
                              "meaning": "the dam was among the year's top 50 dams by foal winnings in an earlier year (about $10,000 or more won by her foals in one year)"}}
