@@ -183,6 +183,13 @@ def match_data(folder):
     else:
         notes.append("It has not been tested against past seasons. The results are too one-sided for a fair test.")
     notes.append("There is no list of every horse shown, so we cannot give a chance per foal as we do for Quarter Horses.")
+    paid = [(r["placing"].strip().lower(), float(r["prize_usd"]), r["year"]) for r in results if r.get("prize_usd")]
+    champ = [p[1] for p in paid if p[0] in ("champion", "1")]
+    ten = [p[1] for p in paid if p[0] not in ("champion", "1", "reserve", "2")]
+    if champ and ten:
+        d = lambda v: "${:,.0f}".format(round(v, -2))
+        notes.append("Prize money is small next to Quarter Horse halter. The U.S. Nationals futurity paid its champion %s to %s and a top ten %s to %s (%s to %s). "
+                     "For Arabians the money is in the sale, and the best sales are private." % (d(min(champ)), d(max(champ)), d(min(ten)), d(max(ten)), min(p[2] for p in paid), max(p[2] for p in paid)))
     if prices:
         notes.append("We found %d public sale prices for Arabians, too few to estimate what a foal sells for. Their typical price was %s." % (len(prices), "${:,.0f}".format(st.median(prices))))
     notes.append("A foal's market depends on its papers. If the mare is not a registered purebred, a foal by a registered purebred stallion can usually be registered as a Half-Arabian. "

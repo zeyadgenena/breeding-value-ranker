@@ -109,7 +109,7 @@ footer li{margin:6px 0}
 'use strict';
 var D = window.BVR, B = D.breeds || {qh: D.match}, KEYS = Object.keys(B), app = document.getElementById('app');
 var M, S, PM, MARES, PRICED, LOWEST;
-var state = {breed: null, have: null, budget: null, sire: '', total: null, mine: '', goal: 'sell', all: false, proven: false};
+var state = {breed: null, have: null, budget: null, sire: '', total: null, mine: '', goal: 'win', all: false, proven: false};
 
 function h(tag, attrs){
   var el = document.createElement(tag), k, i;
@@ -139,7 +139,7 @@ function use(b){
   state.breed = b; M = B[b]; S = M.stallions; PM = M.pricing; MARES = M.sales && M.sales.mares;
   PRICED = S.filter(function(s){ return s.price; });
   LOWEST = PRICED.reduce(function(m, s){ return Math.min(m, s.price.fee); }, Infinity);
-  state.goal = PM ? 'sell' : 'win'; state.all = false; state.mine = ''; state.sire = ''; state.proven = false;
+  state.goal = 'win'; state.all = false; state.mine = ''; state.sire = ''; state.proven = false;
 }
 function chance(st){ return st.odds ? (state.proven ? st.odds.yes : st.odds.no) : null; }
 function moneyChance(st){ return st.odds ? (state.proven ? st.odds.money_yes : st.odds.money_no) : null; }
@@ -275,7 +275,7 @@ var COL = {
   ret: ['Return', function(s){ return priced(s) ? times(s.sale.multiple) : 'no estimate'; }]
 };
 function statCol(){
-  return M.foal ? ['Top-three chance', function(s){ return s.odds ? pct(chance(s)) : ''; }] : [M.stat_label || 'Record', function(s){ return s.stat || ''; }];
+  return M.foal ? ['Top three', function(s){ return s.odds ? pct(chance(s)) : ''; }] : [M.stat_label || 'Record', function(s){ return s.stat || ''; }];
 }
 function moneyInput(id, value, onset, label){
   var input = h('input', {id: id, type: 'text', inputmode: 'numeric', autocomplete: 'off', placeholder: '0', 'aria-label': label,
@@ -299,7 +299,7 @@ function seg(label, options, current, onpick){
 }
 function goalToggle(){
   if (!PM) return null;
-  return seg('Rank by', [['sell', 'Return if I sell the foal'], ['win', 'Chance of a prize winner']], state.goal, function(g){ state.goal = g; state.all = false; results(); });
+  return seg('Rank by', [['win', 'Chance of a prize winner'], ['sell', 'Return if I sell the foal']], state.goal, function(g){ state.goal = g; state.all = false; results(); });
 }
 function provenToggle(){
   if (!M.foal) return null;
