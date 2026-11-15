@@ -373,6 +373,13 @@ function noPrice(){
     h('p', {class: 'fine', text: 'We found no advertised fee or auction price for these, so they are not ranked by budget. Ask the farm.'}),
     h('ul', {class: 'plain'}, list.map(function(s){ return h('li', null, s.name + (s.stat ? ', ' + s.stat : '') + ' ', badge(s)); })));
 }
+function mareFacts(){
+  var f = M.mare_facts;
+  if (!f || !f.already_producers || !f.already_producers.n) return '';
+  var a = f.already_producers, l = f.became_producers;
+  return ' What such mares cost: in ' + f.mares_sold + ' public mare sales the typical price was ' + money(f.typical) + '. The ' + a.n + ' that were already listed producers sold for ' +
+    money(a.low) + ' to ' + money(a.high) + (l && l.n ? ', and the ' + l.n + ' that later produced an earner had sold for ' + money(l.low) + ' to ' + money(l.high) : '') + '. Small numbers, so take them as a rough guide.';
+}
 function useButton(v){ return h('button', {class: 'linkbtn', type: 'button', text: 'Use ' + money(v), onclick: function(){ state[state.have === 'mare' ? 'budget' : 'total'] = v; render(); }}); }
 
 /* ---------- a mare ---------- */
@@ -462,7 +469,7 @@ function noneResults(){
     (MARES ? ': at public online sales most halter mares sold for ' + money(MARES.q1) + ' to ' + money(MARES.q3) + ' (' + MARES.n + ' sales).' : '.') +
     ' A better mare should give a better foal, but the public sales do not show by how much, so the foal’s price here does not change with what you spend on her.'}));
   else if (M.foal) out.push(h('p', {class: 'fine', text: 'Spend what is left on the mare with care: a mare that has already produced an earner lifts the top-three chance from ' +
-    pct(top.odds.no) + ' to ' + pct(top.odds.yes) + ' with this stallion. That is as big a step as moving from an ordinary stallion to a leading one.'}));
+    pct(top.odds.no) + ' to ' + pct(top.odds.yes) + ' with this stallion. That is as big a step as moving from an ordinary stallion to a leading one.' + mareFacts()}));
   out.push(expectBox(t));
   return out;
 }

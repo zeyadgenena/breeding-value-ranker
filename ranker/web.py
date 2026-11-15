@@ -265,7 +265,7 @@ def match_data(ds, p):
     return {"label": "Quarter Horse", "sub": "Halter stallions", "detail": "explore.html", "fee_chips": [1000, 1500, 2000, 2500, 3000],
             "total_chips": [5000, 10000, 20000, 50000], "how": how, "notes": [],
             "years": recent, "latest": latest, "read_on": dates[-1] if dates else "", "stallions": out,
-            "record": record, "sales": _load("sales_summary.json"),
+            "record": record, "sales": _load("sales_summary.json"), "mare_facts": _load("mare_facts.json"),
             "foal": {"class_size": foal.get("typical_class_size", 21), "proven_at": 10000, "money_at": int(round(foal["money_cutoff"], -3)),
                      "money_rate": foal["money_rate"], "money_forward": foal["money_score"]["forward"],
                      "worth": _load("futurity_worth.json"), "proven_rate": foal["dam_rates"]["proven"], "other_rate": foal["dam_rates"]["other"],
