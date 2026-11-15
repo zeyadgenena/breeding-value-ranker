@@ -1,0 +1,815 @@
+{
+ "note": "Stallions outside the workbook whose young foals appear in the public sales. Fees are the advertised breeding fee on their stallion-service auction pages (internethorseauctions.com); winnings are from the QData halter sire leaderboards (top 50 per year, read 2026-11-15). Used only to train the sale-price model.",
+ "stallions": {
+  "A TOUCH OF SUDDEN": {
+   "fees": {
+    "2019": 1000.0,
+    "2020": 1000.0
+   },
+   "winnings": {}
+  },
+  "ACOOLEST TOUCHDOWN": {
+   "fees": {
+    "2018": 1500.0,
+    "2019": 1500.0
+   },
+   "winnings": {
+    "2018": {
+     "rank": 25,
+     "earners": 6,
+     "earnings": 25084
+    },
+    "2019": {
+     "rank": 28,
+     "earners": 7,
+     "earnings": 22786
+    },
+    "2020": {
+     "rank": 32,
+     "earners": 4,
+     "earnings": 21441
+    },
+    "2021": {
+     "rank": 11,
+     "earners": 9,
+     "earnings": 86634
+    },
+    "2022": {
+     "rank": 18,
+     "earners": 11,
+     "earnings": 46545
+    },
+    "2023": {
+     "rank": 32,
+     "earners": 8,
+     "earnings": 17914
+    },
+    "2024": {
+     "rank": 30,
+     "earners": 5,
+     "earnings": 16412
+    }
+   }
+  },
+  "ATTENCION": {
+   "fees": {
+    "2018": 1250.0,
+    "2019": 1200.0
+   },
+   "winnings": {}
+  },
+  "AWESOME ANDY": {
+   "fees": {
+    "2018": 1000.0,
+    "2019": 1000.0,
+    "2020": 1000.0,
+    "2021": 1000.0
+   },
+   "winnings": {}
+  },
+  "CALI BABA": {
+   "fees": {
+    "2018": 1750.0
+   },
+   "winnings": {
+    "2018": {
+     "rank": 40,
+     "earners": 4,
+     "earnings": 10464
+    },
+    "2019": {
+     "rank": 40,
+     "earners": 3,
+     "earnings": 12492
+    },
+    "2021": {
+     "rank": 47,
+     "earners": 1,
+     "earnings": 9000
+    }
+   }
+  },
+  "COOL ADDICTION": {
+   "fees": {
+    "2018": 1500.0,
+    "2019": 1500.0
+   },
+   "winnings": {
+    "2019": {
+     "rank": 30,
+     "earners": 3,
+     "earnings": 20852
+    },
+    "2020": {
+     "rank": 20,
+     "earners": 5,
+     "earnings": 35408
+    },
+    "2021": {
+     "rank": 20,
+     "earners": 8,
+     "earnings": 47101
+    },
+    "2023": {
+     "rank": 48,
+     "earners": 2,
+     "earnings": 6827
+    },
+    "2024": {
+     "rank": 38,
+     "earners": 5,
+     "earnings": 9922
+    },
+    "2026": {
+     "rank": 49,
+     "earners": 3,
+     "earnings": 5050
+    }
+   }
+  },
+  "COOL IN COLOR": {
+   "fees": {
+    "2024": 800.0,
+    "2025": 800.0
+   },
+   "winnings": {
+    "2019": {
+     "rank": 37,
+     "earners": 2,
+     "earnings": 14068
+    },
+    "2020": {
+     "rank": 16,
+     "earners": 3,
+     "earnings": 48242
+    },
+    "2021": {
+     "rank": 43,
+     "earners": 5,
+     "earnings": 10607
+    },
+    "2022": {
+     "rank": 39,
+     "earners": 3,
+     "earnings": 12241
+    },
+    "2023": {
+     "rank": 23,
+     "earners": 6,
+     "earnings": 29870
+    },
+    "2024": {
+     "rank": 34,
+     "earners": 8,
+     "earnings": 12766
+    },
+    "2025": {
+     "rank": 36,
+     "earners": 6,
+     "earnings": 14047
+    }
+   }
+  },
+  "DC LEGACY": {
+   "fees": {
+    "2018": 1250.0,
+    "2019": 1250.0
+   },
+   "winnings": {
+    "2018": {
+     "rank": 50,
+     "earners": 5,
+     "earnings": 7320
+    }
+   }
+  },
+  "DOUBLE UP INVESTMENT": {
+   "fees": {
+    "2018": 1000.0
+   },
+   "winnings": {}
+  },
+  "ECREDIBLE": {
+   "fees": {
+    "2018": 2500.0
+   },
+   "winnings": {
+    "2018": {
+     "rank": 9,
+     "earners": 12,
+     "earnings": 79597
+    },
+    "2019": {
+     "rank": 9,
+     "earners": 12,
+     "earnings": 66641
+    },
+    "2020": {
+     "rank": 12,
+     "earners": 15,
+     "earnings": 57353
+    },
+    "2021": {
+     "rank": 17,
+     "earners": 15,
+     "earnings": 60449
+    },
+    "2022": {
+     "rank": 23,
+     "earners": 13,
+     "earnings": 32783
+    },
+    "2023": {
+     "rank": 16,
+     "earners": 10,
+     "earnings": 61441
+    },
+    "2024": {
+     "rank": 16,
+     "earners": 11,
+     "earnings": 70161
+    },
+    "2025": {
+     "rank": 19,
+     "earners": 7,
+     "earnings": 52028
+    },
+    "2026": {
+     "rank": 23,
+     "earners": 8,
+     "earnings": 33531
+    }
+   }
+  },
+  "FEARLES": {
+   "fees": {
+    "2018": 2000.0
+   },
+   "winnings": {
+    "2018": {
+     "rank": 37,
+     "earners": 7,
+     "earnings": 11045
+    },
+    "2019": {
+     "rank": 38,
+     "earners": 5,
+     "earnings": 13638
+    },
+    "2020": {
+     "rank": 36,
+     "earners": 4,
+     "earnings": 13360
+    }
+   }
+  },
+  "FG BORN LEGACY": {
+   "fees": {
+    "2020": 1750.0,
+    "2022": 1750.0
+   },
+   "winnings": {
+    "2020": {
+     "rank": 21,
+     "earners": 2,
+     "earnings": 35224
+    },
+    "2021": {
+     "rank": 16,
+     "earners": 8,
+     "earnings": 62126
+    },
+    "2022": {
+     "rank": 9,
+     "earners": 12,
+     "earnings": 91038
+    },
+    "2023": {
+     "rank": 9,
+     "earners": 14,
+     "earnings": 123759
+    },
+    "2024": {
+     "rank": 5,
+     "earners": 19,
+     "earnings": 222626
+    },
+    "2025": {
+     "rank": 8,
+     "earners": 20,
+     "earnings": 155851
+    },
+    "2026": {
+     "rank": 13,
+     "earners": 16,
+     "earnings": 82540
+    }
+   }
+  },
+  "FG RISING STAR": {
+   "fees": {
+    "2023": 1500.0
+   },
+   "winnings": {}
+  },
+  "HEARTLESS KID": {
+   "fees": {
+    "2018": 1200.0
+   },
+   "winnings": {}
+  },
+  "HEZA SECRET AGENT": {
+   "fees": {},
+   "winnings": {
+    "2018": {
+     "rank": 2,
+     "earners": 37,
+     "earnings": 188843
+    },
+    "2019": {
+     "rank": 2,
+     "earners": 39,
+     "earnings": 273165
+    },
+    "2020": {
+     "rank": 5,
+     "earners": 23,
+     "earnings": 111707
+    },
+    "2021": {
+     "rank": 35,
+     "earners": 11,
+     "earnings": 17160
+    }
+   }
+  },
+  "I AM RELENTLESS": {
+   "fees": {
+    "2018": 1500.0
+   },
+   "winnings": {}
+  },
+  "I GOTTA COOL SECRET": {
+   "fees": {
+    "2018": 3000.0,
+    "2019": 3000.0,
+    "2020": 3000.0
+   },
+   "winnings": {
+    "2018": {
+     "rank": 11,
+     "earners": 31,
+     "earnings": 68533
+    },
+    "2019": {
+     "rank": 14,
+     "earners": 27,
+     "earnings": 46167
+    },
+    "2020": {
+     "rank": 19,
+     "earners": 20,
+     "earnings": 35948
+    },
+    "2021": {
+     "rank": 40,
+     "earners": 10,
+     "earnings": 10896
+    },
+    "2022": {
+     "rank": 40,
+     "earners": 7,
+     "earnings": 11046
+    },
+    "2023": {
+     "rank": 46,
+     "earners": 7,
+     "earnings": 7455
+    }
+   }
+  },
+  "IKON": {
+   "fees": {
+    "2018": 2000.0,
+    "2019": 2000.0
+   },
+   "winnings": {
+    "2018": {
+     "rank": 4,
+     "earners": 19,
+     "earnings": 103670
+    },
+    "2019": {
+     "rank": 18,
+     "earners": 15,
+     "earnings": 38722
+    },
+    "2020": {
+     "rank": 25,
+     "earners": 11,
+     "earnings": 31841
+    },
+    "2021": {
+     "rank": 45,
+     "earners": 3,
+     "earnings": 9683
+    }
+   }
+  },
+  "IM THE SECRET": {
+   "fees": {
+    "2018": 1000.0,
+    "2021": 750.0,
+    "2022": 1250.0,
+    "2023": 1000.0
+   },
+   "winnings": {
+    "2018": {
+     "rank": 22,
+     "earners": 9,
+     "earnings": 34525
+    },
+    "2019": {
+     "rank": 6,
+     "earners": 15,
+     "earnings": 101030
+    },
+    "2020": {
+     "rank": 29,
+     "earners": 7,
+     "earnings": 22152
+    },
+    "2021": {
+     "rank": 9,
+     "earners": 8,
+     "earnings": 91899
+    },
+    "2022": {
+     "rank": 20,
+     "earners": 8,
+     "earnings": 38040
+    }
+   }
+  },
+  "INTENSIONS": {
+   "fees": {
+    "2018": 2500.0,
+    "2021": 1500.0
+   },
+   "winnings": {
+    "2018": {
+     "rank": 20,
+     "earners": 9,
+     "earnings": 35230
+    },
+    "2019": {
+     "rank": 19,
+     "earners": 10,
+     "earnings": 35325
+    },
+    "2020": {
+     "rank": 10,
+     "earners": 15,
+     "earnings": 60629
+    },
+    "2021": {
+     "rank": 5,
+     "earners": 10,
+     "earnings": 118505
+    },
+    "2022": {
+     "rank": 26,
+     "earners": 6,
+     "earnings": 26180
+    },
+    "2023": {
+     "rank": 38,
+     "earners": 3,
+     "earnings": 13215
+    },
+    "2024": {
+     "rank": 48,
+     "earners": 2,
+     "earnings": 5708
+    }
+   }
+  },
+  "INVESTED BY FAR": {
+   "fees": {
+    "2020": 650.0,
+    "2021": 650.0
+   },
+   "winnings": {}
+  },
+  "KID COOLSIFIED": {
+   "fees": {
+    "2018": 2500.0
+   },
+   "winnings": {
+    "2018": {
+     "rank": 3,
+     "earners": 45,
+     "earnings": 134334
+    },
+    "2019": {
+     "rank": 5,
+     "earners": 38,
+     "earnings": 112116
+    },
+    "2020": {
+     "rank": 4,
+     "earners": 24,
+     "earnings": 141773
+    },
+    "2021": {
+     "rank": 18,
+     "earners": 14,
+     "earnings": 57692
+    },
+    "2022": {
+     "rank": 25,
+     "earners": 11,
+     "earnings": 29089
+    },
+    "2023": {
+     "rank": 43,
+     "earners": 3,
+     "earnings": 9769
+    }
+   }
+  },
+  "KIDS TELASECRET": {
+   "fees": {
+    "2018": 1000.0,
+    "2020": 1000.0
+   },
+   "winnings": {}
+  },
+  "LOVE TO HOTROD": {
+   "fees": {
+    "2019": 750.0
+   },
+   "winnings": {}
+  },
+  "MR TOUCHDOWN KID": {
+   "fees": {
+    "2018": 1250.0
+   },
+   "winnings": {
+    "2018": {
+     "rank": 41,
+     "earners": 8,
+     "earnings": 9458
+    }
+   }
+  },
+  "MY INTENTION": {
+   "fees": {
+    "2018": 2500.0,
+    "2019": 2500.0
+   },
+   "winnings": {
+    "2018": {
+     "rank": 1,
+     "earners": 71,
+     "earnings": 366294
+    },
+    "2019": {
+     "rank": 1,
+     "earners": 79,
+     "earnings": 424201
+    },
+    "2020": {
+     "rank": 1,
+     "earners": 77,
+     "earnings": 554470
+    },
+    "2021": {
+     "rank": 1,
+     "earners": 63,
+     "earnings": 410238
+    },
+    "2022": {
+     "rank": 2,
+     "earners": 62,
+     "earnings": 358505
+    },
+    "2023": {
+     "rank": 1,
+     "earners": 61,
+     "earnings": 356239
+    },
+    "2024": {
+     "rank": 2,
+     "earners": 54,
+     "earnings": 336245
+    },
+    "2025": {
+     "rank": 6,
+     "earners": 45,
+     "earnings": 263513
+    },
+    "2026": {
+     "rank": 9,
+     "earners": 28,
+     "earnings": 131706
+    }
+   }
+  },
+  "PF PREMO": {
+   "fees": {
+    "2018": 2500.0,
+    "2019": 2500.0,
+    "2020": 2500.0
+   },
+   "winnings": {
+    "2018": {
+     "rank": 17,
+     "earners": 14,
+     "earnings": 41438
+    },
+    "2019": {
+     "rank": 17,
+     "earners": 14,
+     "earnings": 39088
+    },
+    "2020": {
+     "rank": 17,
+     "earners": 15,
+     "earnings": 43201
+    },
+    "2021": {
+     "rank": 6,
+     "earners": 27,
+     "earnings": 111804
+    },
+    "2022": {
+     "rank": 10,
+     "earners": 22,
+     "earnings": 83548
+    },
+    "2023": {
+     "rank": 18,
+     "earners": 21,
+     "earnings": 54803
+    },
+    "2024": {
+     "rank": 28,
+     "earners": 11,
+     "earnings": 18528
+    }
+   }
+  },
+  "RG JUSTIFIED": {
+   "fees": {
+    "2022": 500.0
+   },
+   "winnings": {}
+  },
+  "SECRETS OF A LEGEND": {
+   "fees": {
+    "2018": 1500.0,
+    "2019": 1500.0
+   },
+   "winnings": {
+    "2019": {
+     "rank": 15,
+     "earners": 13,
+     "earnings": 40654
+    },
+    "2020": {
+     "rank": 8,
+     "earners": 21,
+     "earnings": 68077
+    },
+    "2021": {
+     "rank": 12,
+     "earners": 24,
+     "earnings": 83962
+    },
+    "2022": {
+     "rank": 28,
+     "earners": 16,
+     "earnings": 21499
+    },
+    "2023": {
+     "rank": 35,
+     "earners": 11,
+     "earnings": 15179
+    }
+   }
+  },
+  "SUCHAN EGO": {
+   "fees": {
+    "2018": 1250.0,
+    "2020": 1500.0,
+    "2021": 1500.0
+   },
+   "winnings": {
+    "2018": {
+     "rank": 7,
+     "earners": 14,
+     "earnings": 87339
+    },
+    "2019": {
+     "rank": 3,
+     "earners": 24,
+     "earnings": 147296
+    },
+    "2020": {
+     "rank": 6,
+     "earners": 26,
+     "earnings": 94824
+    },
+    "2021": {
+     "rank": 19,
+     "earners": 24,
+     "earnings": 53182
+    },
+    "2022": {
+     "rank": 21,
+     "earners": 26,
+     "earnings": 36650
+    },
+    "2023": {
+     "rank": 17,
+     "earners": 19,
+     "earnings": 61241
+    },
+    "2024": {
+     "rank": 40,
+     "earners": 15,
+     "earnings": 9118
+    },
+    "2026": {
+     "rank": 37,
+     "earners": 4,
+     "earnings": 10650
+    }
+   }
+  },
+  "TE COOLEST": {
+   "fees": {
+    "2018": 1250.0
+   },
+   "winnings": {}
+  },
+  "THE AMAZING GUNSLINGER": {
+   "fees": {
+    "2018": 2000.0
+   },
+   "winnings": {}
+  },
+  "UNBELIEVEABLE": {
+   "fees": {
+    "2021": 600.0
+   },
+   "winnings": {}
+  },
+  "URGE": {
+   "fees": {
+    "2019": 1500.0
+   },
+   "winnings": {
+    "2019": {
+     "rank": 36,
+     "earners": 6,
+     "earnings": 15128
+    },
+    "2020": {
+     "rank": 30,
+     "earners": 7,
+     "earnings": 21971
+    },
+    "2022": {
+     "rank": 7,
+     "earners": 12,
+     "earnings": 95214
+    },
+    "2023": {
+     "rank": 8,
+     "earners": 10,
+     "earnings": 131048
+    },
+    "2024": {
+     "rank": 21,
+     "earners": 5,
+     "earnings": 40716
+    }
+   }
+  },
+  "VIRTUOUS": {
+   "fees": {
+    "2020": 1500.0,
+    "2025": 500.0
+   },
+   "winnings": {}
+  },
+  "ZS CELEBRI TE GQ": {
+   "fees": {
+    "2019": 1500.0
+   },
+   "winnings": {}
+  }
+ }
+}

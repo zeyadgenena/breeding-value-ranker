@@ -31,6 +31,17 @@ rounds. The full write-up is [qa/RESULTS.md](qa/RESULTS.md). In brief:
 - In 122 public online sales, young horses by these stallions sold for 1.7 times the stud fee at the median, and none reached $20,000. The large outcomes are prize money, not resale.
 - The test cannot say what one foal's chance is, because crop sizes are unknown. That still needs the AQHA all-foals record.
 
+**Expected sale price and return (added 2026-11-15).** The app now gives a
+likely sale price for a foal by every stallion and ranks the options by return
+on the stud fee. A price model was trained in ten versions on 240 public sales,
+and 128 combinations of factors were searched. Findings:
+
+- A yearling colt or filly sells for about $2,600 to $2,900 whoever the sire is. A weanling sells for about $3,400 to $3,800. The stud fee does not move the price.
+- So the best return on resale is the lowest stud fee: about 2.6 to 2.8 times a $1,000 fee, against 1.3 to 1.5 times a $2,000 fee. Real sales by $1,000 stallions came in a little lower, at 2.2 times.
+- The best model explains 14% of the difference between sales, and the sire accounts for about one point of that. Two sales in three landed between half and double the estimate.
+- These are public online auction prices. The best prospects sell privately, so the figures understate what a top sire's best foal can bring.
+- One year after breeding there is no sale price, because the foal has only just been born. The first sale points are weanling (about 18 months) and yearling (about 2 years).
+
 This matcher is separate from the backtest described in the rest of this note,
 which waits on foal-by-foal records.
 

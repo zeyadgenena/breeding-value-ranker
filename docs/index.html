@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Breeding Value Ranker</title>
-<meta name="description" content="Tell us what you have and what you can spend. We match you with the halter stallion whose foals have the strongest record within your budget.">
+<meta name="description" content="Tell us what you have and what you can spend. We rank every halter stallion in your budget by the return you can expect.">
 <style>
 :root{
   color-scheme:light;
@@ -23,7 +23,7 @@ html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--page);color:var(--ink);font:17px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
 a{color:inherit}
 button,input,select{font:inherit;color:inherit}
-.wrap{max-width:680px;margin:0 auto;padding:28px 16px 56px}
+.wrap{max-width:720px;margin:0 auto;padding:28px 16px 56px}
 h1{font-size:30px;line-height:1.15;margin:0 0 6px}
 .tag{color:var(--ink2);margin:0 0 30px;font-size:18px}
 h2{font-size:20px;margin:30px 0 12px}
@@ -43,59 +43,73 @@ h2{font-size:20px;margin:30px 0 12px}
 .chip:hover{background:var(--wash)}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .field{margin:18px 0 0}
-.field label{display:block;font-weight:600;margin:0 0 6px}
+.field label,.field .lab{display:block;font-weight:600;margin:0 0 6px}
 .field small{display:block;color:var(--ink2);margin:6px 0 0;font-size:14.5px}
 .field input[type=text],.field select{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 14px;width:100%;max-width:360px}
+.seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1.5px solid var(--line);border-radius:12px;overflow:hidden;max-width:520px}
+.seg button{border:0;background:var(--surface);padding:10px 14px;cursor:pointer;color:var(--ink2);text-align:left}
+.seg button + button{border-left:1px solid var(--line)}
+@media (max-width:560px){.seg{grid-template-columns:minmax(0,1fr)}.seg button + button{border-left:0;border-top:1px solid var(--line)}}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
 .card{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:18px 20px;margin:0 0 12px}
 .card.best{border:2px solid var(--ink)}
 .eyebrow{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);font-weight:600;margin:0 0 4px}
 .name{font-size:24px;font-weight:700;line-height:1.2;margin:0}
-.card:not(.best) .name{font-size:19px}
 .by{color:var(--ink2);font-size:14.5px;margin:2px 0 10px}
 .row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;margin:0 0 8px}
-.price{font-size:26px;font-weight:700}
-.card:not(.best) .price{font-size:20px}
+.price{font-size:20px;font-weight:700}
 .price small{font-size:14.5px;font-weight:400;color:var(--ink2);margin-left:6px}
-.badge{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:15px;white-space:nowrap}
-.badge i{width:12px;height:12px;border-radius:50%;display:inline-block;border:2px solid var(--muted)}
+.badge{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:14.5px;white-space:nowrap}
+.badge i{width:11px;height:11px;border-radius:50%;display:inline-block;border:2px solid var(--muted)}
 .badge.strong i{background:var(--good);border-color:var(--good)}
 .badge.some i{background:var(--muted)}
-.why{margin:0;color:var(--ink)}
+.nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.nums.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:560px){.nums,.nums.two{grid-template-columns:minmax(0,1fr)}}
+.num{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.num .k{display:block;color:var(--ink2);font-size:13.5px}
+.num .v{display:block;font-size:24px;font-weight:700;line-height:1.25}
+.num .s{display:block;color:var(--ink2);font-size:13px}
+.why{margin:0 0 8px;color:var(--ink)}
 .fine{color:var(--ink2);font-size:14.5px;margin:6px 0 0}
 .note{border-left:4px solid var(--accent);background:var(--surface);border-radius:8px;padding:12px 14px;margin:14px 0;color:var(--ink2)}
 .note b{color:var(--ink)}
 .linkbtn{border:0;background:none;padding:0;text-decoration:underline;cursor:pointer;color:inherit}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+th{color:var(--ink2);font-weight:600;font-size:13px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+td.n{white-space:nowrap}
+td .sub{display:block;color:var(--ink2);font-size:13px;font-weight:400}
+td .badge{font-size:13px;font-weight:400;white-space:normal}
+td .badge i{flex:none}
+tr.top td{background:var(--wash);font-weight:600}
+@media (max-width:560px){th.wide,td.wide{display:none}th,td{padding:9px 6px}th:first-child,td:first-child{padding-left:10px}th:last-child,td:last-child{padding-right:10px}table{font-size:14.5px}th{font-size:12.5px}}
 details{margin:14px 0 0}
 summary{cursor:pointer;font-weight:600}
-.list{list-style:none;margin:10px 0 0;padding:0}
-.list li{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:space-between;align-items:baseline;padding:10px 0;border-top:1px solid var(--line)}
-.list li b{font-weight:600}
-.list .r{display:flex;gap:14px;align-items:baseline;color:var(--ink2);font-size:15px}
-.plan{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:6px 14px;align-items:baseline;padding:14px 0;border-top:1px solid var(--line)}
-.plan:first-of-type{border-top:0}
-.plan .k{color:var(--ink2);font-size:13.5px;display:block}
-.plan .v{font-size:20px;font-weight:700}
-@media (max-width:560px){.plan{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.plan > div:first-child{grid-column:1 / -1}}
+ul.plain{margin:6px 0 0;padding-left:20px}
+ul.plain li{margin:8px 0}
 footer{margin:40px 0 0;padding:18px 0 0;border-top:1px solid var(--line);color:var(--ink2);font-size:15px}
 footer ul{margin:10px 0 0;padding-left:20px}
 footer li{margin:6px 0}
-ul.plain{margin:6px 0 0;padding-left:20px}
-ul.plain li{margin:8px 0}
 </style>
 </head>
 <body>
 <main class="wrap">
   <h1>Breeding Value Ranker</h1>
-  <p class="tag">Tell us what you have and what you can spend. We find the halter stallion with the strongest record within your budget.</p>
+  <p class="tag">Tell us what you have and what you can spend. We rank every halter stallion in your budget by the return you can expect.</p>
   <div id="app"></div>
   <footer id="foot"></footer>
 </main>
-<script>window.BVR={"generated":"2026-11-15","repo":"https://github.com/zeyadgenena/breeding-value-ranker","match":{"years":[2024,2025,2026],"latest":2026,"read_on":"2026-11-15","stallions":[{"id":"ST001","name":"BEST KEPT SECRETE","foaled":2015,"sire":"HEZA SECRET AGENT","dam":"HUSH DONT TELL","dam_sire":"FEARLES","price":{"fee":2500.0,"year":2026,"current":true},"pt":false,"share":0.52,"bids":9,"score":18527.0,"rec":{"tier":"some","y":2026,"e":32013.0,"n":8,"prev":55315.0},"shown":{"n":9,"y":2026,"big":1,"median":5667.0}},{"id":"ST002","name":"EVINCEBLE","foaled":2017,"sire":"MR ELUSIVE","dam":"LADIES N LACE","dam_sire":"VERY COOL","price":{"fee":2250.0,"year":2027,"current":true},"pt":false,"share":0.71,"bids":10,"score":197470.0,"rec":{"tier":"strong","y":2026,"e":244968.0,"n":44,"prev":303891.0},"shown":{"n":47,"y":2026,"big":13,"median":7170.0}},{"id":"ST003","name":"HEARTZ ON FIRE","foaled":2015,"sire":"SECRETZ","dam":"KIDS KEEPING COOL","dam_sire":"THE FINEST KID","price":null,"pt":true,"share":0.72,"bids":8,"score":23221.0,"rec":{"tier":"some","y":2026,"e":36723.0,"n":8,"prev":58077.0},"shown":{"n":8,"y":2026,"big":3,"median":17842.0}},{"id":"ST004","name":"QUINLAN","foaled":2022,"sire":"MY INTENTION","dam":"SHEZ PURE ELEGANCE","dam_sire":"HEZA SECRET AGENT","price":{"fee":1750.0,"year":2026,"current":true},"pt":false,"share":null,"bids":0,"score":98942.0,"rec":{"tier":"some","y":2026,"e":49471.0,"n":4,"prev":0.0},"shown":{"n":4,"y":2026,"big":1,"median":10559.5}},{"id":"ST005","name":"RAYLAN GIVENS","foaled":2019,"sire":"MY INTENTION","dam":"EXCUSES XCUSES","dam_sire":"MR ELUSIVE","price":{"fee":2000.0,"year":2027,"current":true},"pt":false,"share":1.03,"bids":1,"score":410215.0,"rec":{"tier":"strong","y":2026,"e":341876.0,"n":30,"prev":284922.0},"shown":{"n":31,"y":2026,"big":17,"median":20542.0}},{"id":"ST006","name":"RUMERZ","foaled":2013,"sire":"SECRETZ","dam":"KIDS KEEPING COOL","dam_sire":"THE FINEST KID","price":{"fee":2500.0,"year":2026,"current":true},"pt":false,"share":0.7,"bids":9,"score":23008.0,"rec":{"tier":"some","y":2026,"e":26882.0,"n":10,"prev":31408.0},"shown":{"n":10,"y":2026,"big":2,"median":4470.0}},{"id":"ST007","name":"VALENTINO","foaled":2013,"sire":"THE TOP SECRET","dam":"INNOCENT TOUCH","dam_sire":"TOUCHDOWN KID","price":null,"pt":true,"share":0.73,"bids":2,"score":1498.0,"rec":{"tier":"some","y":2025,"e":7488.0,"n":2,"prev":0.0},"shown":null},{"id":"ST008","name":"ACQUI GUNFIGHTER","foaled":2015,"sire":"SECRET GUNFIGHTER","dam":"ACQUI BELLA","dam_sire":"ACQUISITIONS","price":{"fee":750.0,"year":2024,"current":false},"pt":false,"share":null,"bids":0,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST009","name":"BIGGER DREAMS","foaled":2018,"sire":"MY INTENTION","dam":"DREAM BIG DREAMS","dam_sire":"MR ELUSIVE","price":{"fee":1000.0,"year":2024,"current":false},"pt":false,"share":0.5,"bids":4,"score":6618.0,"rec":{"tier":"some","y":2026,"e":13235.0,"n":7,"prev":83534.0},"shown":null},{"id":"ST010","name":"CARIBBEAN TOUCHDOWN","foaled":2008,"sire":"CARIBBEAN KID","dam":"SHEZA KCS TOUCHDOWN","dam_sire":null,"price":{"fee":725.0,"year":2024,"current":false},"pt":false,"share":0.48,"bids":4,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST011","name":"CHILLEN","foaled":2010,"sire":"SIR COOL SKIP","dam":"COLORFUL ENCOUNTER","dam_sire":null,"price":{"fee":1050.0,"year":2020,"current":false},"pt":false,"share":0.5,"bids":1,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST012","name":"CLASSIC T O A TE","foaled":2016,"sire":"HEARTLESS KID","dam":"MS ICE TE","dam_sire":"MR ICE TE","price":{"fee":1250.0,"year":2025,"current":true},"pt":false,"share":0.54,"bids":2,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST013","name":"CR PEACEMAKER","foaled":2017,"sire":"SOLARIS","dam":"SHES GOT THE GUNS","dam_sire":"WESTERN GUSLINGER","price":{"fee":2500.0,"year":2025,"current":true},"pt":false,"share":0.62,"bids":5,"score":173563.0,"rec":{"tier":"strong","y":2026,"e":225208.0,"n":30,"prev":292220.0},"shown":null},{"id":"ST014","name":"DGS REPLICATED","foaled":2009,"sire":"INDIAN ARTIFACTS","dam":"VIVA VALENTINA","dam_sire":null,"price":{"fee":925.0,"year":2024,"current":false},"pt":false,"share":0.51,"bids":2,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST015","name":"DGS THE ENTERTAINER","foaled":2015,"sire":"HBF IRON MAN","dam":"DGS INDYCREDIBLE","dam_sire":"INDIAN ARTIFACTS","price":{"fee":800.0,"year":2025,"current":true},"pt":false,"share":0.51,"bids":2,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST016","name":"DGS VINTAGE","foaled":2014,"sire":"DGS VESTASTIC","dam":"DGS INDYSPIRATIONAL","dam_sire":"INDIAN ARTIFACTS","price":{"fee":975.0,"year":2023,"current":false},"pt":false,"share":0.65,"bids":2,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST017","name":"EL ANTE","foaled":2012,"sire":"I GOTTA COOL SECRET","dam":"KIDS CLASSIC BEAUTY","dam_sire":"KIDS CLASSIC STYLE","price":{"fee":1500.0,"year":2024,"current":false},"pt":false,"share":0.72,"bids":8,"score":65858.0,"rec":{"tier":"strong","y":2026,"e":81946.0,"n":24,"prev":101964.0},"shown":null},{"id":"ST018","name":"EL FUTURO","foaled":2017,"sire":"KID COOLSIFIED","dam":"MEXICALI COOL","dam_sire":null,"price":{"fee":1000.0,"year":2025,"current":true},"pt":false,"share":0.5,"bids":8,"score":10600.0,"rec":{"tier":"some","y":2026,"e":5300.0,"n":2,"prev":0.0},"shown":null},{"id":"ST019","name":"ENCHANT","foaled":2012,"sire":"MR ELUSIVE","dam":"COOL CRUISIN TEMPEST","dam_sire":"COOL CRUISIN SKIP","price":{"fee":1000.0,"year":2022,"current":false},"pt":false,"share":0.5,"bids":3,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST020","name":"ENTENTIONS","foaled":2014,"sire":"MY INTENTION","dam":"OBVIOUSLY ELATED","dam_sire":"MR ELUSIVE","price":{"fee":1500.0,"year":2024,"current":false},"pt":false,"share":0.7,"bids":8,"score":2710.0,"rec":{"tier":"some","y":2026,"e":5420.0,"n":6,"prev":30688.0},"shown":null},{"id":"ST021","name":"ESE A LOOKER","foaled":2015,"sire":"ECREDIBLE","dam":"DONT STARE","dam_sire":"YOU BET IM KIDDIN","price":{"fee":1000.0,"year":2025,"current":true},"pt":false,"share":0.64,"bids":7,"score":14756.0,"rec":{"tier":"some","y":2026,"e":24196.0,"n":4,"prev":39674.0},"shown":null},{"id":"ST022","name":"EXCEPTIONAL LOOK","foaled":2007,"sire":"KIDLOOK","dam":"CJ TARDEES ANGEL","dam_sire":"AZZARI","price":{"fee":800.0,"year":2020,"current":false},"pt":false,"share":null,"bids":0,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST023","name":"EXECUTE","foaled":2004,"sire":"MR TOUCHDOWN KID","dam":"FOREVER COOLEST","dam_sire":"COOLEST","price":{"fee":2500.0,"year":2024,"current":false},"pt":false,"share":0.76,"bids":9,"score":164641.0,"rec":{"tier":"strong","y":2026,"e":198901.0,"n":18,"prev":240290.0},"shown":null},{"id":"ST024","name":"FG PHENOMENAL FELLA","foaled":2014,"sire":"MR YELLA FELLA","dam":"PHENOMENAL MS","dam_sire":"THE PHENOMENAL","price":{"fee":1000.0,"year":2025,"current":true},"pt":false,"share":0.5,"bids":1,"score":0.0,"rec":{"tier":"some","y":2024,"e":6200.0,"n":3,"prev":0.0},"shown":null},{"id":"ST025","name":"FG SPEECHLESS","foaled":2018,"sire":"VERY COOL","dam":"MISS KITTEE","dam_sire":"WESTERN GUNSLINGER","price":{"fee":1000.0,"year":2024,"current":false},"pt":false,"share":0.68,"bids":6,"score":125056.0,"rec":{"tier":"strong","y":2026,"e":110813.0,"n":21,"prev":98192.0},"shown":null},{"id":"ST026","name":"GRAND SLAM TOUCHDOWN","foaled":2004,"sire":"TOUCHDOWN KID","dam":"STRAW HAT GOLD CHARM","dam_sire":null,"price":{"fee":1500.0,"year":2023,"current":false},"pt":false,"share":0.5,"bids":1,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST027","name":"GUCCIE","foaled":2018,"sire":"SECRETS OF A LEGEND","dam":"BLUE EYES SURPRISE","dam_sire":"MR SINATRA","price":{"fee":1200.0,"year":2025,"current":true},"pt":false,"share":0.55,"bids":5,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST028","name":"HOTTEST CK IN TOWN","foaled":2013,"sire":"CK KID","dam":"HOY CHILD IN THE CITY","dam_sire":null,"price":{"fee":1200.0,"year":2020,"current":false},"pt":false,"share":0.5,"bids":1,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST029","name":"IEM THE ONE","foaled":2012,"sire":"TELASECRET","dam":"SIERRA TEASE","dam_sire":"SIERRA TE","price":{"fee":2000.0,"year":2023,"current":false},"pt":false,"share":0.5,"bids":7,"score":0.0,"rec":{"tier":"some","y":2024,"e":12955.0,"n":9,"prev":20028.0},"shown":null},{"id":"ST030","name":"INITIALS ONLY","foaled":2010,"sire":"CK KID","dam":"BE A TARDEE","dam_sire":"MR BE DOWNTOWN","price":{"fee":1000.0,"year":2023,"current":false},"pt":false,"share":0.7,"bids":6,"score":13476.0,"rec":{"tier":"some","y":2026,"e":6738.0,"n":3,"prev":0.0},"shown":null},{"id":"ST031","name":"KID FOREVER IN STYLE","foaled":2009,"sire":"KIDS CLASSIC STYLE","dam":"IMA LUCKY CLUE","dam_sire":"CONCLUSIFIED","price":null,"pt":true,"share":null,"bids":0,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST032","name":"KIDS GOTTA SECRET","foaled":2013,"sire":"I GOTTA COOL SECRET","dam":"SERIOUSABOUTDIAMONDS","dam_sire":"KIDS CLASSIC STYLE","price":{"fee":750.0,"year":2025,"current":true},"pt":false,"share":null,"bids":0,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST033","name":"LFL ELIGIANCE","foaled":2018,"sire":"APIRATES LIFE FOR ME","dam":"LFL ELIGE","dam_sire":"SIR COOL SKIP","price":{"fee":950.0,"year":2024,"current":false},"pt":false,"share":0.67,"bids":6,"score":18409.0,"rec":{"tier":"some","y":2026,"e":24019.0,"n":6,"prev":31339.0},"shown":null},{"id":"ST034","name":"LOOKIN AT THE SIERRAS","foaled":2011,"sire":"KIDSLOOKINTOUCHABLE","dam":"MISS PRINCESS SIERRA","dam_sire":"SIERRA TE","price":{"fee":1000.0,"year":2023,"current":false},"pt":false,"share":null,"bids":0,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST035","name":"MMR JINX ON ME","foaled":2017,"sire":"KID COOLSIFIED","dam":"LOVE ON ME","dam_sire":"AWESOME ANDY","price":{"fee":1250.0,"year":2025,"current":true},"pt":false,"share":null,"bids":0,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST036","name":"MR REDNECK ROMEO","foaled":2013,"sire":"NOT KIDDIN ME","dam":"HEAVENLY ACOOSA","dam_sire":"ACOOSA","price":{"fee":1000.0,"year":2020,"current":false},"pt":false,"share":0.57,"bids":4,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST037","name":"MV LEGENDARY","foaled":2011,"sire":"IM TEE TOTALLY COOL","dam":"CHARM BRACELETS","dam_sire":null,"price":{"fee":750.0,"year":2021,"current":false},"pt":false,"share":null,"bids":0,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST038","name":"MY TE INTENSE","foaled":2012,"sire":"MY INTENTION","dam":"A MORNING VERSE","dam_sire":null,"price":{"fee":850.0,"year":2023,"current":false},"pt":false,"share":0.5,"bids":2,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST039","name":"PIRATE PAYDAY","foaled":2016,"sire":"APIRATES LIFE FOR ME","dam":"RENEGADES GOLDEN KID","dam_sire":"THE FINEST KID","price":{"fee":1000.0,"year":2022,"current":false},"pt":false,"share":0.5,"bids":3,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST040","name":"SAIL ON SAILOR","foaled":2019,"sire":"APIRATES LIFE FOR ME","dam":"CK CARAVEL","dam_sire":"CARIBBEAN KID","price":{"fee":1650.0,"year":2024,"current":false},"pt":false,"share":0.73,"bids":5,"score":10883.0,"rec":{"tier":"some","y":2026,"e":10761.0,"n":7,"prev":10640.0},"shown":null},{"id":"ST041","name":"SECRET GUNFIGHTER","foaled":2011,"sire":"WESTERN GUNSLINGER","dam":"TOP SECRETINA","dam_sire":"TH TOP SECRET","price":{"fee":2000.0,"year":2025,"current":true},"pt":false,"share":0.81,"bids":8,"score":348495.0,"rec":{"tier":"strong","y":2026,"e":362770.0,"n":53,"prev":377630.0},"shown":null},{"id":"ST042","name":"SOLARIS","foaled":2013,"sire":"SIRPRIZERIZED","dam":"COOLESTSHOWGIRLINTOWN","dam_sire":null,"price":{"fee":2000.0,"year":2025,"current":true},"pt":false,"share":0.71,"bids":6,"score":397833.0,"rec":{"tier":"strong","y":2026,"e":337999.0,"n":42,"prev":287164.0},"shown":null},{"id":"ST043","name":"TELACHROME","foaled":2015,"sire":"TELASECRET","dam":"SHEZ AN ELUSIVE KID","dam_sire":"TD KID","price":{"fee":1500.0,"year":2024,"current":false},"pt":false,"share":0.5,"bids":4,"score":5139.0,"rec":{"tier":"some","y":2026,"e":6010.0,"n":2,"prev":7029.0},"shown":null},{"id":"ST044","name":"TELASECRET","foaled":2009,"sire":"THE TOP SECRET","dam":"TELOQUENCE","dam_sire":null,"price":{"fee":1000.0,"year":2024,"current":false},"pt":false,"share":0.65,"bids":4,"score":2192.0,"rec":{"tier":"some","y":2025,"e":10958.0,"n":14,"prev":24038.0},"shown":null},{"id":"ST045","name":"TELESTRATOR","foaled":2017,"sire":"TELASECRET","dam":"PF SUPREME SURPRISE","dam_sire":"MH SUPREMO","price":{"fee":1000.0,"year":2025,"current":true},"pt":false,"share":null,"bids":0,"score":0.0,"rec":{"tier":"some","y":2024,"e":6400.0,"n":1,"prev":0.0},"shown":null},{"id":"ST046","name":"THE HEISMAN LEGEND","foaled":2016,"sire":"HEISMAN","dam":"MISS LITTLE TE","dam_sire":"SAINT TELUSIVE","price":{"fee":1300.0,"year":2023,"current":false},"pt":false,"share":0.58,"bids":3,"score":11842.0,"rec":{"tier":"some","y":2026,"e":19132.0,"n":5,"prev":30909.0},"shown":null},{"id":"ST047","name":"VERY COOL","foaled":2008,"sire":"TE COOLEST","dam":"VERY SEXY","dam_sire":"IMAGE OF KID","price":{"fee":2000.0,"year":2022,"current":false},"pt":false,"share":0.81,"bids":5,"score":40689.0,"rec":{"tier":"some","y":2026,"e":54633.0,"n":19,"prev":73356.0},"shown":null},{"id":"ST048","name":"VIGILANTI","foaled":2013,"sire":"FEARLES","dam":"MY SWEET INNOCENCE","dam_sire":"COOLEST","price":{"fee":1000.0,"year":2022,"current":false},"pt":false,"share":0.5,"bids":3,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST049","name":"WHISKEY FOR MY MOCCA","foaled":2016,"sire":"A CLASSICAL MOCCA","dam":"COOL CARIBBEAN MISS","dam_sire":"TWENTYFOUR KARAT KID","price":{"fee":750.0,"year":2023,"current":false},"pt":false,"share":null,"bids":0,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST050","name":"XA OBVIOUSLY SUAVE","foaled":2016,"sire":"HEZ N COMMAND","dam":"OBVIOUSLY MIGHTY","dam_sire":"MIGHTY AMBITIOUS","price":{"fee":550.0,"year":2021,"current":false},"pt":false,"share":null,"bids":0,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST051","name":"XTRA STYLE","foaled":2019,"sire":"KID FOREVER IN STYLE","dam":"PLATINUM N STYLE","dam_sire":"JF SKIP N STYLE","price":null,"pt":true,"share":null,"bids":0,"score":3568.0,"rec":{"tier":"some","y":2026,"e":6253.0,"n":1,"prev":10960.0},"shown":null},{"id":"ST052","name":"ZR KIDS CLASSICSTYLE","foaled":2013,"sire":"KIDS CLASSIC STYLE","dam":"MS RE DESIGNED","dam_sire":"HE IS RE DESIGNED","price":{"fee":500.0,"year":2022,"current":false},"pt":false,"share":null,"bids":0,"score":0.0,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null}],"record":{"first_season":2019,"last_season":2025,"k":3,"method":"leave one season out: rule chosen on the other seasons","rules_chosen":["final","momentum","final","final","final","total3","final"],"final_rule_in_sample_hits":{"1000":6,"1500":7,"2000":17,"None":18},"by_budget":[{"budget":1000,"picks":21,"hit":5,"base":0.06136054421768707,"share":0.23809523809523808},{"budget":1500,"picks":21,"hit":4,"base":0.08499622071050641,"share":0.19047619047619047},{"budget":2000,"picks":21,"hit":14,"base":0.177070588087483,"share":0.6666666666666666},{"budget":null,"picks":21,"hit":16,"base":0.21052867121843916,"share":0.7619047619047619}]},"sales":{"note":"Public online auction results from internethorseauctions.com listings, 2017 to 2025, read 2026-11-15. Young = weanling to two-year-old by a stallion in the workbook. Mares = aged three and up, by a halter sire.","young":{"n":122,"median":2600.0,"q1":1550,"q3":4200,"top":18100,"at_least_10000":4,"at_least_20000":0,"with_fee":85,"median_multiple":1.67,"at_least_3x":22,"at_least_10x":0,"best_multiple":9.1},"mares":{"n":108,"median":3100.0,"q1":1750,"q3":6200,"top":20300}}}};</script>
+<script>window.BVR={"generated":"2026-11-15","repo":"https://github.com/zeyadgenena/breeding-value-ranker","match":{"years":[2024,2025,2026],"latest":2026,"read_on":"2026-11-15","stallions":[{"id":"ST001","name":"BEST KEPT SECRETE","foaled":2015,"sire":"HEZA SECRET AGENT","dam":"HUSH DONT TELL","dam_sire":"FEARLES","price":{"fee":2500.0,"year":2026,"current":true},"pt":false,"share":0.52,"bids":9,"score":18527.0,"sale":{"typical":2700.0,"low":1600.0,"high":4200.0,"multiple":1.08,"p3":0.05,"p10":0.004,"weanling":3500.0,"weanling_multiple":1.41,"tested":true,"real":{"n":20,"median":1575.0,"label":"more than $2,000","multiple":0.63}},"sold":null,"rec":{"tier":"some","y":2026,"e":32013.0,"n":8,"prev":55315.0},"shown":{"n":9,"y":2026,"big":1,"median":5667.0}},{"id":"ST002","name":"EVINCEBLE","foaled":2017,"sire":"MR ELUSIVE","dam":"LADIES N LACE","dam_sire":"VERY COOL","price":{"fee":2250.0,"year":2027,"current":true},"pt":false,"share":0.71,"bids":10,"score":197470.0,"sale":{"typical":2900.0,"low":1700.0,"high":4500.0,"multiple":1.27,"p3":0.09,"p10":0.004,"weanling":3700.0,"weanling_multiple":1.66,"tested":true,"real":{"n":20,"median":1575.0,"label":"more than $2,000","multiple":0.63}},"sold":{"n":4,"median":3650.0},"rec":{"tier":"strong","y":2026,"e":244968.0,"n":44,"prev":303891.0},"shown":{"n":47,"y":2026,"big":13,"median":7170.0}},{"id":"ST003","name":"HEARTZ ON FIRE","foaled":2015,"sire":"SECRETZ","dam":"KIDS KEEPING COOL","dam_sire":"THE FINEST KID","price":null,"pt":true,"share":0.72,"bids":8,"score":23221.0,"sale":null,"sold":{"n":4,"median":3600.0},"rec":{"tier":"some","y":2026,"e":36723.0,"n":8,"prev":58077.0},"shown":{"n":8,"y":2026,"big":3,"median":17842.0}},{"id":"ST004","name":"QUINLAN","foaled":2022,"sire":"MY INTENTION","dam":"SHEZ PURE ELEGANCE","dam_sire":"HEZA SECRET AGENT","price":{"fee":1750.0,"year":2026,"current":true},"pt":false,"share":null,"bids":0,"score":98942.0,"sale":{"typical":2700.0,"low":1700.0,"high":4200.0,"multiple":1.56,"p3":0.15,"p10":0.004,"weanling":3600.0,"weanling_multiple":2.04,"tested":true,"real":{"n":68,"median":2900.0,"label":"$1,501 to $2,000","multiple":1.66}},"sold":null,"rec":{"tier":"some","y":2026,"e":49471.0,"n":4,"prev":0.0},"shown":{"n":4,"y":2026,"big":1,"median":10559.5}},{"id":"ST005","name":"RAYLAN GIVENS","foaled":2019,"sire":"MY INTENTION","dam":"EXCUSES XCUSES","dam_sire":"MR ELUSIVE","price":{"fee":2000.0,"year":2027,"current":true},"pt":false,"share":1.03,"bids":1,"score":410215.0,"sale":{"typical":2900.0,"low":1700.0,"high":4500.0,"multiple":1.45,"p3":0.12,"p10":0.004,"weanling":3800.0,"weanling_multiple":1.89,"tested":true,"real":{"n":68,"median":2900.0,"label":"$1,501 to $2,000","multiple":1.66}},"sold":null,"rec":{"tier":"strong","y":2026,"e":341876.0,"n":30,"prev":284922.0},"shown":{"n":31,"y":2026,"big":17,"median":20542.0}},{"id":"ST006","name":"RUMERZ","foaled":2013,"sire":"SECRETZ","dam":"KIDS KEEPING COOL","dam_sire":"THE FINEST KID","price":{"fee":2500.0,"year":2026,"current":true},"pt":false,"share":0.7,"bids":9,"score":23008.0,"sale":{"typical":2700.0,"low":1600.0,"high":4200.0,"multiple":1.08,"p3":0.05,"p10":0.004,"weanling":3500.0,"weanling_multiple":1.4,"tested":true,"real":{"n":20,"median":1575.0,"label":"more than $2,000","multiple":0.63}},"sold":{"n":4,"median":3225.0},"rec":{"tier":"some","y":2026,"e":26882.0,"n":10,"prev":31408.0},"shown":{"n":10,"y":2026,"big":2,"median":4470.0}},{"id":"ST007","name":"VALENTINO","foaled":2013,"sire":"THE TOP SECRET","dam":"INNOCENT TOUCH","dam_sire":"TOUCHDOWN KID","price":null,"pt":true,"share":0.73,"bids":2,"score":1498.0,"sale":null,"sold":null,"rec":{"tier":"some","y":2025,"e":7488.0,"n":2,"prev":0.0},"shown":null},{"id":"ST008","name":"ACQUI GUNFIGHTER","foaled":2015,"sire":"SECRET GUNFIGHTER","dam":"ACQUI BELLA","dam_sire":"ACQUISITIONS","price":{"fee":750.0,"year":2024,"current":false},"pt":false,"share":null,"bids":0,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":3.44,"p3":0.57,"p10":0.05,"weanling":3400.0,"weanling_multiple":4.48,"tested":false,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST009","name":"BIGGER DREAMS","foaled":2018,"sire":"MY INTENTION","dam":"DREAM BIG DREAMS","dam_sire":"MR ELUSIVE","price":{"fee":1000.0,"year":2024,"current":false},"pt":false,"share":0.5,"bids":4,"score":6618.0,"sale":{"typical":2700.0,"low":1600.0,"high":4100.0,"multiple":2.65,"p3":0.45,"p10":0.025,"weanling":3500.0,"weanling_multiple":3.46,"tested":true,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"some","y":2026,"e":13235.0,"n":7,"prev":83534.0},"shown":null},{"id":"ST010","name":"CARIBBEAN TOUCHDOWN","foaled":2008,"sire":"CARIBBEAN KID","dam":"SHEZA KCS TOUCHDOWN","dam_sire":null,"price":{"fee":725.0,"year":2024,"current":false},"pt":false,"share":0.48,"bids":4,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":3.56,"p3":0.6,"p10":0.054,"weanling":3400.0,"weanling_multiple":4.64,"tested":false,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST011","name":"CHILLEN","foaled":2010,"sire":"SIR COOL SKIP","dam":"COLORFUL ENCOUNTER","dam_sire":null,"price":{"fee":1050.0,"year":2020,"current":false},"pt":false,"share":0.5,"bids":1,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.46,"p3":0.39,"p10":0.021,"weanling":3400.0,"weanling_multiple":3.2,"tested":true,"real":{"n":22,"median":2850.0,"label":"$1,001 to $1,500","multiple":1.9}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST012","name":"CLASSIC T O A TE","foaled":2016,"sire":"HEARTLESS KID","dam":"MS ICE TE","dam_sire":"MR ICE TE","price":{"fee":1250.0,"year":2025,"current":true},"pt":false,"share":0.54,"bids":2,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.07,"p3":0.29,"p10":0.008,"weanling":3400.0,"weanling_multiple":2.69,"tested":true,"real":{"n":22,"median":2850.0,"label":"$1,001 to $1,500","multiple":1.9}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST013","name":"CR PEACEMAKER","foaled":2017,"sire":"SOLARIS","dam":"SHES GOT THE GUNS","dam_sire":"WESTERN GUSLINGER","price":{"fee":2500.0,"year":2025,"current":true},"pt":false,"share":0.62,"bids":5,"score":173563.0,"sale":{"typical":2900.0,"low":1700.0,"high":4400.0,"multiple":1.14,"p3":0.05,"p10":0.004,"weanling":3700.0,"weanling_multiple":1.49,"tested":true,"real":{"n":20,"median":1575.0,"label":"more than $2,000","multiple":0.63}},"sold":{"n":5,"median":3500.0},"rec":{"tier":"strong","y":2026,"e":225208.0,"n":30,"prev":292220.0},"shown":null},{"id":"ST014","name":"DGS REPLICATED","foaled":2009,"sire":"INDIAN ARTIFACTS","dam":"VIVA VALENTINA","dam_sire":null,"price":{"fee":925.0,"year":2024,"current":false},"pt":false,"share":0.51,"bids":2,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.79,"p3":0.45,"p10":0.042,"weanling":3400.0,"weanling_multiple":3.64,"tested":false,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST015","name":"DGS THE ENTERTAINER","foaled":2015,"sire":"HBF IRON MAN","dam":"DGS INDYCREDIBLE","dam_sire":"INDIAN ARTIFACTS","price":{"fee":800.0,"year":2025,"current":true},"pt":false,"share":0.51,"bids":2,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":3.23,"p3":0.54,"p10":0.05,"weanling":3400.0,"weanling_multiple":4.2,"tested":false,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST016","name":"DGS VINTAGE","foaled":2014,"sire":"DGS VESTASTIC","dam":"DGS INDYSPIRATIONAL","dam_sire":"INDIAN ARTIFACTS","price":{"fee":975.0,"year":2023,"current":false},"pt":false,"share":0.65,"bids":2,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.65,"p3":0.45,"p10":0.025,"weanling":3400.0,"weanling_multiple":3.45,"tested":false,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST017","name":"EL ANTE","foaled":2012,"sire":"I GOTTA COOL SECRET","dam":"KIDS CLASSIC BEAUTY","dam_sire":"KIDS CLASSIC STYLE","price":{"fee":1500.0,"year":2024,"current":false},"pt":false,"share":0.72,"bids":8,"score":65858.0,"sale":{"typical":2800.0,"low":1700.0,"high":4300.0,"multiple":1.85,"p3":0.24,"p10":0.004,"weanling":3600.0,"weanling_multiple":2.41,"tested":true,"real":{"n":22,"median":2850.0,"label":"$1,001 to $1,500","multiple":1.9}},"sold":{"n":9,"median":3100.0},"rec":{"tier":"strong","y":2026,"e":81946.0,"n":24,"prev":101964.0},"shown":null},{"id":"ST018","name":"EL FUTURO","foaled":2017,"sire":"KID COOLSIFIED","dam":"MEXICALI COOL","dam_sire":null,"price":{"fee":1000.0,"year":2025,"current":true},"pt":false,"share":0.5,"bids":8,"score":10600.0,"sale":{"typical":2600.0,"low":1600.0,"high":4100.0,"multiple":2.62,"p3":0.44,"p10":0.021,"weanling":3400.0,"weanling_multiple":3.41,"tested":true,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"some","y":2026,"e":5300.0,"n":2,"prev":0.0},"shown":null},{"id":"ST019","name":"ENCHANT","foaled":2012,"sire":"MR ELUSIVE","dam":"COOL CRUISIN TEMPEST","dam_sire":"COOL CRUISIN SKIP","price":{"fee":1000.0,"year":2022,"current":false},"pt":false,"share":0.5,"bids":3,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.58,"p3":0.43,"p10":0.021,"weanling":3400.0,"weanling_multiple":3.36,"tested":true,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST020","name":"ENTENTIONS","foaled":2014,"sire":"MY INTENTION","dam":"OBVIOUSLY ELATED","dam_sire":"MR ELUSIVE","price":{"fee":1500.0,"year":2024,"current":false},"pt":false,"share":0.7,"bids":8,"score":2710.0,"sale":{"typical":2600.0,"low":1600.0,"high":4100.0,"multiple":1.75,"p3":0.22,"p10":0.004,"weanling":3400.0,"weanling_multiple":2.27,"tested":true,"real":{"n":22,"median":2850.0,"label":"$1,001 to $1,500","multiple":1.9}},"sold":{"n":5,"median":1000.0},"rec":{"tier":"some","y":2026,"e":5420.0,"n":6,"prev":30688.0},"shown":null},{"id":"ST021","name":"ESE A LOOKER","foaled":2015,"sire":"ECREDIBLE","dam":"DONT STARE","dam_sire":"YOU BET IM KIDDIN","price":{"fee":1000.0,"year":2025,"current":true},"pt":false,"share":0.64,"bids":7,"score":14756.0,"sale":{"typical":2700.0,"low":1600.0,"high":4200.0,"multiple":2.69,"p3":0.45,"p10":0.033,"weanling":3500.0,"weanling_multiple":3.5,"tested":true,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"some","y":2026,"e":24196.0,"n":4,"prev":39674.0},"shown":null},{"id":"ST022","name":"EXCEPTIONAL LOOK","foaled":2007,"sire":"KIDLOOK","dam":"CJ TARDEES ANGEL","dam_sire":"AZZARI","price":{"fee":800.0,"year":2020,"current":false},"pt":false,"share":null,"bids":0,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":3.23,"p3":0.54,"p10":0.05,"weanling":3400.0,"weanling_multiple":4.2,"tested":false,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST023","name":"EXECUTE","foaled":2004,"sire":"MR TOUCHDOWN KID","dam":"FOREVER COOLEST","dam_sire":"COOLEST","price":{"fee":2500.0,"year":2024,"current":false},"pt":false,"share":0.76,"bids":9,"score":164641.0,"sale":{"typical":2900.0,"low":1700.0,"high":4400.0,"multiple":1.14,"p3":0.05,"p10":0.004,"weanling":3700.0,"weanling_multiple":1.48,"tested":true,"real":{"n":20,"median":1575.0,"label":"more than $2,000","multiple":0.63}},"sold":{"n":21,"median":2300.0},"rec":{"tier":"strong","y":2026,"e":198901.0,"n":18,"prev":240290.0},"shown":null},{"id":"ST024","name":"FG PHENOMENAL FELLA","foaled":2014,"sire":"MR YELLA FELLA","dam":"PHENOMENAL MS","dam_sire":"THE PHENOMENAL","price":{"fee":1000.0,"year":2025,"current":true},"pt":false,"share":0.5,"bids":1,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.58,"p3":0.43,"p10":0.021,"weanling":3400.0,"weanling_multiple":3.36,"tested":true,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"some","y":2024,"e":6200.0,"n":3,"prev":0.0},"shown":null},{"id":"ST025","name":"FG SPEECHLESS","foaled":2018,"sire":"VERY COOL","dam":"MISS KITTEE","dam_sire":"WESTERN GUNSLINGER","price":{"fee":1000.0,"year":2024,"current":false},"pt":false,"share":0.68,"bids":6,"score":125056.0,"sale":{"typical":2800.0,"low":1700.0,"high":4300.0,"multiple":2.8,"p3":0.45,"p10":0.046,"weanling":3600.0,"weanling_multiple":3.65,"tested":true,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"strong","y":2026,"e":110813.0,"n":21,"prev":98192.0},"shown":null},{"id":"ST026","name":"GRAND SLAM TOUCHDOWN","foaled":2004,"sire":"TOUCHDOWN KID","dam":"STRAW HAT GOLD CHARM","dam_sire":null,"price":{"fee":1500.0,"year":2023,"current":false},"pt":false,"share":0.5,"bids":1,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":1.72,"p3":0.2,"p10":0.004,"weanling":3400.0,"weanling_multiple":2.24,"tested":true,"real":{"n":22,"median":2850.0,"label":"$1,001 to $1,500","multiple":1.9}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST027","name":"GUCCIE","foaled":2018,"sire":"SECRETS OF A LEGEND","dam":"BLUE EYES SURPRISE","dam_sire":"MR SINATRA","price":{"fee":1200.0,"year":2025,"current":true},"pt":false,"share":0.55,"bids":5,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.15,"p3":0.33,"p10":0.017,"weanling":3400.0,"weanling_multiple":2.8,"tested":true,"real":{"n":22,"median":2850.0,"label":"$1,001 to $1,500","multiple":1.9}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST028","name":"HOTTEST CK IN TOWN","foaled":2013,"sire":"CK KID","dam":"HOY CHILD IN THE CITY","dam_sire":null,"price":{"fee":1200.0,"year":2020,"current":false},"pt":false,"share":0.5,"bids":1,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.15,"p3":0.33,"p10":0.017,"weanling":3400.0,"weanling_multiple":2.8,"tested":true,"real":{"n":22,"median":2850.0,"label":"$1,001 to $1,500","multiple":1.9}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST029","name":"IEM THE ONE","foaled":2012,"sire":"TELASECRET","dam":"SIERRA TEASE","dam_sire":"SIERRA TE","price":{"fee":2000.0,"year":2023,"current":false},"pt":false,"share":0.5,"bids":7,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":1.29,"p3":0.09,"p10":0.004,"weanling":3400.0,"weanling_multiple":1.68,"tested":true,"real":{"n":68,"median":2900.0,"label":"$1,501 to $2,000","multiple":1.66}},"sold":{"n":7,"median":2000.0},"rec":{"tier":"some","y":2024,"e":12955.0,"n":9,"prev":20028.0},"shown":null},{"id":"ST030","name":"INITIALS ONLY","foaled":2010,"sire":"CK KID","dam":"BE A TARDEE","dam_sire":"MR BE DOWNTOWN","price":{"fee":1000.0,"year":2023,"current":false},"pt":false,"share":0.7,"bids":6,"score":13476.0,"sale":{"typical":2600.0,"low":1600.0,"high":4100.0,"multiple":2.63,"p3":0.44,"p10":0.025,"weanling":3400.0,"weanling_multiple":3.42,"tested":true,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"some","y":2026,"e":6738.0,"n":3,"prev":0.0},"shown":null},{"id":"ST031","name":"KID FOREVER IN STYLE","foaled":2009,"sire":"KIDS CLASSIC STYLE","dam":"IMA LUCKY CLUE","dam_sire":"CONCLUSIFIED","price":null,"pt":true,"share":null,"bids":0,"score":0.0,"sale":null,"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST032","name":"KIDS GOTTA SECRET","foaled":2013,"sire":"I GOTTA COOL SECRET","dam":"SERIOUSABOUTDIAMONDS","dam_sire":"KIDS CLASSIC STYLE","price":{"fee":750.0,"year":2025,"current":true},"pt":false,"share":null,"bids":0,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":3.44,"p3":0.57,"p10":0.05,"weanling":3400.0,"weanling_multiple":4.48,"tested":false,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST033","name":"LFL ELIGIANCE","foaled":2018,"sire":"APIRATES LIFE FOR ME","dam":"LFL ELIGE","dam_sire":"SIR COOL SKIP","price":{"fee":950.0,"year":2024,"current":false},"pt":false,"share":0.67,"bids":6,"score":18409.0,"sale":{"typical":2700.0,"low":1600.0,"high":4200.0,"multiple":2.83,"p3":0.46,"p10":0.046,"weanling":3500.0,"weanling_multiple":3.68,"tested":false,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"some","y":2026,"e":24019.0,"n":6,"prev":31339.0},"shown":null},{"id":"ST034","name":"LOOKIN AT THE SIERRAS","foaled":2011,"sire":"KIDSLOOKINTOUCHABLE","dam":"MISS PRINCESS SIERRA","dam_sire":"SIERRA TE","price":{"fee":1000.0,"year":2023,"current":false},"pt":false,"share":null,"bids":0,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.58,"p3":0.43,"p10":0.021,"weanling":3400.0,"weanling_multiple":3.36,"tested":true,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST035","name":"MMR JINX ON ME","foaled":2017,"sire":"KID COOLSIFIED","dam":"LOVE ON ME","dam_sire":"AWESOME ANDY","price":{"fee":1250.0,"year":2025,"current":true},"pt":false,"share":null,"bids":0,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.07,"p3":0.29,"p10":0.008,"weanling":3400.0,"weanling_multiple":2.69,"tested":true,"real":{"n":22,"median":2850.0,"label":"$1,001 to $1,500","multiple":1.9}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST036","name":"MR REDNECK ROMEO","foaled":2013,"sire":"NOT KIDDIN ME","dam":"HEAVENLY ACOOSA","dam_sire":"ACOOSA","price":{"fee":1000.0,"year":2020,"current":false},"pt":false,"share":0.57,"bids":4,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.58,"p3":0.43,"p10":0.021,"weanling":3400.0,"weanling_multiple":3.36,"tested":true,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST037","name":"MV LEGENDARY","foaled":2011,"sire":"IM TEE TOTALLY COOL","dam":"CHARM BRACELETS","dam_sire":null,"price":{"fee":750.0,"year":2021,"current":false},"pt":false,"share":null,"bids":0,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":3.44,"p3":0.57,"p10":0.05,"weanling":3400.0,"weanling_multiple":4.48,"tested":false,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST038","name":"MY TE INTENSE","foaled":2012,"sire":"MY INTENTION","dam":"A MORNING VERSE","dam_sire":null,"price":{"fee":850.0,"year":2023,"current":false},"pt":false,"share":0.5,"bids":2,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":3.04,"p3":0.48,"p10":0.046,"weanling":3400.0,"weanling_multiple":3.96,"tested":false,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST039","name":"PIRATE PAYDAY","foaled":2016,"sire":"APIRATES LIFE FOR ME","dam":"RENEGADES GOLDEN KID","dam_sire":"THE FINEST KID","price":{"fee":1000.0,"year":2022,"current":false},"pt":false,"share":0.5,"bids":3,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.58,"p3":0.43,"p10":0.021,"weanling":3400.0,"weanling_multiple":3.36,"tested":true,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST040","name":"SAIL ON SAILOR","foaled":2019,"sire":"APIRATES LIFE FOR ME","dam":"CK CARAVEL","dam_sire":"CARIBBEAN KID","price":{"fee":1650.0,"year":2024,"current":false},"pt":false,"share":0.73,"bids":5,"score":10883.0,"sale":{"typical":2600.0,"low":1600.0,"high":4100.0,"multiple":1.6,"p3":0.17,"p10":0.004,"weanling":3400.0,"weanling_multiple":2.09,"tested":true,"real":{"n":68,"median":2900.0,"label":"$1,501 to $2,000","multiple":1.66}},"sold":null,"rec":{"tier":"some","y":2026,"e":10761.0,"n":7,"prev":10640.0},"shown":null},{"id":"ST041","name":"SECRET GUNFIGHTER","foaled":2011,"sire":"WESTERN GUNSLINGER","dam":"TOP SECRETINA","dam_sire":"TH TOP SECRET","price":{"fee":2000.0,"year":2025,"current":true},"pt":false,"share":0.81,"bids":8,"score":348495.0,"sale":{"typical":2900.0,"low":1800.0,"high":4500.0,"multiple":1.45,"p3":0.12,"p10":0.004,"weanling":3800.0,"weanling_multiple":1.89,"tested":true,"real":{"n":68,"median":2900.0,"label":"$1,501 to $2,000","multiple":1.66}},"sold":{"n":6,"median":1350.0},"rec":{"tier":"strong","y":2026,"e":362770.0,"n":53,"prev":377630.0},"shown":null},{"id":"ST042","name":"SOLARIS","foaled":2013,"sire":"SIRPRIZERIZED","dam":"COOLESTSHOWGIRLINTOWN","dam_sire":null,"price":{"fee":2000.0,"year":2025,"current":true},"pt":false,"share":0.71,"bids":6,"score":397833.0,"sale":{"typical":2900.0,"low":1700.0,"high":4500.0,"multiple":1.45,"p3":0.12,"p10":0.004,"weanling":3800.0,"weanling_multiple":1.89,"tested":true,"real":{"n":68,"median":2900.0,"label":"$1,501 to $2,000","multiple":1.66}},"sold":{"n":5,"median":1450.0},"rec":{"tier":"strong","y":2026,"e":337999.0,"n":42,"prev":287164.0},"shown":null},{"id":"ST043","name":"TELACHROME","foaled":2015,"sire":"TELASECRET","dam":"SHEZ AN ELUSIVE KID","dam_sire":"TD KID","price":{"fee":1500.0,"year":2024,"current":false},"pt":false,"share":0.5,"bids":4,"score":5139.0,"sale":{"typical":2600.0,"low":1600.0,"high":4100.0,"multiple":1.75,"p3":0.22,"p10":0.004,"weanling":3400.0,"weanling_multiple":2.28,"tested":true,"real":{"n":22,"median":2850.0,"label":"$1,001 to $1,500","multiple":1.9}},"sold":null,"rec":{"tier":"some","y":2026,"e":6010.0,"n":2,"prev":7029.0},"shown":null},{"id":"ST044","name":"TELASECRET","foaled":2009,"sire":"THE TOP SECRET","dam":"TELOQUENCE","dam_sire":null,"price":{"fee":1000.0,"year":2024,"current":false},"pt":false,"share":0.65,"bids":4,"score":2192.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.58,"p3":0.43,"p10":0.021,"weanling":3400.0,"weanling_multiple":3.36,"tested":true,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":{"n":8,"median":3000.0},"rec":{"tier":"some","y":2025,"e":10958.0,"n":14,"prev":24038.0},"shown":null},{"id":"ST045","name":"TELESTRATOR","foaled":2017,"sire":"TELASECRET","dam":"PF SUPREME SURPRISE","dam_sire":"MH SUPREMO","price":{"fee":1000.0,"year":2025,"current":true},"pt":false,"share":null,"bids":0,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.58,"p3":0.43,"p10":0.021,"weanling":3400.0,"weanling_multiple":3.36,"tested":true,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"some","y":2024,"e":6400.0,"n":1,"prev":0.0},"shown":null},{"id":"ST046","name":"THE HEISMAN LEGEND","foaled":2016,"sire":"HEISMAN","dam":"MISS LITTLE TE","dam_sire":"SAINT TELUSIVE","price":{"fee":1300.0,"year":2023,"current":false},"pt":false,"share":0.58,"bids":3,"score":11842.0,"sale":{"typical":2700.0,"low":1600.0,"high":4100.0,"multiple":2.06,"p3":0.29,"p10":0.008,"weanling":3500.0,"weanling_multiple":2.68,"tested":true,"real":{"n":22,"median":2850.0,"label":"$1,001 to $1,500","multiple":1.9}},"sold":null,"rec":{"tier":"some","y":2026,"e":19132.0,"n":5,"prev":30909.0},"shown":null},{"id":"ST047","name":"VERY COOL","foaled":2008,"sire":"TE COOLEST","dam":"VERY SEXY","dam_sire":"IMAGE OF KID","price":{"fee":2000.0,"year":2022,"current":false},"pt":false,"share":0.81,"bids":5,"score":40689.0,"sale":{"typical":2700.0,"low":1700.0,"high":4300.0,"multiple":1.37,"p3":0.1,"p10":0.004,"weanling":3600.0,"weanling_multiple":1.79,"tested":true,"real":{"n":68,"median":2900.0,"label":"$1,501 to $2,000","multiple":1.66}},"sold":{"n":35,"median":3000.0},"rec":{"tier":"some","y":2026,"e":54633.0,"n":19,"prev":73356.0},"shown":null},{"id":"ST048","name":"VIGILANTI","foaled":2013,"sire":"FEARLES","dam":"MY SWEET INNOCENCE","dam_sire":"COOLEST","price":{"fee":1000.0,"year":2022,"current":false},"pt":false,"share":0.5,"bids":3,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":2.58,"p3":0.43,"p10":0.021,"weanling":3400.0,"weanling_multiple":3.36,"tested":true,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST049","name":"WHISKEY FOR MY MOCCA","foaled":2016,"sire":"A CLASSICAL MOCCA","dam":"COOL CARIBBEAN MISS","dam_sire":"TWENTYFOUR KARAT KID","price":{"fee":750.0,"year":2023,"current":false},"pt":false,"share":null,"bids":0,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":3.44,"p3":0.57,"p10":0.05,"weanling":3400.0,"weanling_multiple":4.48,"tested":false,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST050","name":"XA OBVIOUSLY SUAVE","foaled":2016,"sire":"HEZ N COMMAND","dam":"OBVIOUSLY MIGHTY","dam_sire":"MIGHTY AMBITIOUS","price":{"fee":550.0,"year":2021,"current":false},"pt":false,"share":null,"bids":0,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":4.69,"p3":0.73,"p10":0.113,"weanling":3400.0,"weanling_multiple":6.11,"tested":false,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null},{"id":"ST051","name":"XTRA STYLE","foaled":2019,"sire":"KID FOREVER IN STYLE","dam":"PLATINUM N STYLE","dam_sire":"JF SKIP N STYLE","price":null,"pt":true,"share":null,"bids":0,"score":3568.0,"sale":null,"sold":null,"rec":{"tier":"some","y":2026,"e":6253.0,"n":1,"prev":10960.0},"shown":null},{"id":"ST052","name":"ZR KIDS CLASSICSTYLE","foaled":2013,"sire":"KIDS CLASSIC STYLE","dam":"MS RE DESIGNED","dam_sire":"HE IS RE DESIGNED","price":{"fee":500.0,"year":2022,"current":false},"pt":false,"share":null,"bids":0,"score":0.0,"sale":{"typical":2600.0,"low":1600.0,"high":4000.0,"multiple":5.16,"p3":0.75,"p10":0.15,"weanling":3400.0,"weanling_multiple":6.73,"tested":false,"real":{"n":15,"median":2200.0,"label":"$1,000 or less","multiple":2.2}},"sold":null,"rec":{"tier":"none","y":null,"e":0,"n":0,"prev":null},"shown":null}],"record":{"first_season":2019,"last_season":2025,"k":3,"method":"leave one season out: rule chosen on the other seasons","rules_chosen":["final","momentum","final","final","final","total3","final"],"final_rule_in_sample_hits":{"1000":6,"1500":7,"2000":17,"None":18},"by_budget":[{"budget":1000,"picks":21,"hit":5,"base":0.06136054421768707,"share":0.23809523809523808},{"budget":1500,"picks":21,"hit":4,"base":0.08499622071050641,"share":0.19047619047619047},{"budget":2000,"picks":21,"hit":14,"base":0.177070588087483,"share":0.6666666666666666},{"budget":null,"picks":21,"hit":16,"base":0.21052867121843916,"share":0.7619047619047619}]},"sales":{"note":"Public online auction results from internethorseauctions.com listings, 2017 to 2025, read 2026-11-15. Young = weanling to two-year-old by a stallion in the workbook. Mares = aged three and up, by a halter sire.","young":{"n":122,"median":2600.0,"q1":1550,"q3":4200,"top":18100,"at_least_10000":4,"at_least_20000":0,"with_fee":85,"median_multiple":1.67,"at_least_3x":22,"at_least_10x":0,"best_multiple":9.1},"mares":{"n":108,"median":3100.0,"q1":1750,"q3":6200,"top":20300}},"pricing":{"sales":240,"sires":59,"explained":0.13663729211972298,"within_double_or_half":0.6666666666666666,"fee_range":[1000.0,3000.0],"rounds":10,"combinations":128,"scorecard":[{"name":"One typical price for every horse","typical_miss":0.63,"explained":-0.0,"kept":false},{"name":"Age at sale","typical_miss":0.654,"explained":0.002,"kept":false},{"name":"Age and stud fee","typical_miss":0.695,"explained":0.018,"kept":false},{"name":"Age, stud fee and the sire's foal winnings the year before the sale","typical_miss":0.706,"explained":-0.012,"kept":false},{"name":"Age, stud fee and the sire's foal winnings when the mare was bred","typical_miss":0.671,"explained":0.093,"kept":false},{"name":"Age and stud fee, plus each sire's own price level","typical_miss":0.695,"explained":0.009,"kept":false},{"name":"Age, stud fee and sex, plus each sire's own price level","typical_miss":0.669,"explained":0.061,"kept":false},{"name":"Age, stud fee and year of sale, plus each sire's own price level","typical_miss":0.693,"explained":0.048,"kept":false},{"name":"Age, plus each sire's own price level","typical_miss":0.669,"explained":-0.005,"kept":false},{"name":"Age, sex and the sire's foal winnings when the mare was bred","typical_miss":0.629,"explained":0.137,"kept":true}],"weanlings":29,"yearlings":108,"two_year_olds":103,"top":18100.0,"at_least_10000":7,"at_least_20000":0}}};</script>
 <script>
 (function(){
 'use strict';
 var D = window.BVR, M = D.match, S = M.stallions, app = document.getElementById('app');
 var Y = M.years, SPAN = Y.length ? Y[0] + ' to ' + Y[Y.length - 1] : '';
+var PM = M.pricing, MARES = M.sales && M.sales.mares;
 
 function h(tag, attrs){
   var el = document.createElement(tag), k, i;
@@ -121,68 +135,131 @@ function round(v){
   if (v >= 10000) return '$' + (Math.round(v / 1000) * 1000).toLocaleString('en-US');
   return money(v);
 }
+function times(v){ return (Math.round(v * 10) / 10).toFixed(1) + 'x'; }
+function pct(v){ return v > 0 && v < 0.01 ? 'under 1%' : Math.round(v * 100) + '%'; }
 function norm(s){ return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
-function tierRank(t){ return t === 'strong' ? 2 : t === 'some' ? 1 : 0; }
-function best(list){
-  return list.slice().sort(function(a, b){
-    return b.score - a.score || tierRank(b.rec.tier) - tierRank(a.rec.tier) || a.price.fee - b.price.fee || (a.name < b.name ? -1 : 1);
+function priced(s){ return !!(s.sale && s.sale.tested); }
+
+var PRICED = S.filter(function(s){ return s.price; });
+var LOWEST = PRICED.reduce(function(m, s){ return Math.min(m, s.price.fee); }, Infinity);
+var state = {have: null, budget: null, sire: '', total: null, mine: '', goal: 'sell', all: false};
+
+/* ---------- two ways to rank ---------- */
+function byWinner(list){            // tested on the 2019 to 2025 seasons: last year's foal winnings x trend
+  return list.slice().sort(function(a, b){ return b.score - a.score || a.price.fee - b.price.fee || (a.name < b.name ? -1 : 1); });
+}
+function byReturn(list){            // likely sale price as a yearling, divided by the stud fee
+  return list.filter(priced).sort(function(a, b){
+    return b.sale.multiple - a.sale.multiple || b.score - a.score || (a.name < b.name ? -1 : 1);
   });
 }
-var PRICED = S.filter(function(s){ return s.price; });
-var PROVEN = PRICED.filter(function(s){ return s.rec.tier !== 'none'; });
-var LOWEST = PRICED.reduce(function(m, s){ return Math.min(m, s.price.fee); }, Infinity);
-var LOWEST_PROVEN = best(PROVEN).sort(function(a, b){ return a.price.fee - b.price.fee; })[0];
-var MARES = M.sales && M.sales.mares;
-
-var state = {have: null, budget: null, sire: '', total: null, mine: ''};
+function unpriced(list){ return byWinner(list.filter(function(s){ return !priced(s); })); }
 
 /* ---------- pieces ---------- */
 function badge(st){
   var t = st.rec.tier;
   return h('span', {class: 'badge ' + t}, h('i'), t === 'strong' ? 'Strong record' : t === 'some' ? 'Some record' : 'No foal results yet');
 }
-function priceLine(st){
-  if (!st.price) return h('span', {class: 'price'}, 'Price on request');
+function feeLine(st){
   return h('span', {class: 'price'}, money(st.price.fee),
     h('small', {text: st.price.current ? 'stud fee, ' + st.price.year : 'last advertised fee, ' + st.price.year}));
 }
-function why(st){
+function byLine(st){
+  return h('p', {class: 'by', text: [st.sire ? 'by ' + st.sire : null, st.foaled ? 'foaled ' + st.foaled : null].filter(Boolean).join(' · ')});
+}
+function record(st){
   var r = st.rec;
   if (r.tier === 'none' || !r.y) return 'None of his foals are on the halter leaderboards for ' + SPAN + '.';
   if (r.y < M.latest) return 'His foals were last on the leaderboard in ' + r.y + ', when they won ' + round(r.e) + '.';
   var s = 'His foals won ' + round(r.e) + ' in halter classes in ' + r.y + ', and ' + r.n + ' of them earned money.';
   if (r.prev > 0 && r.e / r.prev >= 1.2) s += ' That is up from ' + round(r.prev) + ' the year before.';
   else if (r.prev > 0 && r.e / r.prev <= 0.8) s += ' That is down from ' + round(r.prev) + ' the year before.';
-  else if (r.prev === 0) s += ' The year before he was not on the list.';
   return s;
 }
-function expectBox(budget){
-  var items = [], R = M.record, Y = M.sales && M.sales.young;
-  if (R){
-    var rows = R.by_budget, row = rows[0], at2k = null;
-    rows.forEach(function(x){ if (x.budget === 2000) at2k = x; if (x.budget === null ? budget >= 2500 : budget >= x.budget) row = x; });
-    var label = row.budget === null ? 'with no budget limit' : 'at a ' + money(row.budget) + ' budget';
-    var t = 'We re-ran this for the ' + R.first_season + ' to ' + R.last_season + ' breeding seasons, using only what was known at the time. ' +
-      row.hit + ' of the ' + row.picks + ' top picks ' + label + ' went on to sire a foal that finished in the top 50 halter money earners. ' +
-      'For the average stallion at that price it was ' + Math.round(row.base * 100) + '%.';
-    if (row.budget !== null && row.budget < 2000 && at2k) t += ' At ' + money(2000) + ' it was ' + at2k.hit + ' of ' + at2k.picks + '.';
-    items.push(h('li', {text: t}));
+function num(k, v, s){
+  return h('div', {class: 'num'}, h('span', {class: 'k', text: k}), h('span', {class: 'v', text: v}), s ? h('span', {class: 's', text: s}) : null);
+}
+function saleNums(st){
+  var x = st.sale;
+  return [h('div', {class: 'nums'},
+      num('Sold as a weanling', money(x.weanling), times(x.weanling_multiple) + ' the fee, about 18 months after breeding'),
+      num('Sold as a yearling', money(x.typical), times(x.multiple) + ' the fee, about 2 years after breeding'),
+      num('Chance of 3x the fee', pct(x.p3), 'a yearling at ' + money(3 * st.price.fee) + ' or more')),
+    h('p', {class: 'fine', text: 'Half of yearlings like his sell between ' + money(x.low) + ' and ' + money(x.high) + '. The chance of ten times the fee is ' + pct(x.p10) + '.'}),
+    h('p', {class: 'fine', text: 'One year after breeding the foal has only just been born, because a mare carries for about 11 months. Foals are first sold as weanlings, then as yearlings.'}),
+    x.real ? h('p', {class: 'fine', text: 'What actually happened: ' + x.real.n + ' young horses whose sire stood for ' + x.real.label + ' sold for a typical ' + money(x.real.median) +
+      ', which was ' + times(x.real.multiple) + ' the fee.' + (x.real.median < x.typical ? ' That counts geldings and older sales, which pulls it below the estimate.' : '')}) : null];
+}
+function extras(st){
+  return [
+    st.shown ? h('p', {class: 'fine', text: 'Of his ' + st.shown.n + ' foals shown in ' + st.shown.y + ', ' + st.shown.big + (st.shown.big === 1 ? ' has' : ' have') + ' won $20,000 or more so far.'}) : null,
+    st.sold ? h('p', {class: 'fine', text: st.sold.n + ' of his young foals are in the public sales. Their typical price was ' + money(st.sold.median) + '.'}) : null,
+    h('p', {class: 'fine'}, h('a', {href: 'explore.html?s=' + encodeURIComponent(st.id) + '#stallions', text: 'More about him'}))];
+}
+function whyReturn(top, ranked, pool){
+  var out = [], t;
+  if (ranked.length === 1) t = 'He is the only stallion in your budget whose foals we can price.';
+  else {
+    var prices = ranked.map(function(s){ return s.sale.typical; }), lo = Math.min.apply(null, prices), hi = Math.max.apply(null, prices);
+    t = 'At public auction a yearling’s price barely depends on his sire. ' +
+      (lo === hi ? 'Every stallion in your budget comes out at about ' + money(lo) : 'Every stallion in your budget comes out between ' + money(lo) + ' and ' + money(hi)) +
+      '. So the stud fee decides the return, and ' +
+      (ranked.every(function(s){ return s.price.fee >= top.price.fee; }) ? 'his is the lowest we can price.' : 'his is among the lowest.');
+    var same = ranked.filter(function(s){ return s.price.fee === top.price.fee && s.id !== top.id; }).length;
+    if (same) t += ' ' + same + (same === 1 ? ' other costs' : ' others cost') + ' the same. ' +
+      (top.rec.y === M.latest && top.rec.e > 0 ? 'He is first because his foals’ winnings are the strongest of that group.' : 'None of them had foals on last year’s list, so they are level.');
   }
-  if (Y) items.push(h('li', {text: 'Do not count on a quick resale. In ' + Y.n + ' public online sales of young horses by these stallions, the typical price was ' +
-    Y.median_multiple.toFixed(1) + ' times the stud fee, and ' + (Y.at_least_20000 ? Y.at_least_20000 : 'none') + ' reached $20,000. The big results come as prize money and private sales.'}));
-  return items.length ? h('div', {class: 'card'}, h('p', {class: 'eyebrow', text: 'What to expect'}), h('ul', {class: 'plain'}, items)) : null;
+  out.push(h('p', {class: 'why', text: t}));
+  var star = byWinner(pool)[0];
+  if (star && star.id !== top.id && priced(star)){
+    var more = star.sale.typical - top.sale.typical, dearer = star.price.fee - top.price.fee;
+    out.push(h('p', {class: 'why', text: 'The strongest record in your budget is ' + star.name + ' at ' + money(star.price.fee) + '. His yearling is likely to sell for ' +
+      money(star.sale.typical) + (more > 0 ? ', ' + money(more) + ' more' : ', no more') + (dearer > 0 ? ', for a fee ' + money(dearer) + ' higher' : '') +
+      '. That is a return of ' + times(star.sale.multiple) + '. His record buys a better chance of a prize winner, not a higher auction price.'}));
+  }
+  return out;
 }
-function card(st, label, isBest){
-  return h('article', {class: 'card' + (isBest ? ' best' : '')},
+function returnCard(top, ranked, pool, split){
+  return h('article', {class: 'card best'},
+    h('p', {class: 'name', text: top.name}), byLine(top),
+    h('div', {class: 'row'}, feeLine(top), badge(top)),
+    split, saleNums(top),
+    h('p', {class: 'eyebrow', style: 'margin-top:14px', text: 'Why he ranks first'}),
+    whyReturn(top, ranked, pool),
+    h('p', {class: 'fine', text: record(top)}),
+    extras(top));
+}
+function winnerCard(st, label, split){
+  return h('article', {class: 'card best'},
     label ? h('p', {class: 'eyebrow', text: label}) : null,
-    h('p', {class: 'name', text: st.name}),
-    h('p', {class: 'by', text: [st.sire ? 'by ' + st.sire : null, st.foaled ? 'foaled ' + st.foaled : null].filter(Boolean).join(' · ')}),
-    h('div', {class: 'row'}, priceLine(st), badge(st)),
-    h('p', {class: 'why', text: why(st)}),
-    st.shown ? h('p', {class: 'why', text: 'Of his ' + st.shown.n + ' foals shown in ' + st.shown.y + ', ' + st.shown.big + (st.shown.big === 1 ? ' has' : ' have') + ' won $20,000 or more so far.'}) : null,
-    st.share && st.bids >= 2 ? h('p', {class: 'fine', text: 'Breedings to him have sold at auction for about ' + Math.round(st.share * 100) + '% of his fee.'}) : null,
-    h('p', {class: 'fine'}, h('a', {href: 'explore.html?s=' + encodeURIComponent(st.id) + '#stallions', text: 'More about him'})));
+    h('p', {class: 'name', text: st.name}), byLine(st),
+    h('div', {class: 'row'}, feeLine(st), badge(st)),
+    split,
+    h('p', {class: 'why', text: record(st)}),
+    priced(st) ? h('p', {class: 'why', text: 'If you sell the foal instead of showing it: likely ' + money(st.sale.typical) + ' as a yearling, a return of ' + times(st.sale.multiple) + ' on the fee.'}) : null,
+    extras(st));
 }
+function rankTable(ranked, cols, starId){
+  var rows = ranked.map(function(s, i){ return {s: s, i: i}; });
+  var cut = !state.all && rows.length > 12;
+  var vis = cut ? rows.filter(function(r){ return r.i < 10 || r.s.id === starId; }) : rows;
+  return [h('div', {class: 'tablewrap'}, h('table', null,
+      h('thead', null, h('tr', null, h('th', {text: '#'}), h('th', {text: 'Stallion'}), cols.map(function(c){ return h('th', {class: 'n' + (c[2] ? ' ' + c[2] : ''), text: c[0]}); }))),
+      h('tbody', null, vis.map(function(r){
+        return h('tr', {class: r.i === 0 ? 'top' : null}, h('td', {text: String(r.i + 1)}),
+          h('td', null, r.s.name, h('span', {class: 'sub'}, badge(r.s)),
+            r.s.id === starId && r.i > 0 ? h('span', {class: 'sub', text: 'Strongest record in your budget'}) : null),
+          cols.map(function(c){ return h('td', {class: 'n' + (c[2] ? ' ' + c[2] : ''), text: c[1](r.s)}); }));
+      })))),
+    cut ? h('p', {class: 'fine'}, h('button', {class: 'linkbtn', type: 'button', text: 'Show all ' + rows.length,
+      onclick: function(){ state.all = true; results(); }})) : null];
+}
+var COL = {
+  fee: ['Stud fee', function(s){ return money(s.price.fee); }],
+  sale: ['Yearling sells for', function(s){ return priced(s) ? money(s.sale.typical) : 'no estimate'; }],
+  ret: ['Return', function(s){ return priced(s) ? times(s.sale.multiple) : 'no estimate'; }],
+  won: ['Foal winnings last year', function(s){ return s.rec.y === M.latest && s.rec.e > 0 ? round(s.rec.e) : 'not listed'; }]
+};
 function moneyInput(id, value, onset, label){
   var input = h('input', {id: id, type: 'text', inputmode: 'numeric', autocomplete: 'off', placeholder: '0', 'aria-label': label,
     value: value == null ? '' : Math.round(value).toLocaleString('en-US')});
@@ -192,15 +269,61 @@ function moneyInput(id, value, onset, label){
   });
   return h('div', {class: 'money'}, h('span', {text: '$'}), input);
 }
-function chips(values, current, onpick, fmt){
+function chips(values, current, onpick){
   return h('div', {class: 'chips'}, values.map(function(v){
-    return h('button', {type: 'button', class: 'chip', 'aria-pressed': current === v ? 'true' : 'false', text: fmt ? fmt(v) : money(v), onclick: function(){ onpick(v); }});
+    return h('button', {type: 'button', class: 'chip', 'aria-pressed': current === v ? 'true' : 'false', text: money(v), onclick: function(){ onpick(v); }});
   }));
 }
+function goalToggle(){
+  function b(key, label){
+    return h('button', {type: 'button', 'aria-pressed': state.goal === key ? 'true' : 'false', text: label, onclick: function(){ state.goal = key; state.all = false; results(); }});
+  }
+  return h('div', {class: 'field'}, h('span', {class: 'lab', text: 'Rank by'}),
+    h('div', {class: 'seg', role: 'group', 'aria-label': 'Rank by'}, b('sell', 'Return if I sell the foal'), b('win', 'Chance of a prize winner')));
+}
+function scorecard(){
+  if (!PM || !PM.scorecard) return null;
+  return h('details', null, h('summary', {text: 'See all ' + PM.scorecard.length + ' versions we trained'}),
+    h('p', {class: 'fine', text: 'Each version was trained with one auction left out, then scored on that auction, for every auction in turn. A version was kept only if it predicted sales it had not seen better than the one before.'}),
+    h('div', {class: 'tablewrap', style: 'margin-top:10px'}, h('table', null,
+      h('thead', null, h('tr', null, h('th', {text: 'Version'}), h('th', {class: 'n', text: 'Typical miss'}), h('th', {class: 'n', text: 'Price differences explained'}))),
+      h('tbody', null, PM.scorecard.map(function(r){
+        var e = Math.round(r.explained * 100);
+        return h('tr', {class: r.kept ? 'top' : null}, h('td', {text: r.name}), h('td', {class: 'n', text: Math.round(r.typical_miss * 100) + '%'}),
+          h('td', {class: 'n', text: e > 0 ? e + '%' : 'none'}));
+      })))));
+}
+function expectBox(budget){
+  var items = [], R = M.record;
+  if (PM){
+    items.push(h('li', null, 'The sale prices are rough. We trained ' + PM.rounds + ' versions of a price model on ' + PM.sales + ' public sales and tried ' + PM.combinations +
+      ' combinations of factors. The best explains about ' + Math.round(PM.explained * 100) + '% of the difference between one sale and the next, and nearly all of that is the horse\u2019s age, sex and the year it sold, not its sire. Two sales in three landed between half and double its estimate.',
+      scorecard()));
+    items.push(h('li', {text: 'They are public online auction prices. The best halter prospects usually change hands privately, at prices nobody publishes, so a top sire’s best foals can be worth more than this shows.'}));
+    items.push(h('li', {text: 'A big resale is rare. Of the ' + PM.sales + ' sales, ' + PM.at_least_10000 + ' reached $10,000 and ' + (PM.at_least_20000 || 'none') +
+      ' reached $20,000. The best was ' + money(PM.top) + '. The cost of raising the foal is not included.'}));
+  }
+  if (R){
+    var rows = R.by_budget, row = rows[0];
+    rows.forEach(function(x){ if (x.budget === null ? budget >= 2500 : budget >= x.budget) row = x; });
+    items.push(h('li', {text: 'The big results come as prize money. Tested on the ' + R.first_season + ' to ' + R.last_season + ' seasons, ' + row.hit + ' of ' + row.picks +
+      ' top picks by "chance of a prize winner" ' + (row.budget === null ? 'with no budget limit' : 'at a ' + money(row.budget) + ' budget') +
+      ' went on to sire a foal in the year’s top 50 halter money earners. For the average stallion at that price it was ' + Math.round(row.base * 100) + '%.'}));
+  }
+  return items.length ? h('div', {class: 'card', style: 'margin-top:26px'}, h('p', {class: 'eyebrow', text: 'How sure is this?'}), h('ul', {class: 'plain'}, items)) : null;
+}
+function noEstimate(list){
+  if (!list.length || !PM) return null;
+  return h('details', null, h('summary', {text: list.length + ' more in your budget with no sale estimate'}),
+    h('p', {class: 'fine', text: 'The public sales only include young horses by stallions standing for ' + money(PM.fee_range[0]) + ' to ' + money(PM.fee_range[1]) +
+      '. Outside that range there is nothing to estimate a sale price from.'}),
+    h('ul', {class: 'plain'}, list.map(function(s){ return h('li', null, s.name + ', ' + money(s.price.fee) + ' ', badge(s)); })));
+}
+function useButton(v){ return h('button', {class: 'linkbtn', type: 'button', text: 'Use ' + money(v), onclick: function(){ state[state.have === 'mare' ? 'budget' : 'total'] = v; render(); }}); }
 
-/* ---------- the three paths ---------- */
+/* ---------- a mare ---------- */
 function mareFlow(){
-  var out = [h('h2', {text: 'What can you spend on the breeding?'}),
+  return [h('h2', {text: 'What can you spend on the breeding?'}),
     moneyInput('budget', state.budget, function(n, typing){ state.budget = n; results(typing); }, 'Your budget for the stud fee, in dollars'),
     chips([1000, 1500, 2000, 2500, 3000], state.budget, function(v){ state.budget = v; render(); }),
     h('div', {class: 'field'}, h('label', {for: 'sire', text: 'Who is her sire? (optional)'}),
@@ -209,7 +332,6 @@ function mareFlow(){
       h('datalist', {id: 'sires'}, sireNames().map(function(n){ return h('option', {value: n}); })),
       h('small', {text: 'So we can leave out her close relatives.'})),
     h('div', {id: 'results'})];
-  return out;
 }
 function sireNames(){
   var seen = {};
@@ -218,76 +340,82 @@ function sireNames(){
 }
 function mareResults(){
   var b = state.budget, out = [];
-  if (!b) return [h('p', {class: 'fine', text: 'Enter a budget to see your match.'})];
+  if (!b) return [h('p', {class: 'fine', text: 'Enter a budget to see every option, ranked.'})];
   var ms = norm(state.sire), related = [];
   var fit = PRICED.filter(function(s){
     if (s.price.fee > b) return false;
     if (ms && (norm(s.name) === ms || norm(s.sire) === ms)) { related.push(s.name); return false; }
     return true;
   });
-  if (!fit.length){
-    out.push(h('div', {class: 'note'}, h('b', {text: 'Nothing fits ' + money(b) + '. '}), 'The lowest stud fee we have is ' + money(LOWEST) + '. ',
-      h('button', {class: 'linkbtn', type: 'button', text: 'Use ' + money(LOWEST), onclick: function(){ state.budget = LOWEST; render(); }})));
-    return out;
-  }
-  var ranked = best(fit), top = ranked[0];
-  if (top.rec.tier === 'none' && LOWEST_PROVEN){
-    out.push(h('div', {class: 'note'}, h('b', {text: 'No stallion with foal results fits ' + money(b) + '. '}),
-      'The lowest fee with a record is ' + money(LOWEST_PROVEN.price.fee) + ' (' + LOWEST_PROVEN.name + '). ',
-      h('button', {class: 'linkbtn', type: 'button', text: 'Use ' + money(LOWEST_PROVEN.price.fee), onclick: function(){ state.budget = LOWEST_PROVEN.price.fee; render(); }})));
-  }
-  out.push(h('h2', {text: 'Your best match'}));
-  out.push(card(top, null, true));
-  if (ranked.length > 1){
-    out.push(h('h2', {text: 'Also within your budget'}));
-    ranked.slice(1, 3).forEach(function(s){ out.push(card(s)); });
-  }
-  if (ranked.length > 3){
-    out.push(h('details', null, h('summary', {text: 'See all ' + ranked.length + ' that fit'}),
-      h('ul', {class: 'list'}, ranked.map(function(s){
-        return h('li', null, h('b', {text: s.name}), h('span', {class: 'r'}, money(s.price.fee), badge(s)));
-      }))));
+  if (!fit.length)
+    return [h('div', {class: 'note'}, h('b', {text: 'Nothing fits ' + money(b) + '. '}), 'The lowest stud fee we have is ' + money(LOWEST) + '. ', useButton(LOWEST))];
+  out.push(goalToggle());
+  var star = byWinner(fit)[0];
+  if (state.goal === 'sell'){
+    var ranked = byReturn(fit);
+    if (!ranked.length)
+      out.push(h('div', {class: 'note'}, h('b', {text: 'We cannot estimate a sale price at ' + money(b) + '. '}),
+        'The public sales only include young horses by stallions standing for ' + money(PM.fee_range[0]) + ' or more. ', useButton(PM.fee_range[0])));
+    else {
+      out.push(h('h2', {text: 'Your best return'}));
+      out.push(returnCard(ranked[0], ranked, fit));
+      out.push(h('h2', {text: ranked.length === 1 ? 'The one option we can price' : 'All ' + ranked.length + ' options, ranked by return'}));
+      out.push(rankTable(ranked, [COL.fee, COL.sale, COL.ret], star.id));
+    }
+    out.push(noEstimate(unpriced(fit)));
+  } else {
+    var w = byWinner(fit);
+    out.push(h('h2', {text: 'Your best chance of a prize winner'}));
+    out.push(winnerCard(w[0]));
+    out.push(h('h2', {text: 'All ' + w.length + ' options, ranked by foal winnings and their trend'}));
+    out.push(rankTable(w, [COL.fee, COL.won, COL.ret]));
   }
   if (related.length) out.push(h('p', {class: 'fine', text: 'Left out as close relatives of your mare: ' + related.join(', ') + '.'}));
-  out.push(h('div', {style: 'height:14px'}));
   out.push(expectBox(b));
   return out;
 }
+
+/* ---------- no horse yet ---------- */
 function noneFlow(){
   return [h('h2', {text: 'What is your total budget?'}),
     moneyInput('total', state.total, function(n, typing){ state.total = n; results(typing); }, 'Your total budget for the breeding and the mare, in dollars'),
     chips([5000, 10000, 20000, 50000], state.total, function(v){ state.total = v; render(); }),
     h('div', {id: 'results'})];
 }
-function noneResults(){
-  var t = state.total, picks = [];
-  if (!t) return [h('p', {class: 'fine', text: 'Enter a budget to see how to split it.'})];
-  [Infinity, 1500, 1000].forEach(function(cap){
-    var r = best(PROVEN.filter(function(s){ return s.price.fee <= cap && s.price.fee < t && picks.indexOf(s) < 0; }));
-    if (r[0]) picks.push(r[0]);
-  });
-  if (!picks.length)
-    return [h('div', {class: 'note'}, h('b', {text: 'That will not cover a breeding yet. '}),
-      'The lowest stud fee with foal results is ' + money(LOWEST_PROVEN.price.fee) + ', before the cost of a mare.')];
-  var labels = ['Strongest record', 'A lower fee', 'The lowest fee with a record'];
-  return [h('h2', {text: 'Three ways to split it'}),
-    h('div', {class: 'card'}, picks.map(function(s, i){
-      return h('div', {class: 'plan'},
-        h('div', null, h('span', {class: 'k', text: labels[i]}), h('b', {text: s.name}), h('div', null, badge(s))),
-        h('div', null, h('span', {class: 'k', text: 'For the breeding'}), h('span', {class: 'v', text: money(s.price.fee)})),
-        h('div', null, h('span', {class: 'k', text: 'Left for the mare'}), h('span', {class: 'v', text: money(t - s.price.fee)})));
-    })),
-    MARES ? h('p', {class: 'why', text: 'What a mare costs: at public online sales, most halter mares sold for ' + money(MARES.q1) + ' to ' + money(MARES.q3) +
-      ' (' + MARES.n + ' sales, typical price ' + money(MARES.median) + ').'}) : null,
-    h('p', {class: 'fine', text: 'We know what mares have sold for, not which mares are for sale today. Once you have one, come back and choose "A mare".'})];
+function split(st, total){
+  var left = total - st.price.fee;
+  return h('div', {class: 'nums two'}, num('For the breeding', money(st.price.fee)),
+    num('Left for the mare', money(left), MARES ? (left >= MARES.q1 ? 'most mares sold for ' + money(MARES.q1) + ' to ' + money(MARES.q3) : 'most mares sold for ' + money(MARES.q1) + ' or more') : null));
 }
+function noneResults(){
+  var t = state.total;
+  if (!t) return [h('p', {class: 'fine', text: 'Enter a budget to see every way to split it, ranked.'})];
+  var fit = PRICED.filter(function(s){ return s.price.fee < t; });
+  var sell = state.goal === 'sell', ranked = sell ? byReturn(fit) : byWinner(fit);
+  if (!ranked.length)
+    return [h('div', {class: 'note'}, h('b', {text: 'That will not cover a breeding yet. '}),
+      'The lowest stud fee we can price is ' + money(PM ? PM.fee_range[0] : LOWEST) + ', before the cost of a mare.')];
+  var top = ranked[0], star = byWinner(fit)[0], out = [goalToggle()];
+  out.push(h('h2', {text: sell ? 'Your best return' : 'Your best chance of a prize winner'}));
+  out.push(sell ? returnCard(top, ranked, fit, split(top, t)) : winnerCard(top, null, split(top, t)));
+  out.push(h('h2', {text: 'All ' + ranked.length + ' ways to split ' + money(t) + ', ranked'}));
+  out.push(rankTable(ranked, [['Breeding', COL.fee[1]], ['Left for the mare', function(s){ return money(t - s.price.fee); }, 'wide'],
+    ['Yearling sells for', COL.sale[1]], ['Return', COL.ret[1]]], sell ? star.id : null));
+  if (sell) out.push(noEstimate(unpriced(fit)));
+  out.push(h('p', {class: 'fine', text: 'The return compares the yearling\u2019s likely price with the stud fee. The mare is still yours to breed again or sell' +
+    (MARES ? ': at public online sales most halter mares sold for ' + money(MARES.q1) + ' to ' + money(MARES.q3) + ' (' + MARES.n + ' sales).' : '.') +
+    ' A better mare should give a better foal, but the public sales do not show by how much, so the foal’s price here does not change with what you spend on her.'}));
+  out.push(expectBox(t));
+  return out;
+}
+
+/* ---------- a stallion ---------- */
 function stallionFlow(){
   var names = S.slice().sort(function(a, b){ return a.name < b.name ? -1 : 1; });
   var sel = h('select', {id: 'mine', onchange: function(e){ state.mine = e.target.value; results(); }},
     h('option', {value: '', text: 'Choose a stallion'}), names.map(function(s){ return h('option', {value: s.id, selected: s.id === state.mine, text: s.name}); }));
   return [h('div', {class: 'note'}, h('b', {text: 'We cannot match mares yet. '}),
-      MARES ? 'We know what halter mares have sold for (most between ' + money(MARES.q1) + ' and ' + money(MARES.q3) + '), but not which mares are for sale.'
-            : 'So far the data covers stallions only.'),
+      MARES ? 'We know what halter mares have sold for (most between ' + money(MARES.q1) + ' and ' + money(MARES.q3) + '), but not which mares are for sale.' : 'So far the data covers stallions only.'),
     h('div', {class: 'field'}, h('label', {for: 'mine', text: 'See how your stallion compares'}), sel,
       h('small', {text: 'If he is one of the ' + S.length + ' stallions we track.'})),
     h('div', {id: 'results'})];
@@ -295,8 +423,9 @@ function stallionFlow(){
 function stallionResults(){
   var st = S.filter(function(s){ return s.id === state.mine; })[0];
   if (!st) return [];
+  if (!st.price) return [h('div', {class: 'note'}, h('b', {text: st.name + ' has no published price. '}), record(st))];
+  var out = [winnerCard(st, 'Your stallion')];
   var peers = PRICED.filter(function(s){ return s.rec.tier === st.rec.tier && s.id !== st.id; }).map(function(s){ return s.price.fee; });
-  var out = [card(st, 'Your stallion', true)];
   if (peers.length){
     var lo = Math.min.apply(null, peers), hi = Math.max.apply(null, peers);
     var label = st.rec.tier === 'strong' ? 'a strong record' : st.rec.tier === 'some' ? 'some record' : 'no foal results yet';
@@ -323,17 +452,18 @@ function render(){
   add(app, [h('h2', {text: 'What do you have?', style: 'margin-top:0'}),
     h('div', {class: 'choices', role: 'group', 'aria-label': 'What do you have?'}, opts.map(function(o){
       return h('button', {type: 'button', class: 'choice', 'aria-pressed': state.have === o[0] ? 'true' : 'false',
-        onclick: function(){ state.have = o[0]; render(); }}, h('b', {text: o[1]}), h('span', {text: o[2]}));
+        onclick: function(){ state.have = o[0]; state.all = false; render(); }}, h('b', {text: o[1]}), h('span', {text: o[2]}));
     }))]);
   if (state.have){ add(app, FLOWS[state.have][0]()); results(); }
 }
 var foot = document.getElementById('foot');
 add(foot, [h('details', null, h('summary', {text: 'How this works'}), h('ul', null,
     h('li', {text: 'We track ' + S.length + ' halter stallions and what each has charged for a breeding. ' + PRICED.length + ' have a published price.'}),
-    h('li', {text: 'A record is prize money won by a stallion’s foals in halter classes, taken from the public QData leaderboards for ' + SPAN + '.'}),
-    h('li', {text: 'Within your budget we rank by what his foals won last year, moved up if that is rising and down if it is falling. We tried ten ways of ranking against the ' + (M.record ? M.record.first_season + ' to ' + M.record.last_season : 'past') + ' seasons and kept the one that did best.'}),
-    h('li', {text: 'Strong record: in the top ten in at least one of those years. Some record: on the top-50 list. A stallion with more foals has more chances to be on it, and we cannot yet see how many foals each stallion has.'}),
-    h('li', {text: 'It is a guide, not a guarantee. Most foals, even by the best stallions, do not become top earners.'}))),
+    PM ? h('li', {text: 'The sale price comes from ' + PM.sales + ' young horses sold at public online auctions, by ' + PM.sires + ' stallions: ' + PM.weanlings + ' weanlings, ' +
+      PM.yearlings + ' yearlings and ' + PM.two_year_olds + ' two-year-olds. Return is that price divided by the stud fee. It leaves out the cost of raising the foal.'}) : null,
+    h('li', {text: 'A record is prize money won by a stallion’s foals in halter classes, from the public QData leaderboards for ' + SPAN + '. Strong record: in the top ten in at least one of those years. Some record: on the top-50 list.'}),
+    h('li', {text: 'Chance of a prize winner ranks by what his foals won last year, moved up if that is rising and down if it is falling. We tried ten ways of ranking against past seasons and kept the best.'}),
+    h('li', {text: 'It is a guide, not a guarantee. We cannot yet see how many foals each stallion has, so we cannot give one foal’s odds.'}))),
   h('p', null, h('a', {href: 'explore.html', text: 'See all the data behind this'}), D.repo ? ' · ' : null, D.repo ? h('a', {href: D.repo, text: 'Source'}) : null,
     ' · Updated ' + D.generated)]);
 render();
